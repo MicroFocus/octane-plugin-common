@@ -1,7 +1,6 @@
-package com.hpe.adm.octane;
+package com.hpe.adm.octane.integrationtests;
 
 import com.google.inject.Inject;
-import com.hpe.adm.octane.integrationtests.IntegrationTestBase;
 import com.hpe.adm.octane.integrationtests.util.ConfigurationUtil;
 import com.hpe.adm.octane.services.TestService;
 import com.hpe.adm.octane.services.connection.ConnectionSettingsProvider;

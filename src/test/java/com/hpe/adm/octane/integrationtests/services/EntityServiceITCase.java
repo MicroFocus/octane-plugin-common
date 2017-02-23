@@ -1,8 +1,10 @@
-package com.hpe.adm.octane.services;
+package com.hpe.adm.octane.integrationtests.services;
 
 import com.google.inject.Inject;
 import com.hpe.adm.nga.sdk.model.EntityModel;
 import com.hpe.adm.octane.integrationtests.IntegrationTestBase;
+import com.hpe.adm.octane.services.EntityService;
+import com.hpe.adm.octane.services.TestService;
 import com.hpe.adm.octane.services.connection.ConnectionSettings;
 import com.hpe.adm.octane.services.connection.ConnectionSettingsProvider;
 import com.hpe.adm.octane.services.filtering.Entity;

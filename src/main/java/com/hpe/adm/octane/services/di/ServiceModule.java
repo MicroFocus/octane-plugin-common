@@ -1,67 +1,45 @@
-package com.hpe.adm.octane.integrationtests;
+package com.hpe.adm.octane.services.di;
 
 import com.google.common.base.Supplier;
 import com.google.common.base.Suppliers;
-import com.google.inject.*;
+import com.google.inject.AbstractModule;
+import com.google.inject.Guice;
+import com.google.inject.Injector;
+import com.google.inject.Provides;
 import com.hpe.adm.nga.sdk.Octane;
 import com.hpe.adm.nga.sdk.authentication.SimpleUserAuthentication;
 import com.hpe.adm.nga.sdk.network.OctaneHttpClient;
 import com.hpe.adm.nga.sdk.network.google.GoogleHttpClient;
-import com.hpe.adm.octane.integrationtests.util.ConfigurationUtil;
-import com.hpe.adm.octane.services.TestService;
-import com.hpe.adm.octane.services.connection.*;
+import com.hpe.adm.octane.services.connection.ConnectionSettings;
+import com.hpe.adm.octane.services.connection.ConnectionSettingsProvider;
+import com.hpe.adm.octane.services.connection.HttpClientProvider;
+import com.hpe.adm.octane.services.connection.OctaneProvider;
 import com.hpe.adm.octane.services.util.ClientType;
 
+public class ServiceModule extends AbstractModule {
 
-/**
- * DI module for integration tests
- */
-class TestModule extends AbstractModule {
+    private ConnectionSettingsProvider connectionSettingsProvider;
 
     protected final Supplier<Injector> injectorSupplier;
 
-    public TestModule() {
+    public ServiceModule(ConnectionSettingsProvider connectionSettingsProvider){
+        this.connectionSettingsProvider = connectionSettingsProvider;
         injectorSupplier = Suppliers.memoize(() -> Guice.createInjector(this));
-    }
-
-    public <T> T getInstance(Class<T> type) {
-        return injectorSupplier.get().getInstance(type);
     }
 
     @Override
     protected void configure() {
-
-        bind(TestService.class);
-
-        bind(ConnectionSettingsProvider.class).toProvider(()-> {
-            ConnectionSettings connectionSettings = new ConnectionSettings();
-
-            //Set form config
-            connectionSettings.setBaseUrl(ConfigurationUtil.getString(ConfigurationUtil.PropertyKeys.URL));
-            connectionSettings.setSharedSpaceId(ConfigurationUtil.getLong(ConfigurationUtil.PropertyKeys.SHAREDSPACE));
-            connectionSettings.setWorkspaceId(ConfigurationUtil.getLong(ConfigurationUtil.PropertyKeys.WORKSPACE));
-            connectionSettings.setUserName(ConfigurationUtil.getString(ConfigurationUtil.PropertyKeys.USERNAME));
-            connectionSettings.setPassword(ConfigurationUtil.getString(ConfigurationUtil.PropertyKeys.PASSWORD));
-
-            return new BasicConnectionSettingProvider(connectionSettings);
-        }).in(Singleton.class);
-
+        bind(ConnectionSettingsProvider.class).toProvider(() -> connectionSettingsProvider);
+        //Rest of services are trivial bindings
     }
 
-
-    private ConnectionSettings octaneProviderPreviousConnectionSettings = new ConnectionSettings();
-    private ConnectionSettings httpClientPreviousConnectionSettings = new ConnectionSettings();
     private Octane octane;
-    private OctaneHttpClient octaneHttpClient;
+    private ConnectionSettings octaneProviderPreviousConnectionSettings = new ConnectionSettings();
 
-
-    /**
-     * @return authenticated instance of Octane, with current connection settings
-     */
     @Provides
-    OctaneProvider getOctane(){
+    public OctaneProvider getOctane(){
         return () -> {
-            ConnectionSettings currentConnectionSettings = getInstance(ConnectionSettingsProvider.class).getConnectionSettings();
+            ConnectionSettings currentConnectionSettings = connectionSettingsProvider.getConnectionSettings();
             if (!currentConnectionSettings.equals(octaneProviderPreviousConnectionSettings) || octane == null) {
                 octane = new Octane
                         .Builder(new SimpleUserAuthentication(currentConnectionSettings.getUserName(), currentConnectionSettings.getPassword(), ClientType.HPE_MQM_UI.name()))
@@ -75,10 +53,14 @@ class TestModule extends AbstractModule {
             return octane;
         };
     }
+
+    private OctaneHttpClient octaneHttpClient;
+    private ConnectionSettings httpClientPreviousConnectionSettings = new ConnectionSettings();
+
     @Provides
-    HttpClientProvider geOctaneHttpClient(){
+    public HttpClientProvider geOctaneHttpClient(){
         return ()->{
-            ConnectionSettings currentConnectionSettings = getInstance(ConnectionSettingsProvider.class).getConnectionSettings();
+            ConnectionSettings currentConnectionSettings = connectionSettingsProvider.getConnectionSettings();
             if (!currentConnectionSettings.equals(httpClientPreviousConnectionSettings) || null == octaneHttpClient) {
                 octaneHttpClient =  new GoogleHttpClient(currentConnectionSettings.getBaseUrl(), ClientType.HPE_MQM_UI.name());
                 httpClientPreviousConnectionSettings = currentConnectionSettings;
