@@ -6,7 +6,7 @@
 
     <groupId>com.hpe.adm.plugins</groupId>
     <artifactId>octane-plugin-common</artifactId>
-    <version>1.0-SNAPSHOT</version>
+    <version>1.0</version>
     <packaging>jar</packaging>
 
     <properties>
