@@ -22,7 +22,13 @@ public class ServiceModule extends AbstractModule {
 
     protected final Supplier<Injector> injectorSupplier;
 
-    public ServiceModule(ConnectionSettingsProvider connectionSettingsProvider){
+    private Octane                     octane;
+    private ConnectionSettings         octaneProviderPreviousConnectionSettings = new ConnectionSettings();
+
+    private OctaneHttpClient           octaneHttpClient;
+    private ConnectionSettings         httpClientPreviousConnectionSettings     = new ConnectionSettings();
+
+    public ServiceModule(ConnectionSettingsProvider connectionSettingsProvider) {
         this.connectionSettingsProvider = connectionSettingsProvider;
         injectorSupplier = Suppliers.memoize(() -> Guice.createInjector(this));
     }
@@ -30,23 +36,24 @@ public class ServiceModule extends AbstractModule {
     @Override
     protected void configure() {
         bind(ConnectionSettingsProvider.class).toProvider(() -> connectionSettingsProvider);
-        //Rest of services are trivial bindings
+        // Rest of services are trivial bindings
     }
 
-    private Octane octane;
-    private ConnectionSettings octaneProviderPreviousConnectionSettings = new ConnectionSettings();
+    public <T> T getInstance(Class<T> type) {
+        return injectorSupplier.get().getInstance(type);
+    }
 
     @Provides
-    public OctaneProvider getOctane(){
+    public OctaneProvider getOctane() {
         return () -> {
             ConnectionSettings currentConnectionSettings = connectionSettingsProvider.getConnectionSettings();
             if (!currentConnectionSettings.equals(octaneProviderPreviousConnectionSettings) || octane == null) {
-                octane = new Octane
-                        .Builder(new SimpleUserAuthentication(currentConnectionSettings.getUserName(), currentConnectionSettings.getPassword(), ClientType.HPE_MQM_UI.name()))
-                        .Server(currentConnectionSettings.getBaseUrl())
-                        .sharedSpace(currentConnectionSettings.getSharedSpaceId())
-                        .workSpace(currentConnectionSettings.getWorkspaceId())
-                        .build();
+                octane = new Octane.Builder(new SimpleUserAuthentication(currentConnectionSettings.getUserName(),
+                        currentConnectionSettings.getPassword(), ClientType.HPE_MQM_UI.name()))
+                                .Server(currentConnectionSettings.getBaseUrl())
+                                .sharedSpace(currentConnectionSettings.getSharedSpaceId())
+                                .workSpace(currentConnectionSettings.getWorkspaceId())
+                                .build();
 
                 octaneProviderPreviousConnectionSettings = currentConnectionSettings;
             }
@@ -54,18 +61,16 @@ public class ServiceModule extends AbstractModule {
         };
     }
 
-    private OctaneHttpClient octaneHttpClient;
-    private ConnectionSettings httpClientPreviousConnectionSettings = new ConnectionSettings();
-
     @Provides
-    public HttpClientProvider geOctaneHttpClient(){
-        return ()->{
+    public HttpClientProvider geOctaneHttpClient() {
+        return () -> {
             ConnectionSettings currentConnectionSettings = connectionSettingsProvider.getConnectionSettings();
             if (!currentConnectionSettings.equals(httpClientPreviousConnectionSettings) || null == octaneHttpClient) {
-                octaneHttpClient =  new GoogleHttpClient(currentConnectionSettings.getBaseUrl(), ClientType.HPE_MQM_UI.name());
+                octaneHttpClient = new GoogleHttpClient(currentConnectionSettings.getBaseUrl(), ClientType.HPE_MQM_UI.name());
                 httpClientPreviousConnectionSettings = currentConnectionSettings;
             }
-            SimpleUserAuthentication userAuthentication =  new SimpleUserAuthentication(currentConnectionSettings.getUserName(),currentConnectionSettings.getPassword(), ClientType.HPE_MQM_UI.name());
+            SimpleUserAuthentication userAuthentication = new SimpleUserAuthentication(currentConnectionSettings.getUserName(),
+                    currentConnectionSettings.getPassword(), ClientType.HPE_MQM_UI.name());
             octaneHttpClient.authenticate(userAuthentication);
 
             return octaneHttpClient;
