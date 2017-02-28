@@ -1,9 +1,6 @@
 package com.hpe.adm.octane.services.util;
 
 import com.hpe.adm.nga.sdk.exception.OctaneException;
-import com.hpe.adm.nga.sdk.model.StringFieldModel;
-import org.json.JSONException;
-import org.json.JSONObject;
 
 public class SdkUtil {
 
@@ -13,48 +10,16 @@ public class SdkUtil {
      * @return
      */
     public static String getMessageFromOctaneException(OctaneException ex){
-        String message = getStringFromErrorModel(ex);
-        if(message != null){
+        String message = ex.getError().getDescription();
 
-            //Try to get the json version
-            JSONObject jsonMessage = getJsonFromOctaneException(message);
-            if(jsonMessage != null){
-                return jsonMessage.getString("description");
-            }
-
-            //otherwise the plain message is good enough
-            return message;
+        if(message.contains("401")){
+            message = "The username or the password is incorrect.";
+        }else if(message.contains("404") || message.contains("500")){
+            message = "The sharedspace or the workspace is incorrect.";
+        }else {
+            message = "General octane connection error.";
         }
 
-        //Well, I'm sorry
-        return null;
+        return message;
     }
-
-    public static JSONObject getJsonFromOctaneException(String message){
-        int firstIndex = message.indexOf("{");
-        if(firstIndex != -1){
-            message = message.substring(firstIndex);
-        } else {
-            return null;
-        }
-
-        //Attempt to parse the json message
-        try {
-            JSONObject jsonObject = new JSONObject(message);
-            return jsonObject;
-        } catch(JSONException jsonException){
-           return null;
-        }
-    }
-
-    private static String getStringFromErrorModel(OctaneException ex){
-        //TODO: wish the OctaneException would give more structured details...
-        try{
-            //Description: private constant in OctaneException.errorModel...
-            return ((StringFieldModel)ex.getError().getValue("Description")).getValue();
-        } catch (ClassCastException | NullPointerException castException){
-            return null;
-        }
-    }
-
 }

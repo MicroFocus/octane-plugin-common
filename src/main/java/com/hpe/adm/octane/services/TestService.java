@@ -12,7 +12,6 @@ import com.hpe.adm.octane.services.util.SdkUtil;
 
 import java.net.HttpURLConnection;
 import java.net.URL;
-import java.net.UnknownHostException;
 
 /**
  * Does not rely on the Octane from the DI,
@@ -60,9 +59,6 @@ public class TestService {
 
             if(ex instanceof OctaneException){
                 message = SdkUtil.getMessageFromOctaneException((OctaneException)ex);
-            }
-            else if(ex instanceof UnknownHostException){
-                message = "Failed to connect to host: " + ex.getMessage();
             }
             //Default
             if(message == null) {
