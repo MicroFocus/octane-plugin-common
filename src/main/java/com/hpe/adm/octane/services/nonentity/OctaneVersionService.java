@@ -21,12 +21,17 @@ public class OctaneVersionService {
     public String getOctaneVersion() {
         ConnectionSettings connectionSettings = connectionSettingsProvider.getConnectionSettings();
         OctaneHttpClient httpClient = httpClientProvider.geOctaneHttpClient();
-        if (null != httpClient) {
-            OctaneHttpRequest request = new OctaneHttpRequest.GetOctaneHttpRequest(connectionSettings.getBaseUrl() + "/admin/server/version");
-            OctaneHttpResponse response = httpClient.execute(request);
-            String jsonString = response.getContent();
-            return new JsonParser().parse(jsonString).getAsJsonObject().get("display_version").getAsString();
+        if (httpClient != null) {
+            try {
+                OctaneHttpRequest request = new OctaneHttpRequest.GetOctaneHttpRequest(connectionSettings.getBaseUrl() + "/admin/server/version");
+                OctaneHttpResponse response = httpClient.execute(request);
+                String jsonString = response.getContent();
+                return new JsonParser().parse(jsonString).getAsJsonObject().get("display_version").getAsString();
+            }
+            catch (Exception e) {
+                return "";
+            }
         }
-        return null;
+        return "";
     }
 }
