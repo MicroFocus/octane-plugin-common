@@ -8,6 +8,7 @@ import com.hpe.adm.nga.sdk.exception.OctaneException;
 import com.hpe.adm.octane.services.connection.ConnectionSettings;
 import com.hpe.adm.octane.services.exception.ServiceException;
 import com.hpe.adm.octane.services.filtering.Entity;
+import com.hpe.adm.octane.services.util.ClientType;
 import com.hpe.adm.octane.services.util.SdkUtil;
 
 import java.net.HttpURLConnection;
@@ -20,12 +21,14 @@ import java.net.URL;
 public class TestService {
 
     public Octane getOctane(ConnectionSettings connectionSettings){
-        return new Octane
-                .Builder(new SimpleUserAuthentication(connectionSettings.getUserName(), connectionSettings.getPassword()))
+        Octane octane = new Octane.Builder(new SimpleUserAuthentication(connectionSettings.getUserName(),
+                connectionSettings.getPassword(), ClientType.HPE_MQM_UI.name()))
                 .Server(connectionSettings.getBaseUrl())
                 .sharedSpace(connectionSettings.getSharedSpaceId())
                 .workSpace(connectionSettings.getWorkspaceId())
                 .build();
+
+        return octane;
     }
 
     private void testHttpConnection(ConnectionSettings connectionSettings) throws ServiceException {
