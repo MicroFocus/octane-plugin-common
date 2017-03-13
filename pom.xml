@@ -17,7 +17,7 @@
         <dependency>
             <groupId>com.hpe.adm.nga.sdk</groupId>
             <artifactId>sdk-src</artifactId>
-            <version>12.53.16</version>
+            <version>12.53.20-SNAPSHOT</version>
         </dependency>
         <dependency>
             <groupId>org.jsoup</groupId>
