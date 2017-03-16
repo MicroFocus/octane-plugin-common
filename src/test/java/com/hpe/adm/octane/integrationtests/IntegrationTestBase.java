@@ -4,6 +4,8 @@ import com.google.inject.Guice;
 import com.google.inject.Inject;
 import com.google.inject.Injector;
 import com.hpe.adm.octane.integrationtests.util.ConfigurationUtil;
+import com.hpe.adm.octane.integrationtests.util.EntityGenerator;
+import com.hpe.adm.octane.services.connection.OctaneProvider;
 import com.hpe.adm.octane.services.di.ServiceModule;
 import com.hpe.adm.octane.services.connection.BasicConnectionSettingProvider;
 import com.hpe.adm.octane.services.connection.ConnectionSettings;
@@ -17,10 +19,13 @@ public abstract class IntegrationTestBase {
 
     private Injector injector;
 
+    protected EntityGenerator entityGenerator;
+
     @Before
     public void setup () {
         injector = Guice.createInjector(new ServiceModule(readConnectionSettingsFromFile()));
         injector.injectMembers(this);
+        entityGenerator = new EntityGenerator(injector.getInstance(OctaneProvider.class));
     }
 
     private ConnectionSettingsProvider readConnectionSettingsFromFile(){
