@@ -69,7 +69,7 @@ public class ServiceModule extends AbstractModule {
         return () -> {
             ConnectionSettings currentConnectionSettings = connectionSettingsProvider.getConnectionSettings();
             if (!currentConnectionSettings.equals(httpClientPreviousConnectionSettings) || null == octaneHttpClient) {
-                octaneHttpClient = new GoogleHttpClient(currentConnectionSettings.getBaseUrl(), ClientType.HPE_MQM_UI.name());
+                octaneHttpClient = new GoogleHttpClient(currentConnectionSettings.getBaseUrl());
                 httpClientPreviousConnectionSettings = currentConnectionSettings;
             }
             SimpleUserAuthentication userAuthentication = new SimpleUserAuthentication(currentConnectionSettings.getUserName(),

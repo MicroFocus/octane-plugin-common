@@ -23,6 +23,10 @@ public class UrlParser {
             if (!"http".equals(siteUrl.getProtocol()) && !"https".equals(siteUrl.getProtocol())) {
                 throw new Exception();
             }
+            int paramIndex = url.indexOf("p=");
+            if (paramIndex == -1) {
+                throw new Exception();
+            }
         } catch (Exception ex) {
             throw new ServiceException(INVALID_URL_FORMAT_MESSAGE);
         }

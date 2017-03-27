@@ -4,7 +4,6 @@ import com.hpe.adm.nga.sdk.model.EntityModel;
 import com.hpe.adm.nga.sdk.model.FieldModel;
 import com.hpe.adm.nga.sdk.model.MultiReferenceFieldModel;
 import com.hpe.adm.nga.sdk.model.ReferenceFieldModel;
-import com.hpe.adm.octane.services.filtering.Entity;
 import org.apache.commons.lang.CharEncoding;
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -12,19 +11,17 @@ import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Entities;
 
-import java.text.ParseException;
-import java.text.SimpleDateFormat;
-import java.util.Date;
+import java.time.ZoneId;
+import java.time.ZonedDateTime;
+import java.time.format.DateTimeFormatter;
 import java.util.List;
 import java.util.StringJoiner;
-import java.util.TimeZone;
-
-import static com.hpe.adm.octane.services.util.Constants.OCTANE_DATE_TIME_FORMAT;
 
 public class Util {
-
+    public static final String DATE_FORMAT="MM/dd/yyyy HH:mm:ss";
     /**
      * This method is for displaying in the UI only
+     *
      * @param fieldModel
      * @return
      */
@@ -34,6 +31,7 @@ public class Util {
 
     /**
      * This method is for displaying in the UI only
+     *
      * @param fieldModel
      * @param neededProperty
      * @return
@@ -51,8 +49,10 @@ public class Util {
                 result = getValueOfChildren((List<EntityModel>) fieldModel.getValue(), neededProperty);
             } else {
                 //In case of dates, we need to convert to local timezone
-                if(fieldModel.getValue() instanceof Date){
-                    result = gmtDateToString((Date) fieldModel.getValue());
+                if (fieldModel.getValue() instanceof ZonedDateTime) {
+                    ZonedDateTime serverdateTime = (ZonedDateTime) fieldModel.getValue();
+                    ZonedDateTime localTime = serverdateTime.withZoneSameInstant(ZoneId.systemDefault());
+                    result = localTime.toLocalDateTime().format(DateTimeFormatter.ofPattern(DATE_FORMAT));
                 } else {
                     result = String.valueOf(fieldModel.getValue());
                 }
@@ -63,10 +63,11 @@ public class Util {
         try {
             new JSONObject(result);
             //in case it is json, make it pretty!
-            result = result.replaceAll("\"","");
-            result = result.replaceAll("\\}","");
-            result = result.replaceAll("\\{","");
-        } catch (JSONException ex){}
+            result = result.replaceAll("\"", "");
+            result = result.replaceAll("\\}", "");
+            result = result.replaceAll("\\{", "");
+        } catch (JSONException ex) {
+        }
 
         return (null == result) ? " " : result;
     }
@@ -124,33 +125,7 @@ public class Util {
         if (text.length() > maximumLength) {
             return text.substring(0, maximumLength) + "...";
         }
-        return  text;
+        return text;
     }
-
-    /**
-     * Convert a date+time from GMT to the machine's local timezone
-     * TODO: atoth, this is horrible
-     * @param date
-     * @return
-     */
-    public static String gmtDateToString(Date date){
-        //Get the time info and add the server timezone
-        TimeZone serverTimeZone = TimeZone.getTimeZone("UTC");
-        SimpleDateFormat formatter = new SimpleDateFormat("dd MMM yyyy HH:mm:ss");
-        String strDateString = formatter.format(date);
-        strDateString+=" "+serverTimeZone.getID();
-
-        //Convert it to your local time and return it as a string
-        formatter.setTimeZone(TimeZone.getDefault());
-        formatter.applyPattern("dd MMM yyyy HH:mm:ss z");
-        Date scheduleTime = null;
-        try {
-            scheduleTime =  formatter.parse(strDateString);
-        } catch (ParseException e) {}
-
-        return new SimpleDateFormat(OCTANE_DATE_TIME_FORMAT).format(scheduleTime);
-    }
-
-
 
 }
