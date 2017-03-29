@@ -14,9 +14,8 @@ import com.hpe.adm.octane.services.connection.ConnectionSettings;
 import com.hpe.adm.octane.services.connection.ConnectionSettingsProvider;
 import com.hpe.adm.octane.services.connection.HttpClientProvider;
 import com.hpe.adm.octane.services.connection.OctaneProvider;
-import com.hpe.adm.octane.services.mywork.BackwardsCompatibleMyWorkService;
+import com.hpe.adm.octane.services.mywork.MyWorkServiceProxyFactory;
 import com.hpe.adm.octane.services.mywork.MyWorkService;
-import com.hpe.adm.octane.services.nonentity.OctaneVersionService;
 import com.hpe.adm.octane.services.util.ClientType;
 
 public class ServiceModule extends AbstractModule {
@@ -39,13 +38,22 @@ public class ServiceModule extends AbstractModule {
     @Override
     protected void configure() {
         bind(ConnectionSettingsProvider.class).toProvider(() -> connectionSettingsProvider);
-        bind(MyWorkService.class).to(BackwardsCompatibleMyWorkService.class).asEagerSingleton();
-        bind(OctaneVersionService.class).asEagerSingleton();
+
+        //bind(OctaneVersionService.class).asEagerSingleton();
         // Rest of services are trivial bindings
     }
 
     public <T> T getInstance(Class<T> type) {
         return injectorSupplier.get().getInstance(type);
+    }
+
+    @Provides
+    public MyWorkService getMyWorkService() {
+        MyWorkServiceProxyFactory backwardsCompatibleMyWorkServiceProvider
+                = new MyWorkServiceProxyFactory();
+        injectorSupplier.get().injectMembers(backwardsCompatibleMyWorkServiceProvider);
+
+        return backwardsCompatibleMyWorkServiceProvider.getMyWorkService();
     }
 
     @Provides

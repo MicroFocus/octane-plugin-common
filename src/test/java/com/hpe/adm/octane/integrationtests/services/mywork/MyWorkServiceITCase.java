@@ -53,19 +53,12 @@ public class MyWorkServiceITCase {
         assertEquals(true, evertonMyWork.isAddingToMyWorkSupported());
     }
 
-
     @Test
     public void testGetMyWork() {
 //        getMyWork(chelsea);
         //getMyWork(dynamo);
         getMyWork(everton);
 //        getMyWork(center);
-    }
-
-    @Test
-    public void dev() {
-        Collection<EntityModel> myWork = dynamo.getInstance(MyWorkService.class).getMyWork();
-        printEntities(myWork);
     }
 
     private void getMyWork(ServiceModule module) {
@@ -86,6 +79,15 @@ public class MyWorkServiceITCase {
         if (myWorkService.isAddingToMyWorkSupported()) {
             Assert.assertTrue(EntityUtil.containsEntityModel(myWork, newEntityModel));
         }
+    }
+
+    @Test
+    public void dev() {
+        Collection<EntityModel> myWork = dynamo.getInstance(MyWorkService.class).getMyWork();
+        printEntities(myWork);
+
+        Collection<EntityModel> myWork2 = everton.getInstance(MyWorkService.class).getMyWork();
+        printEntities(myWork2);
     }
 
     //DEBUG
