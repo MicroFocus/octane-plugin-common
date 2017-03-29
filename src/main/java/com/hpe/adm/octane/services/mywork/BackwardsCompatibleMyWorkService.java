@@ -2,12 +2,14 @@ package com.hpe.adm.octane.services.mywork;
 
 import com.google.inject.Inject;
 import com.hpe.adm.nga.sdk.model.EntityModel;
-import com.hpe.adm.octane.services.EntityService;
 import com.hpe.adm.octane.services.filtering.Entity;
 import com.hpe.adm.octane.services.nonentity.OctaneVersionService;
-import org.jsoup.helper.StringUtil;
+import com.hpe.adm.octane.services.util.OctaneVersion;
 
-import java.util.*;
+import java.util.Collection;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.Set;
 
 /**
  * Implementations that should works over more version of the octane server
@@ -18,11 +20,10 @@ public class BackwardsCompatibleMyWorkService implements MyWorkService {
     private OctaneVersionService octaneVersionService;
 
     @Inject
-    private EntityService entityService;
+    private PreDynamoMyWorkService preDynamoMyWorkService;
 
     @Inject
-    private MyWorkFilterCriteria myWorkFilterCriteria;
-
+    private PostDynamoMyWorkService postDynamoMyWorkService;
 
     @Override
     public Collection<EntityModel> getMyWork() {
@@ -31,54 +32,61 @@ public class BackwardsCompatibleMyWorkService implements MyWorkService {
 
     @Override
     public Collection<EntityModel> getMyWork(Map<Entity, Set<String>> fieldListMap) {
-
-        Map<Entity, Collection<EntityModel>> entities;
-
-        String version = octaneVersionService.getOctaneVersion();
-
-        int comparison;
-        if(StringUtil.isBlank(version)){
-            comparison = 1;
+        if(compareServerVersion(OctaneVersion.Operation.LOWER_EQ, OctaneVersion.DYNAMO)){
+            return preDynamoMyWorkService.getMyWork(fieldListMap);
         } else {
-            comparison = version.compareTo("12.53.20");
+            return postDynamoMyWorkService.getMyWork(fieldListMap);
         }
+    }
 
-        //lower than 12.53.20
-        if(comparison == 0 || comparison == -1){
-            entities = entityService.concurrentFindEntities(myWorkFilterCriteria.getServersideFilterCriteria(), fieldListMap);
-        } else {
-            entities = entityService.concurrentFindEntities(myWorkFilterCriteria.getStaticFilterCriteria(), fieldListMap);
-        }
-
-        Collection<EntityModel> result = new ArrayList<>();
-
-        entities
-                .keySet()
-                .stream()
-                .sorted(Comparator.comparing(Enum::name))
-                .forEach(entity -> result.addAll(entities.get(entity)));
-
-        return result;
+    @Override
+    public boolean isAddingToMyWorkSupported() {
+        return !compareServerVersion(OctaneVersion.Operation.LOWER_EQ, OctaneVersion.CHELSEA);
     }
 
     @Override
     public boolean isAddingToMyWorkSupported(Entity entityType) {
-        return false;
+
+        if(!isAddingToMyWorkSupported()) return false;
+
+        if(compareServerVersion(OctaneVersion.Operation.LOWER_EQ, OctaneVersion.DYNAMO)){
+            return preDynamoMyWorkService.isAddingToMyWorkSupported(entityType);
+        } else {
+            return postDynamoMyWorkService.isAddingToMyWorkSupported(entityType);
+        }
     }
 
     @Override
     public boolean isInMyWork(EntityModel entityModel) {
-        return false;
+        if(compareServerVersion(OctaneVersion.Operation.LOWER_EQ, OctaneVersion.DYNAMO)){
+            return preDynamoMyWorkService.isInMyWork(entityModel);
+        } else {
+            return postDynamoMyWorkService.isInMyWork(entityModel);
+        }
     }
 
     @Override
     public boolean addToMyWork(EntityModel entityModel) {
-        return false;
+        if(compareServerVersion(OctaneVersion.Operation.LOWER_EQ, OctaneVersion.DYNAMO)){
+            return preDynamoMyWorkService.addToMyWork(entityModel);
+        } else {
+            return postDynamoMyWorkService.addToMyWork(entityModel);
+        }
     }
 
     @Override
     public boolean removeFromMyWork(EntityModel entityModel) {
-        return false;
+        if(compareServerVersion(OctaneVersion.Operation.LOWER_EQ, OctaneVersion.DYNAMO)){
+            return preDynamoMyWorkService.removeFromMyWork(entityModel);
+        } else {
+            return postDynamoMyWorkService.removeFromMyWork(entityModel);
+        }
+    }
+
+    private boolean compareServerVersion(OctaneVersion.Operation operation, OctaneVersion otherVersion){
+        OctaneVersion version = octaneVersionService.getOctaneVersion();
+        version.discardBuildNumber();
+        return OctaneVersion.compare(version, operation, otherVersion);
     }
 
 }

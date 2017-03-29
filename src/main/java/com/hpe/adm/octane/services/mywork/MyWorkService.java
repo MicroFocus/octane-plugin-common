@@ -13,6 +13,8 @@ public interface MyWorkService {
 
     Collection<EntityModel> getMyWork(Map<Entity, Set<String>> fieldListMap);
 
+    boolean isAddingToMyWorkSupported();
+
     boolean isAddingToMyWorkSupported(Entity entityType);
 
     boolean isInMyWork(EntityModel entityModel);

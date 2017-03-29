@@ -19,7 +19,8 @@ import java.util.*;
  */
 public class EntityGenerator {
 
-    private static final DateFormat DATE_FORMAT = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss'Z'");
+    private static final DateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss'Z'");
+    private static final SimpleDateFormat generateNameDateFormat = new SimpleDateFormat("yyyy-MM-dd-HH:mm:ss.SSS");
 
     private static final Set<String> transitionFields = new HashSet<>();
     static {
@@ -92,7 +93,7 @@ public class EntityGenerator {
         count++;
         generatedEntityCount.put(entity, count);
 
-        return entity.getEntityName() + ":" + count;
+        return entity.getEntityName() + ":" + generateNameDateFormat.format(Calendar.getInstance(TimeZone.getTimeZone("UTC")).getTime());
     }
 
     private EntityModel getWorkItemRoot() {

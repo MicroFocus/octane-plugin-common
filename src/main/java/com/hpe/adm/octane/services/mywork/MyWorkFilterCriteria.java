@@ -11,6 +11,7 @@ import java.util.HashMap;
 import java.util.Map;
 
 import static com.hpe.adm.octane.services.filtering.Entity.*;
+import static com.hpe.adm.octane.services.mywork.QueryUtil.*;
 
 public class MyWorkFilterCriteria {
 
@@ -22,49 +23,49 @@ public class MyWorkFilterCriteria {
         Map<Entity, Query.QueryBuilder> filterCriteria = new HashMap<>();
 
         filterCriteria.put(GHERKIN_TEST,
-                createCurrentUserQuery("owner")
+                createUserQuery("owner", userService.getCurrentUserId())
                         .and(GHERKIN_TEST.createMatchSubtypeQueryBuilder())
                         .and(createPhaseQuery(TEST, "new", "indesign"))
         );
         filterCriteria.put(MANUAL_TEST,
-                createCurrentUserQuery("owner")
+                createUserQuery("owner", userService.getCurrentUserId())
                         .and(MANUAL_TEST.createMatchSubtypeQueryBuilder())
                         .and(createPhaseQuery(TEST, "new", "indesign"))
 
         );
         filterCriteria.put(DEFECT,
-                createCurrentUserQuery("owner")
+                createUserQuery("owner", userService.getCurrentUserId())
                         .and(DEFECT.createMatchSubtypeQueryBuilder())
                         .and(createPhaseQuery(DEFECT, "new", "inprogress", "intesting"))
         );
         filterCriteria.put(USER_STORY,
-                createCurrentUserQuery("owner")
+                createUserQuery("owner", userService.getCurrentUserId())
                         .and(USER_STORY.createMatchSubtypeQueryBuilder())
                         .and(createPhaseQuery(USER_STORY, "new", "inprogress", "intesting"))
         );
         filterCriteria.put(QUALITY_STORY,
-                createCurrentUserQuery("owner")
+                createUserQuery("owner", userService.getCurrentUserId())
                         .and(QUALITY_STORY.createMatchSubtypeQueryBuilder())
                         .and(createPhaseQuery(QUALITY_STORY, "new", "inprogress"))
         );
         filterCriteria.put(TASK,
-                createCurrentUserQuery("owner")
+                createUserQuery("owner", userService.getCurrentUserId())
                         .and(createPhaseQuery(TASK, "new", "inprogress"))
         );
         filterCriteria.put(MANUAL_TEST_RUN,
-                createCurrentUserQuery("run_by")
+                createUserQuery("run_by", userService.getCurrentUserId())
                         .and(MANUAL_TEST_RUN.createMatchSubtypeQueryBuilder())
                         .and(Query.statement("parent_suite", QueryMethod.EqualTo, null))
                         .and(createNativeStatusQuery("list_node.run_native_status.blocked", "list_node.run_native_status.not_completed"))
         );
         filterCriteria.put(TEST_SUITE_RUN,
-                createCurrentUserQuery("run_by")
+                createUserQuery("run_by", userService.getCurrentUserId())
                         .and(TEST_SUITE_RUN.createMatchSubtypeQueryBuilder())
                         .and(createNativeStatusQuery("list_node.run_native_status.blocked", "list_node.run_native_status.not_completed")
                                 .and( Query.statement("parent_suite", QueryMethod.EqualTo, null)))
         );
 
-        filterCriteria.put(COMMENT, createCurrentUserQuery("mention_user"));
+        filterCriteria.put(COMMENT, createUserQuery("mention_user", userService.getCurrentUserId()));
 
         return filterCriteria;
     }
@@ -90,57 +91,9 @@ public class MyWorkFilterCriteria {
                 .stream(simpleEntities)
                 .forEach(entity -> filterCriteria.put(entity, query));
 
-        filterCriteria.put(COMMENT, createCurrentUserQuery("mention_user"));
+        filterCriteria.put(COMMENT, createUserQuery("mention_user", userService.getCurrentUserId()));
 
         return filterCriteria;
-    }
-
-    /**
-     * Constructs a metaphase query builder to match "logical_name":"metaphase.entity.phasename",
-     *
-     * @param entity
-     * @param phases
-     * @return
-     */
-    private Query.QueryBuilder createPhaseQuery(Entity entity, String... phases) {
-        Query.QueryBuilder phaseQueryBuilder = null;
-        for (String phaseName : phases) {
-            String phaseLogicalName = "metaphase." + entity.getTypeName() + "." + phaseName;
-            Query.QueryBuilder currentPhaseQueryBuilder =
-                    Query.statement("metaphase", QueryMethod.EqualTo,
-                            Query.statement("logical_name", QueryMethod.EqualTo, phaseLogicalName)
-                    );
-            if (phaseQueryBuilder == null) {
-                phaseQueryBuilder = currentPhaseQueryBuilder;
-            } else {
-                phaseQueryBuilder = phaseQueryBuilder.or(currentPhaseQueryBuilder);
-            }
-        }
-
-        return Query.statement("phase", QueryMethod.EqualTo, phaseQueryBuilder);
-    }
-
-    /**
-     * @param logicalNames
-     * @return
-     */
-    private Query.QueryBuilder createNativeStatusQuery(String... logicalNames) {
-        Query.QueryBuilder nativeStatusQueryBuilder = null;
-        for (String logicalName : logicalNames) {
-            Query.QueryBuilder currentNativeStatusQueryBuilder =
-                    Query.statement("logical_name", QueryMethod.EqualTo, logicalName);
-            if (nativeStatusQueryBuilder == null) {
-                nativeStatusQueryBuilder = currentNativeStatusQueryBuilder;
-            } else {
-                nativeStatusQueryBuilder = nativeStatusQueryBuilder.or(currentNativeStatusQueryBuilder);
-            }
-        }
-        return  Query.statement("native_status", QueryMethod.EqualTo, nativeStatusQueryBuilder);
-    }
-
-    private Query.QueryBuilder createCurrentUserQuery(String fieldName) {
-        return  Query.statement(fieldName, QueryMethod.EqualTo,
-                Query.statement("id", QueryMethod.EqualTo, userService.getCurrentUserId()));
     }
 
 }
