@@ -1,19 +1,16 @@
 package com.hpe.adm.octane.services.nonentity;
 
 import com.google.inject.Inject;
-import com.hpe.adm.nga.sdk.authentication.Authentication;
-import com.hpe.adm.nga.sdk.authentication.SimpleUserAuthentication;
 import com.hpe.adm.nga.sdk.model.EntityModel;
 import com.hpe.adm.nga.sdk.model.StringFieldModel;
 import com.hpe.adm.nga.sdk.network.OctaneHttpClient;
 import com.hpe.adm.nga.sdk.network.OctaneHttpRequest;
 import com.hpe.adm.nga.sdk.network.OctaneHttpResponse;
-import com.hpe.adm.nga.sdk.network.google.GoogleHttpClient;
-import com.hpe.adm.octane.services.connection.ConnectionSettings;
 import com.hpe.adm.octane.services.connection.ConnectionSettingsProvider;
 import com.hpe.adm.octane.services.connection.HttpClientProvider;
 import com.hpe.adm.octane.services.exception.ServiceRuntimeException;
 import com.hpe.adm.octane.services.filtering.Entity;
+import com.hpe.adm.octane.services.util.OctaneUrlBuilder;
 import org.apache.commons.lang.StringUtils;
 import org.apache.http.client.utils.URIBuilder;
 import org.json.JSONArray;
@@ -21,8 +18,6 @@ import org.json.JSONObject;
 
 import java.util.ArrayList;
 import java.util.Collection;
-
-import static com.hpe.adm.octane.services.util.ClientType.HPE_MQM_UI;
 
 public class EntitySearchService {
 
@@ -34,45 +29,31 @@ public class EntitySearchService {
     @Inject
     protected HttpClientProvider httpClientProvider;
 
+    private static String getStringOrBlank(JSONObject jsonObject, String key) {
+        if (jsonObject.has(key) && !jsonObject.isNull(key)) {
+            return jsonObject.getString(key);
+        } else {
+            return "";
+        }
+    }
+
     public Collection<EntityModel> searchGlobal(String queryString, Entity entity) {
 
-        ConnectionSettings connectionSettings = connectionSettingsProvider.getConnectionSettings();
-        //auth
         OctaneHttpClient httpClient = httpClientProvider.geOctaneHttpClient();
-        if(null == httpClient){
+        if (null == httpClient) {
             throw new ServiceRuntimeException("Failed to authenticate with current connection settings");
         }
 
-        URIBuilder uriBuilder = new URIBuilder();
+        URIBuilder uriBuilder = OctaneUrlBuilder.buildOctaneUri(connectionSettingsProvider.getConnectionSettings(), entity.getApiEntityName());
 
-        //set the scheme, the protocol must be removed for the uri builder setHost method
-        if(connectionSettings.getBaseUrl().contains("https")){
-            uriBuilder.setScheme("https");
-            uriBuilder.setHost(connectionSettings.getBaseUrl().replace("https://", ""));
-        }
-        else if (connectionSettings.getBaseUrl().contains("http")){
-            uriBuilder.setScheme("http");
-            uriBuilder.setHost(connectionSettings.getBaseUrl().replace("http://", ""));
-        } else {
-            throw new ServiceRuntimeException("Cannot find http/https protocol is connections settings base URL");
-        }
+        uriBuilder.setParameter("text_search", "{\"type\":\"global\",\"text\":\"" + queryString + "\"}");
 
-        uriBuilder.setPath(
-                "/api"
-                + "/shared_spaces/" + connectionSettings.getSharedSpaceId()
-                + "/workspaces/" + connectionSettings.getWorkspaceId()
-                + "/" + entity.getApiEntityName());
+        uriBuilder.setParameter("order_by", "id");
 
-
-
-        uriBuilder.setParameter("text_search", "{\"type\":\"global\",\"text\":\""+queryString+"\"}");
-
-        uriBuilder.setParameter("order_by","id");
-
-        if(entity.isSubtype()) {
+        if (entity.isSubtype()) {
             String queryStr = "\"(";
-            for(Entity subtype : Entity.getSubtypes(entity)){
-                queryStr += "subtype='"+subtype.getSubtypeName()+"'||";
+            for (Entity subtype : Entity.getSubtypes(entity)) {
+                queryStr += "subtype='" + subtype.getSubtypeName() + "'||";
             }
             queryStr = queryStr.substring(0, queryStr.length() - 2);
             queryStr += ")\"";
@@ -81,11 +62,11 @@ public class EntitySearchService {
         }
 
         try {
-            OctaneHttpRequest request = new OctaneHttpRequest.GetOctaneHttpRequest( uriBuilder.build().toASCIIString());
+            OctaneHttpRequest request = new OctaneHttpRequest.GetOctaneHttpRequest(uriBuilder.build().toASCIIString());
             OctaneHttpResponse response = httpClient.execute(request);
             String responseString = response.getContent();
 
-            if(response.isSuccessStatusCode() && StringUtils.isNotBlank(responseString)){
+            if (response.isSuccessStatusCode() && StringUtils.isNotBlank(responseString)) {
                 return searchResponseToEntityModels(responseString);
             } else {
                 throw new ServiceRuntimeException("Failed to get search response JSON");
@@ -99,10 +80,11 @@ public class EntitySearchService {
     /**
      * Convert it to standard entity model for re-using exiting UI,
      * only has: id, name, type/subtype, description
+     *
      * @param responseString
      * @return
      */
-    private Collection<EntityModel> searchResponseToEntityModels(String responseString){
+    private Collection<EntityModel> searchResponseToEntityModels(String responseString) {
 
         Collection<EntityModel> result = new ArrayList<>();
 
@@ -113,11 +95,11 @@ public class EntitySearchService {
             JSONObject jsonObject = (JSONObject) jsonObj;
 
             //Create an entity model from the json, the json format is fixed
-            String name = getStringOrBlank(jsonObject.getJSONObject(GLOBAL_TEXT_SEARCH_RESULT_TAG), "name" );
-            String description = getStringOrBlank(jsonObject.getJSONObject(GLOBAL_TEXT_SEARCH_RESULT_TAG), "description" );
-            String id = getStringOrBlank(jsonObject, "id" );
-            String type = getStringOrBlank(jsonObject, "type" );
-            String subtype = getStringOrBlank(jsonObject, "subtype" );
+            String name = getStringOrBlank(jsonObject.getJSONObject(GLOBAL_TEXT_SEARCH_RESULT_TAG), "name");
+            String description = getStringOrBlank(jsonObject.getJSONObject(GLOBAL_TEXT_SEARCH_RESULT_TAG), "description");
+            String id = getStringOrBlank(jsonObject, "id");
+            String type = getStringOrBlank(jsonObject, "type");
+            String subtype = getStringOrBlank(jsonObject, "subtype");
 
             EntityModel entityModel = new EntityModel();
             entityModel.setValue(new StringFieldModel("name", name));
@@ -130,14 +112,6 @@ public class EntitySearchService {
         });
 
         return result;
-    }
-
-    private static String getStringOrBlank(JSONObject jsonObject, String key){
-        if(jsonObject.has(key) && !jsonObject.isNull(key)){
-            return jsonObject.getString(key);
-        } else {
-            return "";
-        }
     }
 
 }
