@@ -8,6 +8,7 @@ import com.hpe.adm.octane.services.EntityService;
 import com.hpe.adm.octane.services.UserService;
 import com.hpe.adm.octane.services.connection.OctaneProvider;
 import com.hpe.adm.octane.services.filtering.Entity;
+import com.hpe.adm.octane.services.util.EntityUtil;
 
 import java.util.*;
 
@@ -90,11 +91,20 @@ class PostDynamoMyWorkService implements MyWorkService {
 
     @Override
     public boolean isInMyWork(EntityModel entityModel) {
+        //Check if added
         if(!isAddingToMyWorkSupported(Entity.getEntityType(entityModel))){
             return false;
         }
         EntityModel userItem = findUserItemForEntity(entityModel);
-        return userItem != null;
+        if(userItem != null){
+            return true;
+        }
+
+        //Check if there because of filter
+        //TODO: can be optimized
+        Collection<EntityModel> myWork = getMyWork();
+        myWork = MyWorkUtil.getEntityModelsFromUserItems(myWork);
+        return EntityUtil.containsEntityModel(myWork, entityModel);
     }
 
     @Override

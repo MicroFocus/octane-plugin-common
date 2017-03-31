@@ -124,6 +124,15 @@ class PreDynamoMyWorkService implements MyWorkService{
 
     @Override
     public boolean isInMyWork(EntityModel entityModel) {
+        //Check if there because of filter
+        //TODO: can be optimized
+        Collection<EntityModel> myWork = getMyWork();
+        myWork = MyWorkUtil.getEntityModelsFromUserItems(myWork);
+        if(EntityUtil.containsEntityModel(myWork, entityModel)) {
+            return true;
+        }
+
+        //Check if added
         if (entityModel.getValue(FOLLOW_ITEMS_OWNER_FIELD) == null ||
                 entityModel.getValue(FOLLOW_ITEMS_OWNER_FIELD).getValue() == null) {
 
@@ -138,6 +147,10 @@ class PreDynamoMyWorkService implements MyWorkService{
 
     @Override
     public boolean addToMyWork(EntityModel entityModel) {
+        if(isInMyWork(entityModel)){
+            return false;
+        }
+
         EntityModel updateEntityModel = createUpdateEntityModelForFollow(entityModel);
         EntityModel currentUser = userService.getCurrentUser();
 
