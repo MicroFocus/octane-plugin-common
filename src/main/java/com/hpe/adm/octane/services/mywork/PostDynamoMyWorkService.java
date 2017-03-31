@@ -6,11 +6,12 @@ import com.hpe.adm.nga.sdk.QueryMethod;
 import com.hpe.adm.nga.sdk.model.*;
 import com.hpe.adm.octane.services.EntityService;
 import com.hpe.adm.octane.services.UserService;
-import com.hpe.adm.octane.services.connection.HttpClientProvider;
 import com.hpe.adm.octane.services.connection.OctaneProvider;
 import com.hpe.adm.octane.services.filtering.Entity;
 
 import java.util.*;
+
+import static com.hpe.adm.octane.services.mywork.MyWorkUtil.*;
 
 class PostDynamoMyWorkService implements MyWorkService {
 
@@ -31,9 +32,6 @@ class PostDynamoMyWorkService implements MyWorkService {
     private MyWorkFilterCriteria myWorkFilterCriteria;
 
     @Inject
-    private HttpClientProvider httpClientProvider;
-
-    @Inject
     private UserService userService;
 
     @Inject
@@ -49,15 +47,18 @@ class PostDynamoMyWorkService implements MyWorkService {
 
         Collection<EntityModel> result = new ArrayList<>();
 
-        Map<Entity, Collection<EntityModel>> entities = entityService.concurrentFindEntities(myWorkFilterCriteria.getServersideFilterCriteria(), fieldListMap);
+        Query.QueryBuilder qUser = createUserQuery("user", userService.getCurrentUserId());
 
-        entities
-                .keySet()
-                .stream()
-                .sorted(Comparator.comparing(Enum::name))
-                .forEach(entity -> result.addAll(entities.get(entity)));
+        Collection<EntityModel> userItems = entityService.findEntities(Entity.USER_ITEM, qUser, null);
 
-        return result;
+        //Extract entity model
+
+        for(EntityModel userItem : userItems){
+            String followField = "my_follow_items_" + userItem.getValue("entity_type").getValue();
+            result.add((EntityModel) userItem.getValue(followField).getValue());
+        }
+
+        return userItems;
     }
 
     @Override
@@ -70,24 +71,16 @@ class PostDynamoMyWorkService implements MyWorkService {
         return addToMyWorkEntities.contains(entityType);
     }
 
-    private String getEntityType(Entity entity){
-        if(entity.isSubtype()){
-            return entity.getSubtypeOf().getTypeName();
-        } else {
-            return entity.getTypeName();
-        }
-    }
-
     private EntityModel findUserItemForEntity(EntityModel entityModel){
-        String entityType =  getEntityType(Entity.getEntityType(entityModel));
-        String followField = "my_follow_items_" + getEntityType(Entity.getEntityType(entityModel));
+        String entityType =  getEntityTypeName(Entity.getEntityType(entityModel));
+        String followField = "my_follow_items_" + getEntityTypeName(Entity.getEntityType(entityModel));
         String id = entityModel.getValue("id").getValue().toString();
 
         Query.QueryBuilder qItem = Query.statement(
                 followField, QueryMethod.EqualTo, Query.statement("id", QueryMethod.EqualTo, id)
         );
 
-        Query.QueryBuilder qUser = QueryUtil.createUserQuery("user", userService.getCurrentUserId());
+        Query.QueryBuilder qUser = createUserQuery("user", userService.getCurrentUserId());
 
         Query.QueryBuilder qType = Query.statement("entity_type", QueryMethod.EqualTo, entityType);
         Query.QueryBuilder qOrigin = Query.statement("origin", QueryMethod.EqualTo, 1);
@@ -124,13 +117,13 @@ class PostDynamoMyWorkService implements MyWorkService {
         newUserItem.setValue(new BooleanFieldModel("is_new", true));
         newUserItem.setValue(new ReferenceFieldModel("reason", null));
 
-        String entityType =  getEntityType(Entity.getEntityType(entityModel));
+        String entityType =  getEntityTypeName(Entity.getEntityType(entityModel));
 
         newUserItem.setValue(new StringFieldModel("entity_type", entityType));
 
         newUserItem.setValue(new ReferenceFieldModel("user", userService.getCurrentUser()));
 
-        String followField = "my_follow_items_" + getEntityType(Entity.getEntityType(entityModel));
+        String followField = "my_follow_items_" + getEntityTypeName(Entity.getEntityType(entityModel));
 
         newUserItem.setValue(new ReferenceFieldModel(followField, entityModel));
 

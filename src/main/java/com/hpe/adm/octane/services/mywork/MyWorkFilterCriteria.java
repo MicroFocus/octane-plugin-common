@@ -11,7 +11,7 @@ import java.util.HashMap;
 import java.util.Map;
 
 import static com.hpe.adm.octane.services.filtering.Entity.*;
-import static com.hpe.adm.octane.services.mywork.QueryUtil.*;
+import static com.hpe.adm.octane.services.mywork.MyWorkUtil.*;
 
 public class MyWorkFilterCriteria {
 

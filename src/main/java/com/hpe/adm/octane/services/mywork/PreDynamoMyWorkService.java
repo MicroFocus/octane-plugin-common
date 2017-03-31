@@ -16,7 +16,8 @@ import com.hpe.adm.octane.services.util.EntityUtil;
 
 import java.util.*;
 
-import static com.hpe.adm.octane.services.mywork.QueryUtil.createUserQuery;
+import static com.hpe.adm.octane.services.mywork.MyWorkUtil.createUserQuery;
+import static com.hpe.adm.octane.services.mywork.MyWorkUtil.wrapCollectionIntoUserItem;
 
 class PreDynamoMyWorkService implements MyWorkService{
 
@@ -50,8 +51,18 @@ class PreDynamoMyWorkService implements MyWorkService{
 
         Map<Entity, Collection<EntityModel>> entities = entityService.concurrentFindEntities(myWorkFilterCriteria.getStaticFilterCriteria(), fieldListMap);
 
+        //Done for backwards compatibility, the UI excepts user_item entities from later server version of Octane,
+        //We can wrap the simple entities into dummy user items to not have to change the UI code
+        entities
+                .keySet()
+                .forEach(key -> entities.put(key, wrapCollectionIntoUserItem(entities.get(key), 0)));
+
         //Also need to get the added items manually
         Map<Entity, Collection<EntityModel>> addedEntities = getAddedItems(fieldListMap);
+
+        addedEntities
+                .keySet()
+                .forEach(key -> addedEntities.put(key, wrapCollectionIntoUserItem(addedEntities.get(key), 1)));
 
         entities
                 .keySet()
