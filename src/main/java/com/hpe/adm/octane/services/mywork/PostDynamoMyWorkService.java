@@ -11,25 +11,13 @@ import com.hpe.adm.octane.services.filtering.Entity;
 
 import java.util.*;
 
+import static com.hpe.adm.octane.services.filtering.Entity.COMMENT;
 import static com.hpe.adm.octane.services.mywork.MyWorkUtil.*;
 
 class PostDynamoMyWorkService implements MyWorkService {
 
-    private static final Set<Entity> addToMyWorkEntities = new HashSet<>();
-    static {
-        addToMyWorkEntities.add(Entity.USER_STORY);
-        addToMyWorkEntities.add(Entity.DEFECT);
-        addToMyWorkEntities.add(Entity.TASK);
-        addToMyWorkEntities.add(Entity.QUALITY_STORY);
-        addToMyWorkEntities.add(Entity.MANUAL_TEST);
-        addToMyWorkEntities.add(Entity.GHERKIN_TEST);
-    }
-
     @Inject
     private EntityService entityService;
-
-    @Inject
-    private MyWorkFilterCriteria myWorkFilterCriteria;
 
     @Inject
     private UserService userService;
@@ -50,15 +38,18 @@ class PostDynamoMyWorkService implements MyWorkService {
         Query.QueryBuilder qUser = createUserQuery("user", userService.getCurrentUserId());
 
         Collection<EntityModel> userItems = entityService.findEntities(Entity.USER_ITEM, qUser, null);
+        result.addAll(userItems);
 
-        //Extract entity model
+        //Also get comments
+        Collection<EntityModel> comments = entityService.findEntities(
+                COMMENT,
+                createUserQuery("mention_user", userService.getCurrentUserId()),
+                fieldListMap.get(COMMENT)
+        );
 
-        for(EntityModel userItem : userItems){
-            String followField = "my_follow_items_" + userItem.getValue("entity_type").getValue();
-            result.add((EntityModel) userItem.getValue(followField).getValue());
-        }
+        result.addAll(MyWorkUtil.wrapCollectionIntoUserItem(comments, -1));
 
-        return userItems;
+        return result;
     }
 
     @Override

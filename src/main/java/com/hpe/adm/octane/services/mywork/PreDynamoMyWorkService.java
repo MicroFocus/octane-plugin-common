@@ -16,6 +16,7 @@ import com.hpe.adm.octane.services.util.EntityUtil;
 
 import java.util.*;
 
+import static com.hpe.adm.octane.services.mywork.MyWorkUtil.addToMyWorkEntities;
 import static com.hpe.adm.octane.services.mywork.MyWorkUtil.createUserQuery;
 import static com.hpe.adm.octane.services.mywork.MyWorkUtil.wrapCollectionIntoUserItem;
 
@@ -118,7 +119,7 @@ class PreDynamoMyWorkService implements MyWorkService{
 
     @Override
     public boolean isAddingToMyWorkSupported(Entity entityType) {
-        return metadataService.hasFields(entityType, FOLLOW_ITEMS_OWNER_FIELD, NEW_ITEMS_OWNER_FIELD);
+        return addToMyWorkEntities.contains(entityType);
     }
 
     @Override

@@ -11,8 +11,21 @@ import com.hpe.adm.octane.services.filtering.Entity;
 
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.HashSet;
+import java.util.Set;
+import java.util.stream.Collectors;
 
 public class MyWorkUtil {
+
+    static final Set<Entity> addToMyWorkEntities = new HashSet<>();
+    static {
+        addToMyWorkEntities.add(Entity.USER_STORY);
+        addToMyWorkEntities.add(Entity.DEFECT);
+        addToMyWorkEntities.add(Entity.TASK);
+        addToMyWorkEntities.add(Entity.QUALITY_STORY);
+        addToMyWorkEntities.add(Entity.MANUAL_TEST);
+        addToMyWorkEntities.add(Entity.GHERKIN_TEST);
+    }
 
     /**
      * Constructs a metaphase query builder to match "logical_name":"metaphase.entity.phasename",
@@ -69,10 +82,17 @@ public class MyWorkUtil {
      */
     public static EntityModel getEntityModelFromUserItem(EntityModel userItem){
         if(Entity.USER_ITEM != Entity.getEntityType(userItem)){
-            throw new ServiceRuntimeException("Given param entity is not of type: user_item");
+            throw new ServiceRuntimeException("Given param entity is not of type: user_item, type is: " + Entity.getEntityType(userItem));
         }
         String followField = "my_follow_items_" + userItem.getValue("entity_type").getValue();
         return (EntityModel) userItem.getValue(followField).getValue();
+    }
+
+    public static Collection<EntityModel> getEntityModelsFromUserItems(Collection<EntityModel> userItems) {
+        return userItems
+                .stream()
+                .map(MyWorkUtil::getEntityModelFromUserItem)
+                .collect(Collectors.toList());
     }
 
     /**
@@ -90,7 +110,7 @@ public class MyWorkUtil {
 
         userItem.setValue(new LongFieldModel("origin", origin));
         userItem.setValue(new StringFieldModel("type", "user_item"));
-        userItem.setValue(new StringFieldModel("id", null));
+        userItem.setValue(new StringFieldModel("id", "-1"));
 
         return userItem;
     }
