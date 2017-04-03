@@ -83,11 +83,11 @@ public class OctaneVersion implements Comparable<OctaneVersion> {
 
     public static boolean compare(OctaneVersion v1, Operation op, OctaneVersion v2){
         int comparison = v1.compareTo(v2);
-        if((comparison == -1) && Operation.LOWER == op) return true;
-        if((comparison == 0 || comparison == -1) && Operation.LOWER_EQ == op) return true;
+        if(comparison <  0 && Operation.LOWER == op) return true;
+        if(comparison <= 0 && Operation.LOWER_EQ == op) return true;
         if(comparison == 0 && Operation.EQ == op) return true;
-        if((comparison == 0 || comparison == 1) && Operation.HIGHER_EQ == op) return true;
-        if(comparison == 1 && Operation.HIGHER == op) return true;
+        if(comparison >= 0 && Operation.HIGHER_EQ == op) return true;
+        if(comparison >  0 && Operation.HIGHER == op) return true;
         return false;
     }
 
