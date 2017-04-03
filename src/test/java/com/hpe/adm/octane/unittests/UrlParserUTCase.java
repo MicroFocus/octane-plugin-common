@@ -1,4 +1,4 @@
-package com.hpe.adm.octane;
+package com.hpe.adm.octane.unittests;
 
 
 import com.hpe.adm.octane.services.exception.ServiceException;
