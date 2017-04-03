@@ -20,10 +20,18 @@ public class OctaneVersion implements Comparable<OctaneVersion> {
         //The first two parts are from ALM version
         almVersion = parts[0] + "." + parts[1];
 
-        octaneVersion = Integer.parseInt(parts[2]);
+        try {
+            //Even though we don't use it, still good to test
+            Integer.parseInt(parts[0]);
+            Integer.parseInt(parts[1]);
 
-        if(parts.length == 4){
-            buildNumber = Integer.parseInt(parts[3]);
+            octaneVersion = Integer.parseInt(parts[2]);
+
+            if(parts.length == 4){
+                buildNumber = Integer.parseInt(parts[3]);
+            }
+        } catch (NumberFormatException ex){
+            throw new RuntimeException("Unable to parse octane version from string: " + versionString, ex);
         }
     }
 
