@@ -6,59 +6,42 @@ import com.hpe.adm.octane.services.connection.BasicConnectionSettingProvider;
 import com.hpe.adm.octane.services.di.ServiceModule;
 import com.hpe.adm.octane.services.filtering.Entity;
 import com.hpe.adm.octane.services.mywork.MyWorkService;
+import com.hpe.adm.octane.services.mywork.MyWorkUtil;
 import com.hpe.adm.octane.services.nonentity.OctaneVersionService;
 import com.hpe.adm.octane.services.util.EntityUtil;
 import org.junit.Assert;
+import org.junit.Ignore;
 import org.junit.Test;
 
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.stream.Collectors;
 
-import static org.junit.Assert.assertEquals;
-
+/**
+ * TODO: The test framework need lots improvement
+ */
+@Ignore
 public class MyWorkServiceITCase {
 
     private static ServiceModule chelsea = new ServiceModule(new BasicConnectionSettingProvider(HardcodedServerUtil.chelsea));
     private static ServiceModule dynamo = new ServiceModule(new BasicConnectionSettingProvider(HardcodedServerUtil.dynamo));
-    private static ServiceModule everton = new ServiceModule(new BasicConnectionSettingProvider(HardcodedServerUtil.everton));
+    private static ServiceModule everton21 = new ServiceModule(new BasicConnectionSettingProvider(HardcodedServerUtil.everton21));
+    private static ServiceModule everton22 = new ServiceModule(new BasicConnectionSettingProvider(HardcodedServerUtil.everton22));
 
-    private static MyWorkService chelseaMyWork = chelsea.getInstance(MyWorkService.class);
-    private static MyWorkService dynamoMyWork = dynamo.getInstance(MyWorkService.class);
-    private static MyWorkService evertonMyWork = everton.getInstance(MyWorkService.class);
+    private static ServiceModule[] serviceModules = new ServiceModule[]{chelsea, dynamo, everton21, everton22};
 
-    @Test
-    public void test() {
-        System.out.println("12.53.13.23".compareTo("12.53.13"));
-    }
-
-
-    @Test
-    public void areServersUp() {
-        System.out.println(chelsea.getInstance(OctaneVersionService.class).getOctaneVersion());
-        System.out.println(dynamo.getInstance(OctaneVersionService.class).getOctaneVersion());
-        System.out.println(everton.getInstance(OctaneVersionService.class).getOctaneVersion());
-    }
-
-//    @Test
-//    public void testIsAddMyWorkSupported() {
-//        chelsea.getOctane().getOctane().entityList("defects").get().execute();
-//        everton.getOctane().getOctane().entityList("defects").get().execute();
-//        dynamo.getOctane().getOctane().entityList("defects").get().execute();
-//    }
-
-    @Test
-    public void testIsAddToMyWorkSupported() {
-        assertEquals(false, chelseaMyWork.isAddingToMyWorkSupported());
-        assertEquals(true, dynamoMyWork.isAddingToMyWorkSupported());
-        assertEquals(true, evertonMyWork.isAddingToMyWorkSupported());
+    private boolean isServerUp(ServiceModule module) {
+        try {
+            module.getInstance(OctaneVersionService.class).getOctaneVersion();
+        } catch (Exception ex) {
+            return false;
+        }
+        return true;
     }
 
     @Test
     public void testGetMyWork() {
-//        getMyWork(chelsea);
-        //getMyWork(dynamo);
-        getMyWork(everton);
-//        getMyWork(center);
+        Arrays.stream(serviceModules).filter(this::isServerUp).forEach(this::getMyWork);
     }
 
     private void getMyWork(ServiceModule module) {
@@ -76,18 +59,35 @@ public class MyWorkServiceITCase {
         Collection<EntityModel> myWork = myWorkService.getMyWork();
         printEntities(myWork);
 
-        if (myWorkService.isAddingToMyWorkSupported()) {
-            Assert.assertTrue(EntityUtil.containsEntityModel(myWork, newEntityModel));
+        myWork = MyWorkUtil.getEntityModelsFromUserItems(myWork);
+
+        if (!myWorkService.isAddingToMyWorkSupported()) {
+            return;
         }
+
+        Assert.assertTrue(EntityUtil.containsEntityModel(myWork, newEntityModel));
+
+        myWorkService.removeFromMyWork(newEntityModel);
+
+        myWork = myWorkService.getMyWork();
+        printEntities(myWork);
+        Assert.assertFalse(EntityUtil.containsEntityModel(myWork, newEntityModel));
     }
 
     @Test
-    public void dev() {
-        Collection<EntityModel> myWork = dynamo.getInstance(MyWorkService.class).getMyWork();
-        printEntities(myWork);
-
-        Collection<EntityModel> myWork2 = everton.getInstance(MyWorkService.class).getMyWork();
-        printEntities(myWork2);
+    public void testIsAddToMyWorkSupported() {
+        if (isServerUp(chelsea)){
+            Assert.assertFalse(chelsea.getInstance(MyWorkService.class).isAddingToMyWorkSupported());
+        }
+        if (isServerUp(dynamo)){
+            Assert.assertFalse(dynamo.getInstance(MyWorkService.class).isAddingToMyWorkSupported());
+        }
+        if (isServerUp(everton21)){
+            Assert.assertFalse(everton21.getInstance(MyWorkService.class).isAddingToMyWorkSupported());
+        }
+        if (isServerUp(everton22)){
+            Assert.assertFalse(everton22.getInstance(MyWorkService.class).isAddingToMyWorkSupported());
+        }
     }
 
     //DEBUG
@@ -96,6 +96,7 @@ public class MyWorkServiceITCase {
         if (entities.size() != 0) {
             String entitiesString = entities
                     .stream()
+                    .map(MyWorkUtil::getEntityModelFromUserItem)
                     .map(em -> {
                         if (em.getValue("name") != null) {
                             return em.getValue("name").getValue().toString();
