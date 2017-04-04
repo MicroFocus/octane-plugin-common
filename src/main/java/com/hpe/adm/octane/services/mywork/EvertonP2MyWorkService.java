@@ -15,7 +15,7 @@ import java.util.*;
 import static com.hpe.adm.octane.services.filtering.Entity.COMMENT;
 import static com.hpe.adm.octane.services.mywork.MyWorkUtil.*;
 
-class PostDynamoMyWorkService implements MyWorkService {
+class EvertonP2MyWorkService implements MyWorkService {
 
     @Inject
     private EntityService entityService;
@@ -91,16 +91,6 @@ class PostDynamoMyWorkService implements MyWorkService {
 
     @Override
     public boolean isInMyWork(EntityModel entityModel) {
-        //Check if added
-        if(!isAddingToMyWorkSupported(Entity.getEntityType(entityModel))){
-            return false;
-        }
-        EntityModel userItem = findUserItemForEntity(entityModel);
-        if(userItem != null){
-            return true;
-        }
-
-        //Check if there because of filter
         //TODO: can be optimized
         Collection<EntityModel> myWork = getMyWork();
         myWork = MyWorkUtil.getEntityModelsFromUserItems(myWork);
@@ -113,20 +103,7 @@ class PostDynamoMyWorkService implements MyWorkService {
             return false;
         }
 
-        EntityModel newUserItem = new EntityModel();
-        newUserItem.setValue(new LongFieldModel("origin", 1L));
-        newUserItem.setValue(new BooleanFieldModel("is_new", true));
-        newUserItem.setValue(new ReferenceFieldModel("reason", null));
-
-        String entityType =  getEntityTypeName(Entity.getEntityType(entityModel));
-
-        newUserItem.setValue(new StringFieldModel("entity_type", entityType));
-
-        newUserItem.setValue(new ReferenceFieldModel("user", userService.getCurrentUser()));
-
-        String followField = "my_follow_items_" + getEntityTypeName(Entity.getEntityType(entityModel));
-
-        newUserItem.setValue(new ReferenceFieldModel(followField, entityModel));
+        EntityModel newUserItem = createNewUserItem(entityModel);
 
         octaneProvider
                 .getOctane()
@@ -136,6 +113,25 @@ class PostDynamoMyWorkService implements MyWorkService {
                 .execute();
 
         return true;
+    }
+
+    protected EntityModel createNewUserItem(EntityModel wrappedEntityModel){
+        EntityModel newUserItem = new EntityModel();
+        newUserItem.setValue(new LongFieldModel("origin", 1L));
+        newUserItem.setValue(new BooleanFieldModel("is_new", true));
+        newUserItem.setValue(new ReferenceFieldModel("reason", null));
+
+        String entityType =  getEntityTypeName(Entity.getEntityType(wrappedEntityModel));
+
+        newUserItem.setValue(new StringFieldModel("entity_type", entityType));
+
+        newUserItem.setValue(new ReferenceFieldModel("user", userService.getCurrentUser()));
+
+        String followField = "my_follow_items_" + getEntityTypeName(Entity.getEntityType(wrappedEntityModel));
+
+        newUserItem.setValue(new ReferenceFieldModel(followField, wrappedEntityModel));
+
+        return newUserItem;
     }
 
     @Override

@@ -12,22 +12,26 @@ public class MyWorkServiceProxyFactory {
     @Inject
     private OctaneVersionService octaneVersionService;
     @Inject
-    private PreDynamoMyWorkService preDynamoMyWorkService;
+    private PreDynamoMyWorkService preDynamoMyWorkService; //v <= 12.53.20
     @Inject
-    private PostDynamoMyWorkService postDynamoMyWorkService;
+    private EvertonP1MyWorkService evertonP1MyWorkService; //v == 12.53.21
+    @Inject
+    private EvertonP2MyWorkService evertonP2MyWorkService; //v >= 12.53.22
 
     private MyWorkService myWorkProxy;
 
     private void init(){
         if(myWorkProxy != null) return;
 
-        BooleanSupplier beforeOrDynamo = () -> compareServerVersion(OctaneVersion.Operation.LOWER_EQ, OctaneVersion.DYNAMO);
-        BooleanSupplier afterDynamo = () -> compareServerVersion(OctaneVersion.Operation.HIGHER, OctaneVersion.DYNAMO);
+        BooleanSupplier isBeforeOrDynamo = () -> compareServerVersion(OctaneVersion.Operation.LOWER_EQ, OctaneVersion.DYNAMO);
+        BooleanSupplier isEvertonP1 = () -> compareServerVersion(OctaneVersion.Operation.EQ, OctaneVersion.EVERTON_P1);
+        BooleanSupplier isEvertonP2OrHigher = () -> compareServerVersion(OctaneVersion.Operation.HIGHER_EQ, OctaneVersion.EVERTON_P2);
 
         ServiceProxyFactory<MyWorkService> myWorkProxy = new ServiceProxyFactory(MyWorkService.class);
 
-        myWorkProxy.addService(beforeOrDynamo, preDynamoMyWorkService);
-        myWorkProxy.addService(afterDynamo, postDynamoMyWorkService);
+        myWorkProxy.addService(isBeforeOrDynamo, preDynamoMyWorkService);
+        myWorkProxy.addService(isEvertonP1, evertonP1MyWorkService);
+        myWorkProxy.addService(isEvertonP2OrHigher, evertonP2MyWorkService);
 
         this.myWorkProxy = myWorkProxy.getServiceProxy();
     }

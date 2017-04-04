@@ -16,9 +16,7 @@ import com.hpe.adm.octane.services.util.EntityUtil;
 
 import java.util.*;
 
-import static com.hpe.adm.octane.services.mywork.MyWorkUtil.addToMyWorkEntities;
-import static com.hpe.adm.octane.services.mywork.MyWorkUtil.createUserQuery;
-import static com.hpe.adm.octane.services.mywork.MyWorkUtil.wrapCollectionIntoUserItem;
+import static com.hpe.adm.octane.services.mywork.MyWorkUtil.*;
 
 class PreDynamoMyWorkService implements MyWorkService{
 
@@ -81,7 +79,7 @@ class PreDynamoMyWorkService implements MyWorkService{
         return result;
     }
 
-    private Map<Entity, Collection<EntityModel>> getAddedItems(Map<Entity, Set<String>> fieldListMap){
+    protected Map<Entity, Collection<EntityModel>> getAddedItems(Map<Entity, Set<String>> fieldListMap){
 
         final Map<Entity, Set<String>> fieldListMapCopy = cloneFieldListMap(fieldListMap);
 
@@ -124,25 +122,10 @@ class PreDynamoMyWorkService implements MyWorkService{
 
     @Override
     public boolean isInMyWork(EntityModel entityModel) {
-        //Check if there because of filter
         //TODO: can be optimized
         Collection<EntityModel> myWork = getMyWork();
         myWork = MyWorkUtil.getEntityModelsFromUserItems(myWork);
-        if(EntityUtil.containsEntityModel(myWork, entityModel)) {
-            return true;
-        }
-
-        //Check if added
-        if (entityModel.getValue(FOLLOW_ITEMS_OWNER_FIELD) == null ||
-                entityModel.getValue(FOLLOW_ITEMS_OWNER_FIELD).getValue() == null) {
-
-            return false;
-        }
-
-        EntityModel currentUser = userService.getCurrentUser();
-        MultiReferenceFieldModel fieldModel = (MultiReferenceFieldModel) entityModel.getValue(FOLLOW_ITEMS_OWNER_FIELD);
-
-        return EntityUtil.containsEntityModel(fieldModel.getValue(), currentUser);
+        return EntityUtil.containsEntityModel(myWork, entityModel);
     }
 
     @Override
@@ -238,23 +221,6 @@ class PreDynamoMyWorkService implements MyWorkService{
         } catch (ServiceException e) {
             throw new ServiceRuntimeException(e);
         }
-    }
-
-    private Map<Entity, Set<String>> cloneFieldListMap(Map<Entity, Set<String>> fieldListMap) {
-        Map<Entity, Set<String>> fieldListMapCopy = new HashMap<>();
-        if (fieldListMap == null) {
-            fieldListMapCopy = null;
-        } else {
-            for (Entity key : fieldListMap.keySet()) {
-                Set<String> value = fieldListMap.get(key);
-                if (value == null) {
-                    fieldListMapCopy.put(key, null);
-                } else {
-                    fieldListMapCopy.put(key, new HashSet<>(value));
-                }
-            }
-        }
-        return fieldListMapCopy;
     }
 
 }

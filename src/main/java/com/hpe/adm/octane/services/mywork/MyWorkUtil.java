@@ -9,10 +9,7 @@ import com.hpe.adm.nga.sdk.model.StringFieldModel;
 import com.hpe.adm.octane.services.exception.ServiceRuntimeException;
 import com.hpe.adm.octane.services.filtering.Entity;
 
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.HashSet;
-import java.util.Set;
+import java.util.*;
 import java.util.stream.Collectors;
 
 public class MyWorkUtil {
@@ -127,6 +124,23 @@ public class MyWorkUtil {
         } else {
             return entity.getTypeName();
         }
+    }
+
+    static Map<Entity, Set<String>> cloneFieldListMap(Map<Entity, Set<String>> fieldListMap) {
+        Map<Entity, Set<String>> fieldListMapCopy = new HashMap<>();
+        if (fieldListMap == null) {
+            fieldListMapCopy = null;
+        } else {
+            for (Entity key : fieldListMap.keySet()) {
+                Set<String> value = fieldListMap.get(key);
+                if (value == null) {
+                    fieldListMapCopy.put(key, null);
+                } else {
+                    fieldListMapCopy.put(key, new HashSet<>(value));
+                }
+            }
+        }
+        return fieldListMapCopy;
     }
 
 }
