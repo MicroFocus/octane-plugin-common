@@ -6,7 +6,6 @@ import com.hpe.adm.nga.sdk.Query;
 import com.hpe.adm.nga.sdk.model.EntityModel;
 import com.hpe.adm.nga.sdk.model.MultiReferenceFieldModel;
 import com.hpe.adm.octane.services.EntityService;
-import com.hpe.adm.octane.services.MetadataService;
 import com.hpe.adm.octane.services.UserService;
 import com.hpe.adm.octane.services.connection.OctaneProvider;
 import com.hpe.adm.octane.services.exception.ServiceException;
@@ -15,13 +14,11 @@ import com.hpe.adm.octane.services.filtering.Entity;
 import com.hpe.adm.octane.services.util.EntityUtil;
 
 import java.util.*;
+import java.util.stream.Collectors;
 
 import static com.hpe.adm.octane.services.mywork.MyWorkUtil.*;
 
 class PreDynamoMyWorkService implements MyWorkService{
-
-    @Inject
-    private MetadataService metadataService;
 
     @Inject
     private EntityService entityService;
@@ -46,37 +43,59 @@ class PreDynamoMyWorkService implements MyWorkService{
     @Override
     public Collection<EntityModel> getMyWork(Map<Entity, Set<String>> fieldListMap) {
 
-        Collection<EntityModel> result = new ArrayList<>();
+        Map<Entity, Collection<EntityModel>> resultMap;
 
-        Map<Entity, Collection<EntityModel>> entities = entityService.concurrentFindEntities(myWorkFilterCriteria.getStaticFilterCriteria(), fieldListMap);
+        //Get entities by query
+        resultMap = entityService.concurrentFindEntities(myWorkFilterCriteria.getStaticFilterCriteria(), fieldListMap);
 
-        //Done for backwards compatibility, the UI excepts user_item entities from later server version of Octane,
-        //We can wrap the simple entities into dummy user items to not have to change the UI code
-        entities
+        // Wrap into user items, for backwards compatibility with the UI
+        // origin is 0 (because they were fetched via the static query (business rule in the future)
+        resultMap
                 .keySet()
-                .forEach(key -> entities.put(key, wrapCollectionIntoUserItem(entities.get(key), 0)));
+                .forEach(entityType ->
+                        resultMap.put(entityType,
+                                MyWorkUtil.wrapCollectionIntoUserItem(resultMap.get(entityType), 0))
+                );
 
-        //Also need to get the added items manually
+        //Get items that were added manually
         Map<Entity, Collection<EntityModel>> addedEntities = getAddedItems(fieldListMap);
 
+        //Also wrap the addedEntities with origin 1
         addedEntities
                 .keySet()
-                .forEach(key -> addedEntities.put(key, wrapCollectionIntoUserItem(addedEntities.get(key), 1)));
+                .forEach(entityType ->
+                        addedEntities.put(entityType,
+                                MyWorkUtil.wrapCollectionIntoUserItem(addedEntities.get(entityType), 1))
+                );
 
-        entities
+        //Make sure the result map has all the keys necessary to merge the two maps
+        addedEntities
                 .keySet()
                 .stream()
-                .sorted(Comparator.comparing(Enum::name))
-                .forEach(entity -> {
-                    if(entities.containsKey(entity)) {
-                        result.addAll(entities.get(entity));
-                    }
-                    if(addedEntities.containsKey(entity)) {
-                        result.addAll(addedEntities.get(entity));
+                .filter(entityType -> !resultMap.containsKey(entityType))
+                .forEach(entityType -> resultMap.put(entityType, new ArrayList<>()));
+
+        //Merge the two maps, check to not add duplicates
+        addedEntities
+                .keySet()
+                .forEach(entityType -> {
+                    Collection<EntityModel> queryEntitiesByKey = resultMap.get(entityType);
+                    Collection<EntityModel> addedEntitiesByKey = addedEntities.get(entityType);
+
+                    for(EntityModel userItem : addedEntitiesByKey){
+                        if(!MyWorkUtil.containsUserItem(queryEntitiesByKey, userItem)){
+                            resultMap.get(entityType).add(userItem);
+                        }
                     }
                 });
 
-        return result;
+        //Convert map to a list and return
+        return resultMap
+                .keySet()
+                .stream()
+                .sorted(Comparator.comparing(Enum::name))
+                .flatMap(entityType -> resultMap.get(entityType).stream())
+                .collect(Collectors.toList());
     }
 
     protected Map<Entity, Collection<EntityModel>> getAddedItems(Map<Entity, Set<String>> fieldListMap){

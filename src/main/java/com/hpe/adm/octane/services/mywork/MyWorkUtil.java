@@ -8,6 +8,7 @@ import com.hpe.adm.nga.sdk.model.ReferenceFieldModel;
 import com.hpe.adm.nga.sdk.model.StringFieldModel;
 import com.hpe.adm.octane.services.exception.ServiceRuntimeException;
 import com.hpe.adm.octane.services.filtering.Entity;
+import com.hpe.adm.octane.services.util.EntityUtil;
 
 import java.util.*;
 import java.util.stream.Collectors;
@@ -116,6 +117,13 @@ public class MyWorkUtil {
         Collection<EntityModel> result = new ArrayList<>();
         entityModels.forEach(entityModel -> result.add(wrapEntityModelIntoUserItem(entityModel, origin)));
         return result;
+    }
+
+    static boolean containsUserItem(Collection<EntityModel> userItems, EntityModel userItem){
+        return userItems
+                .stream()
+                .map(MyWorkUtil::getEntityModelFromUserItem)
+                .anyMatch(entityModel -> EntityUtil.areEqual(entityModel, MyWorkUtil.getEntityModelFromUserItem(userItem)));
     }
 
     static String getEntityTypeName(Entity entity){
