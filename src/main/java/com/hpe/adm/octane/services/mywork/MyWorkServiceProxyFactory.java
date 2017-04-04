@@ -12,7 +12,7 @@ public class MyWorkServiceProxyFactory {
     @Inject
     private OctaneVersionService octaneVersionService;
     @Inject
-    private PreDynamoMyWorkService preDynamoMyWorkService; //v <= 12.53.20
+    private DynamoMyWorkService dynamoMyWorkService; //v <= 12.53.20
     @Inject
     private EvertonP1MyWorkService evertonP1MyWorkService; //v == 12.53.21
     @Inject
@@ -29,7 +29,7 @@ public class MyWorkServiceProxyFactory {
 
         ServiceProxyFactory<MyWorkService> myWorkProxy = new ServiceProxyFactory(MyWorkService.class);
 
-        myWorkProxy.addService(isBeforeOrDynamo, preDynamoMyWorkService);
+        myWorkProxy.addService(isBeforeOrDynamo, dynamoMyWorkService);
         myWorkProxy.addService(isEvertonP1, evertonP1MyWorkService);
         myWorkProxy.addService(isEvertonP2OrHigher, evertonP2MyWorkService);
 

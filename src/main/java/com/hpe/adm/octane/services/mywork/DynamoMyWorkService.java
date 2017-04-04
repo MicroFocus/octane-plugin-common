@@ -18,7 +18,7 @@ import java.util.stream.Collectors;
 
 import static com.hpe.adm.octane.services.mywork.MyWorkUtil.*;
 
-class PreDynamoMyWorkService implements MyWorkService{
+class DynamoMyWorkService implements MyWorkService{
 
     @Inject
     private EntityService entityService;
