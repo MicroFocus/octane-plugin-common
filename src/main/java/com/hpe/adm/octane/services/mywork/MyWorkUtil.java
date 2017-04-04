@@ -151,4 +151,25 @@ public class MyWorkUtil {
         return fieldListMapCopy;
     }
 
+    private static void verifyUserItem(EntityModel entityModel){
+        if(Entity.USER_ITEM != Entity.getEntityType(entityModel)){
+            throw new ServiceRuntimeException("Given param entity is not of type: user_item, type is: " + Entity.getEntityType(entityModel));
+        }
+    }
+
+    /**
+     * Check if the user item is dismissible or not, uses field "origin" from user item. <br>
+     * Origin field value meaning:
+     *     <ul>
+     *         <li>0: was added by business rule (matched some query, for eg. user story in phase new</li>
+     *         <li>1: was added by right click -> context menu -> "Add to My Work"</li>
+     *     </ul>
+     * @param userItem
+     * @return
+     */
+    public static boolean isUserItemDismissible(EntityModel userItem){
+        verifyUserItem(userItem);
+        return userItem.getValue("origin").getValue().equals(1L);
+    }
+
 }
