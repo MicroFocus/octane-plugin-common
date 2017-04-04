@@ -33,8 +33,6 @@ public class ServiceProxyFactory<T> {
                     .findFirst()
                     .get();
 
-            System.out.println("Using service: " + service.getClass().getCanonicalName());
-
             return method.invoke(service, args);
         }
     }
