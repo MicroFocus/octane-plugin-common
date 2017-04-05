@@ -83,10 +83,11 @@ public class EntityService {
     }
 
     /**
-     * Useful when you have to fetch more than 1 type of entity at the same time
-     * @param filterCriteria
-     * @param fieldListMap
-     * @return
+     * Useful when you have to fetch more than one type of entity at the same time
+     * This method will make concurrent rest calls for each type of entity (key of the maps)
+     * @param filterCriteria a query builder used for querying the entity type (key of the maps)
+     * @param fieldListMap a map of the fields that will be returned after querying the entity type
+     * @return a map with the result entities organized by entity type
      */
     public Map<Entity, Collection<EntityModel>> concurrentFindEntities(Map<Entity, Query.QueryBuilder> filterCriteria, Map<Entity, Set<String>> fieldListMap) {
         Map<Entity, Collection<EntityModel>> resultMap = new ConcurrentHashMap<>();
