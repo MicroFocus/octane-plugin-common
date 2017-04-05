@@ -166,7 +166,6 @@ class DynamoMyWorkService implements MyWorkService{
                 fieldModelNew.getValue().add(currentUser);
             }
 
-            //Do update
             Octane octane = octaneProvider.getOctane();
             Integer id = Integer.valueOf(entityModel.getValue("id").getValue().toString());
             octane.entityList(Entity.getEntityType(entityModel).getApiEntityName())
@@ -175,11 +174,9 @@ class DynamoMyWorkService implements MyWorkService{
                     .entity(updateEntityModel)
                     .execute();
 
-            //Was added
             return true;
         }
 
-        //No need to add
         return false;
     }
 
@@ -190,7 +187,6 @@ class DynamoMyWorkService implements MyWorkService{
         MultiReferenceFieldModel fieldModel = (MultiReferenceFieldModel) updateEntityModel.getValue(FOLLOW_ITEMS_OWNER_FIELD);
 
         if (EntityUtil.removeEntityModel(fieldModel.getValue(), currentUser)) {
-            //Do update
             Octane octane = octaneProvider.getOctane();
 
             try {
@@ -202,16 +198,13 @@ class DynamoMyWorkService implements MyWorkService{
                         .execute();
 
             } catch (Exception ex) {
-                //Re-add it if the call failed
                 fieldModel.getValue().add(currentUser);
                 throw ex;
             }
 
-            //Was removed
             return true;
         }
 
-        //No need to remove
         return false;
     }
 
