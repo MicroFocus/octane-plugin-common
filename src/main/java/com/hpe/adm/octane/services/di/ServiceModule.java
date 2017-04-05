@@ -38,9 +38,6 @@ public class ServiceModule extends AbstractModule {
     @Override
     protected void configure() {
         bind(ConnectionSettingsProvider.class).toProvider(() -> connectionSettingsProvider);
-
-        //bind(OctaneVersionService.class).asEagerSingleton();
-        // Rest of services are trivial bindings
     }
 
     public <T> T getInstance(Class<T> type) {
