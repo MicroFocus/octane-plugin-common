@@ -117,13 +117,21 @@ class EvertonP1MyWorkService extends EvertonP2MyWorkService implements MyWorkSer
     @Override
     protected EntityModel createNewUserItem(EntityModel wrappedEntityModel){
         EntityModel newUserItem = new EntityModel();
+
+        //origin==1 means it was added manually, not because the entity matches the business rule
         newUserItem.setValue(new LongFieldModel("origin", 1L));
+
+        //Is clear, was added manually (origin==1)
         newUserItem.setValue(new ReferenceFieldModel("reason", null));
+
         String entityType =  getEntityTypeName(Entity.getEntityType(wrappedEntityModel));
+
         newUserItem.setValue(new StringFieldModel("entity_type", entityType));
         newUserItem.setValue(new ReferenceFieldModel("user", userService.getCurrentUser()));
+
         String followField = "my_follow_items_" + getEntityTypeName(Entity.getEntityType(wrappedEntityModel));
         newUserItem.setValue(new ReferenceFieldModel(followField, wrappedEntityModel));
+
         return newUserItem;
     }
 
