@@ -39,6 +39,8 @@ public class OctaneVersionService {
                     versionString = new JsonParser().parse(jsonString).getAsJsonObject().get("display_version").getAsString();
                 }
                 catch (Exception e) {
+                    //Failed to get version, method returns null
+                    //TODO: logging
                 }
             }
         }

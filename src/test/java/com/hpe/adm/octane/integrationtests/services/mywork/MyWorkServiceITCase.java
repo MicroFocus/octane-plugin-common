@@ -90,7 +90,6 @@ public class MyWorkServiceITCase {
         }
     }
 
-    //DEBUG
     private void printEntities(Collection<EntityModel> entities) {
         System.out.println("My Work Entities size: " + entities.size());
         if (entities.size() != 0) {
