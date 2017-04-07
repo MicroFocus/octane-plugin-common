@@ -8,8 +8,8 @@ import com.hpe.adm.nga.sdk.network.OctaneHttpResponse;
 import com.hpe.adm.octane.services.connection.ConnectionSettings;
 import com.hpe.adm.octane.services.connection.ConnectionSettingsProvider;
 import com.hpe.adm.octane.services.connection.HttpClientProvider;
+import com.hpe.adm.octane.services.exception.ServiceRuntimeException;
 import com.hpe.adm.octane.services.util.OctaneVersion;
-import org.apache.commons.lang.StringUtils;
 
 /**
  * Retrieves the Octane version.
@@ -24,35 +24,36 @@ public class OctaneVersionService {
 
     public String versionString;
 
-    private void loadOctaneVersionString() {
+    public final Runnable resetVersionRunnable = () -> versionString = null;
 
-        if(versionString == null){
-            connectionSettingsProvider.addChangeHandler(()-> versionString = null);
-
-            ConnectionSettings connectionSettings = connectionSettingsProvider.getConnectionSettings();
-            OctaneHttpClient httpClient = httpClientProvider.geOctaneHttpClient();
-            if (httpClient != null) {
-                try {
-                    OctaneHttpRequest request = new OctaneHttpRequest.GetOctaneHttpRequest(connectionSettings.getBaseUrl() + "/admin/server/version");
-                    OctaneHttpResponse response = httpClient.execute(request);
-                    String jsonString = response.getContent();
-                    versionString = new JsonParser().parse(jsonString).getAsJsonObject().get("display_version").getAsString();
-                }
-                catch (Exception e) {
-                    //Failed to get version, method returns null
-                    //TODO: logging
-                }
-            }
+    private static String getVersionString(ConnectionSettings connectionSettings, OctaneHttpClient httpClient) {
+        try {
+            OctaneHttpRequest request = new OctaneHttpRequest.GetOctaneHttpRequest(connectionSettings.getBaseUrl() + "/admin/server/version");
+            OctaneHttpResponse response = httpClient.execute(request);
+            String jsonString = response.getContent();
+            return new JsonParser().parse(jsonString).getAsJsonObject().get("display_version").getAsString();
+        } catch (Exception e) {
+            //TODO: logging
+            throw new ServiceRuntimeException("Failed to retrieve Octane server version", e);
         }
-
     }
 
     /**
      * If the server version cannot be fetched it assumes it's the latest version
-     * @return
+     *
+     * @return OctaneVersion of the current connection settings
      */
     public OctaneVersion getOctaneVersion() {
-        loadOctaneVersionString();
-        return StringUtils.isEmpty(versionString) ? OctaneVersion.EVERTON_P1 : new OctaneVersion(versionString);
+        if (versionString == null) {
+            connectionSettingsProvider.addChangeHandler(resetVersionRunnable);
+            versionString = getVersionString(connectionSettingsProvider.getConnectionSettings(), httpClientProvider.geOctaneHttpClient());
+        }
+        return new OctaneVersion(versionString);
     }
+
+    public static OctaneVersion getOctaneVersion(ConnectionSettings connectionSettings, OctaneHttpClient httpClient) {
+        String versionString = getVersionString(connectionSettings, httpClient);
+        return new OctaneVersion(versionString);
+    }
+
 }
