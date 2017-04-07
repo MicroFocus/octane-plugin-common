@@ -11,6 +11,7 @@ import com.hpe.adm.octane.services.filtering.Entity;
 import com.hpe.adm.octane.services.util.EntityUtil;
 
 import java.util.*;
+import java.util.stream.Collectors;
 
 import static com.hpe.adm.octane.services.filtering.Entity.COMMENT;
 import static com.hpe.adm.octane.services.mywork.MyWorkUtil.*;
@@ -39,6 +40,7 @@ class EvertonP2MyWorkService implements MyWorkService {
         Query.QueryBuilder qUser = createUserQuery("user", userService.getCurrentUserId());
 
         Collection<EntityModel> userItems = entityService.findEntities(Entity.USER_ITEM, qUser, null);
+        userItems = sortUserItems(userItems);
         result.addAll(userItems);
 
         //Also get comments
@@ -53,6 +55,31 @@ class EvertonP2MyWorkService implements MyWorkService {
         return result;
     }
 
+    private static Collection<EntityModel> sortUserItems(Collection<EntityModel> userItems) {
+        try {
+            return userItems
+                    .stream()
+                    .sorted((userItemLeft, userItemRight) -> {
+                        EntityModel entityLeft = MyWorkUtil.getEntityModelFromUserItem(userItemLeft);
+                        EntityModel entityRight = MyWorkUtil.getEntityModelFromUserItem(userItemRight);
+
+                        Entity entityTypeLeft = Entity.getEntityType(entityLeft);
+                        Entity entityTypeRight = Entity.getEntityType(entityRight);
+
+                        if (entityTypeLeft != entityTypeRight) {
+                            return entityTypeLeft.name().compareTo(entityTypeRight.name());
+                        } else {
+                            Long leftId = Long.parseLong(entityLeft.getValue("id").getValue().toString());
+                            Long rightId = Long.parseLong(entityRight.getValue("id").getValue().toString());
+                            return leftId.compareTo(rightId);
+                        }
+                    })
+                    .collect(Collectors.toList());
+        } catch (Exception ex) {
+            return userItems;
+        }
+    }
+
     @Override
     public boolean isAddingToMyWorkSupported() {
         return true;
@@ -63,8 +90,8 @@ class EvertonP2MyWorkService implements MyWorkService {
         return addToMyWorkEntities.contains(entityType);
     }
 
-    private EntityModel findUserItemForEntity(EntityModel entityModel){
-        String entityType =  getEntityTypeName(Entity.getEntityType(entityModel));
+    private EntityModel findUserItemForEntity(EntityModel entityModel) {
+        String entityType = getEntityTypeName(Entity.getEntityType(entityModel));
         String followField = "my_follow_items_" + getEntityTypeName(Entity.getEntityType(entityModel));
         String id = entityModel.getValue("id").getValue().toString();
 
@@ -82,7 +109,7 @@ class EvertonP2MyWorkService implements MyWorkService {
                         qUser.and(qType).and(qOrigin).and(qItem),
                         null);
 
-        if(userItems.size()!=1){
+        if (userItems.size() != 1) {
             return null;
         } else {
             return userItems.iterator().next();
@@ -99,7 +126,7 @@ class EvertonP2MyWorkService implements MyWorkService {
 
     @Override
     public boolean addToMyWork(EntityModel entityModel) {
-        if(isInMyWork(entityModel)) {
+        if (isInMyWork(entityModel)) {
             return false;
         }
 
@@ -115,13 +142,13 @@ class EvertonP2MyWorkService implements MyWorkService {
         return true;
     }
 
-    protected EntityModel createNewUserItem(EntityModel wrappedEntityModel){
+    protected EntityModel createNewUserItem(EntityModel wrappedEntityModel) {
         EntityModel newUserItem = new EntityModel();
         newUserItem.setValue(new LongFieldModel("origin", 1L));
         newUserItem.setValue(new BooleanFieldModel("is_new", true));
         newUserItem.setValue(new ReferenceFieldModel("reason", null));
 
-        String entityType =  getEntityTypeName(Entity.getEntityType(wrappedEntityModel));
+        String entityType = getEntityTypeName(Entity.getEntityType(wrappedEntityModel));
 
         newUserItem.setValue(new StringFieldModel("entity_type", entityType));
 
@@ -138,14 +165,14 @@ class EvertonP2MyWorkService implements MyWorkService {
     public boolean removeFromMyWork(EntityModel entityModel) {
 
         EntityModel userItem = findUserItemForEntity(entityModel);
-        if(userItem == null){
+        if (userItem == null) {
             return false;
         }
 
         Integer id = Integer.valueOf(userItem.getValue("id").getValue().toString());
         try {
             octaneProvider.getOctane().entityList(Entity.USER_ITEM.getApiEntityName()).at(id).delete().execute();
-        } catch (Exception ex){
+        } catch (Exception ex) {
             return false;
         }
 
