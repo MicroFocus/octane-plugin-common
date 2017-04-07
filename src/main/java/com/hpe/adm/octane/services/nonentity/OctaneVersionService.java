@@ -5,9 +5,9 @@ import com.google.inject.Inject;
 import com.hpe.adm.nga.sdk.network.OctaneHttpClient;
 import com.hpe.adm.nga.sdk.network.OctaneHttpRequest;
 import com.hpe.adm.nga.sdk.network.OctaneHttpResponse;
+import com.hpe.adm.nga.sdk.network.google.GoogleHttpClient;
 import com.hpe.adm.octane.services.connection.ConnectionSettings;
 import com.hpe.adm.octane.services.connection.ConnectionSettingsProvider;
-import com.hpe.adm.octane.services.connection.HttpClientProvider;
 import com.hpe.adm.octane.services.exception.ServiceRuntimeException;
 import com.hpe.adm.octane.services.util.OctaneVersion;
 
@@ -17,19 +17,16 @@ import com.hpe.adm.octane.services.util.OctaneVersion;
 public class OctaneVersionService {
 
     @Inject
-    private HttpClientProvider httpClientProvider;
-
-    @Inject
     private ConnectionSettingsProvider connectionSettingsProvider;
 
-    public String versionString;
+    private String versionString;
+    private final Runnable resetVersionRunnable = () -> versionString = null;
 
-    public final Runnable resetVersionRunnable = () -> versionString = null;
-
-    private static String getVersionString(ConnectionSettings connectionSettings, OctaneHttpClient httpClient) {
+    private static String getVersionString(ConnectionSettings connectionSettings) {
         try {
             OctaneHttpRequest request = new OctaneHttpRequest.GetOctaneHttpRequest(connectionSettings.getBaseUrl() + "/admin/server/version");
-            OctaneHttpResponse response = httpClient.execute(request);
+            OctaneHttpClient octaneHttpClient = new GoogleHttpClient(connectionSettings.getBaseUrl());
+            OctaneHttpResponse response = octaneHttpClient.execute(request);
             String jsonString = response.getContent();
             return new JsonParser().parse(jsonString).getAsJsonObject().get("display_version").getAsString();
         } catch (Exception e) {
@@ -46,13 +43,13 @@ public class OctaneVersionService {
     public OctaneVersion getOctaneVersion() {
         if (versionString == null) {
             connectionSettingsProvider.addChangeHandler(resetVersionRunnable);
-            versionString = getVersionString(connectionSettingsProvider.getConnectionSettings(), httpClientProvider.geOctaneHttpClient());
+            versionString = getVersionString(connectionSettingsProvider.getConnectionSettings());
         }
         return new OctaneVersion(versionString);
     }
 
-    public static OctaneVersion getOctaneVersion(ConnectionSettings connectionSettings, OctaneHttpClient httpClient) {
-        String versionString = getVersionString(connectionSettings, httpClient);
+    public static OctaneVersion getOctaneVersion(ConnectionSettings connectionSettings) {
+        String versionString = getVersionString(connectionSettings);
         return new OctaneVersion(versionString);
     }
 
