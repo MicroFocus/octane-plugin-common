@@ -6,14 +6,13 @@ import com.hpe.adm.nga.sdk.QueryMethod;
 import com.hpe.adm.octane.services.UserService;
 import com.hpe.adm.octane.services.filtering.Entity;
 
-import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Map;
 
 import static com.hpe.adm.octane.services.filtering.Entity.*;
 import static com.hpe.adm.octane.services.mywork.MyWorkUtil.*;
 
-public class MyWorkFilterCriteria {
+public class DynamoMyWorkFilterCriteria {
 
     @Inject
     private UserService userService;
@@ -55,13 +54,8 @@ public class MyWorkFilterCriteria {
         filterCriteria.put(MANUAL_TEST_RUN,
                 createUserQuery("run_by", userService.getCurrentUserId())
                         .and(MANUAL_TEST_RUN.createMatchSubtypeQueryBuilder())
-                        .and(createNativeStatusQuery("list_node.run_native_status.blocked", "list_node.run_native_status.not_completed", "list_node.run_native_status.planned"))
-                        .and(
-                            Query.statement("parent_suite", QueryMethod.EqualTo, null)
-                            .or(
-                            Query.statement("parent_suite", QueryMethod.EqualTo, Query.statement("run_by", QueryMethod.EqualTo, null))
-                            )
-                        )
+                        .and(Query.statement("parent_suite", QueryMethod.EqualTo, null))
+                        .and(createNativeStatusQuery("list_node.run_native_status.blocked", "list_node.run_native_status.not_completed"))
         );
         filterCriteria.put(TEST_SUITE_RUN,
                 createUserQuery("run_by", userService.getCurrentUserId())
@@ -69,32 +63,6 @@ public class MyWorkFilterCriteria {
                         .and(createNativeStatusQuery("list_node.run_native_status.blocked", "list_node.run_native_status.not_completed", "list_node.run_native_status.planned")
                                 .and( Query.statement("parent_suite", QueryMethod.EqualTo, null)))
         );
-
-        filterCriteria.put(COMMENT, createUserQuery("mention_user", userService.getCurrentUserId()));
-
-        return filterCriteria;
-    }
-
-    public Map<Entity, Query.QueryBuilder> getServersideFilterCriteria(){
-
-        Map<Entity, Query.QueryBuilder> filterCriteria = new HashMap<>();
-
-        Entity[] simpleEntities = new Entity[]{
-                GHERKIN_TEST, MANUAL_TEST,
-                MANUAL_TEST_RUN, TEST_SUITE_RUN,
-                WORK_ITEM,
-                TASK };
-
-        Query.QueryBuilder query =
-                Query.statement("user_item", QueryMethod.EqualTo,
-                    Query.statement("user", QueryMethod.EqualTo,
-                        Query.statement("id", QueryMethod.EqualTo, userService.getCurrentUserId())
-                    )
-                );
-
-        Arrays
-                .stream(simpleEntities)
-                .forEach(entity -> filterCriteria.put(entity, query));
 
         filterCriteria.put(COMMENT, createUserQuery("mention_user", userService.getCurrentUserId()));
 

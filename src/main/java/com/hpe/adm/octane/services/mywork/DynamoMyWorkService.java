@@ -30,7 +30,7 @@ class DynamoMyWorkService implements MyWorkService{
     private OctaneProvider octaneProvider;
 
     @Inject
-    private MyWorkFilterCriteria myWorkFilterCriteria;
+    private DynamoMyWorkFilterCriteria dynamoMyWorkFilterCriteria;
 
     private static final String FOLLOW_ITEMS_OWNER_FIELD = "my_follow_items_owner";
     private static final String NEW_ITEMS_OWNER_FIELD = "my_new_items_owner";
@@ -46,7 +46,7 @@ class DynamoMyWorkService implements MyWorkService{
         Map<Entity, Collection<EntityModel>> resultMap;
 
         //Get entities by query
-        resultMap = entityService.concurrentFindEntities(myWorkFilterCriteria.getStaticFilterCriteria(), fieldListMap);
+        resultMap = entityService.concurrentFindEntities(dynamoMyWorkFilterCriteria.getStaticFilterCriteria(), fieldListMap);
 
         // Wrap into user items, for backwards compatibility with the UI
         // origin is 0 (because they were fetched via the static query (business rule in the future)
@@ -106,7 +106,7 @@ class DynamoMyWorkService implements MyWorkService{
 
         Map<Entity, Query.QueryBuilder> followFilterCriteria = new HashMap<>();
 
-        myWorkFilterCriteria.getStaticFilterCriteria()
+        dynamoMyWorkFilterCriteria.getStaticFilterCriteria()
                 .keySet()
                 .stream()
                 .filter(this::isAddingToMyWorkSupported)

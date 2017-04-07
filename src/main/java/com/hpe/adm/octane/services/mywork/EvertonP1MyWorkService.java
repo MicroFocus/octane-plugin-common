@@ -14,8 +14,8 @@ import com.hpe.adm.octane.services.filtering.Entity;
 import java.util.*;
 import java.util.stream.Collectors;
 
-import static com.hpe.adm.octane.services.mywork.MyWorkUtil.cloneFieldListMap;
-import static com.hpe.adm.octane.services.mywork.MyWorkUtil.getEntityTypeName;
+import static com.hpe.adm.octane.services.filtering.Entity.MANUAL_TEST_RUN;
+import static com.hpe.adm.octane.services.mywork.MyWorkUtil.*;
 
 class EvertonP1MyWorkService extends EvertonP2MyWorkService implements MyWorkService {
 
@@ -26,15 +26,29 @@ class EvertonP1MyWorkService extends EvertonP2MyWorkService implements MyWorkSer
     private UserService userService;
 
     @Inject
-    private MyWorkFilterCriteria myWorkFilterCriteria;
+    private DynamoMyWorkFilterCriteria dynamoMyWorkFilterCriteria;
 
     @Override
     public Collection<EntityModel> getMyWork(Map<Entity, Set<String>> fieldListMap) {
 
         Map<Entity, Collection<EntityModel>> resultMap;
 
+        //For Everton P1 change the way MANUAL_TEST_RUNs are queried
+        Map<Entity, Query.QueryBuilder> filterCriteria = dynamoMyWorkFilterCriteria.getStaticFilterCriteria();
+        filterCriteria.put(MANUAL_TEST_RUN,
+                createUserQuery("run_by", userService.getCurrentUserId())
+                        .and(MANUAL_TEST_RUN.createMatchSubtypeQueryBuilder())
+                        .and(createNativeStatusQuery("list_node.run_native_status.blocked", "list_node.run_native_status.not_completed", "list_node.run_native_status.planned"))
+                        .and(
+                                Query.statement("parent_suite", QueryMethod.EqualTo, null)
+                                        .or(
+                                                Query.statement("parent_suite", QueryMethod.EqualTo, Query.statement("run_by", QueryMethod.EqualTo, null))
+                                        )
+                        )
+        );
+
         //Get entities by query
-        resultMap = entityService.concurrentFindEntities(myWorkFilterCriteria.getStaticFilterCriteria(), fieldListMap);
+        resultMap = entityService.concurrentFindEntities(filterCriteria, fieldListMap);
 
         // Wrap into user items, for backwards compatibility with the UI
         // origin is 0 (because they were fetched via the static query (business rule in the future)
@@ -94,7 +108,7 @@ class EvertonP1MyWorkService extends EvertonP2MyWorkService implements MyWorkSer
 
         Map<Entity, Query.QueryBuilder> followFilterCriteria = new HashMap<>();
 
-        myWorkFilterCriteria.getStaticFilterCriteria()
+        dynamoMyWorkFilterCriteria.getStaticFilterCriteria()
                 .keySet()
                 .stream()
                 .filter(this::isAddingToMyWorkSupported)
