@@ -55,8 +55,13 @@ public class MyWorkFilterCriteria {
         filterCriteria.put(MANUAL_TEST_RUN,
                 createUserQuery("run_by", userService.getCurrentUserId())
                         .and(MANUAL_TEST_RUN.createMatchSubtypeQueryBuilder())
-                        .and(Query.statement("parent_suite", QueryMethod.EqualTo, null))
                         .and(createNativeStatusQuery("list_node.run_native_status.blocked", "list_node.run_native_status.not_completed", "list_node.run_native_status.planned"))
+                        .and(
+                            Query.statement("parent_suite", QueryMethod.EqualTo, null)
+                            .or(
+                            Query.statement("parent_suite", QueryMethod.EqualTo, Query.statement("run_by", QueryMethod.EqualTo, null))
+                            )
+                        )
         );
         filterCriteria.put(TEST_SUITE_RUN,
                 createUserQuery("run_by", userService.getCurrentUserId())
