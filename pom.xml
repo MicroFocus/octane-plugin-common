@@ -6,7 +6,7 @@
 
     <groupId>com.hpe.adm.plugins</groupId>
     <artifactId>octane-plugin-common</artifactId>
-    <version>1.0.1</version>
+    <version>1.2</version>
     <packaging>jar</packaging>
 
     <properties>
@@ -68,6 +68,18 @@
                         <include>**/*.java</include>
                     </includes>
                 </configuration>
+            </plugin>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-source-plugin</artifactId>
+                <executions>
+                    <execution>
+                        <id>attach-sources</id>
+                        <goals>
+                            <goal>jar</goal>
+                        </goals>
+                    </execution>
+                </executions>
             </plugin>
         </plugins>
     </build>

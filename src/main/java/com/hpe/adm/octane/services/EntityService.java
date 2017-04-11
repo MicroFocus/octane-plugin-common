@@ -19,10 +19,8 @@ import com.hpe.adm.octane.services.util.UrlParser;
 
 import java.awt.*;
 import java.net.URI;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.HashSet;
-import java.util.Set;
+import java.util.*;
+import java.util.concurrent.ConcurrentHashMap;
 
 import static com.hpe.adm.octane.services.util.Util.getUiDataFromModel;
 
@@ -82,6 +80,34 @@ public class EntityService {
 
         Collection<EntityModel> col = getRequest.execute();
         return col;
+    }
+
+    /**
+     * Useful when you have to fetch more than one type of entity at the same time
+     * This method will make concurrent rest calls for each type of entity (key of the maps)
+     * @param filterCriteria a query builder used for querying the entity type (key of the maps)
+     * @param fieldListMap a map of the fields that will be returned after querying the entity type
+     * @return a map with the result entities organized by entity type
+     */
+    public Map<Entity, Collection<EntityModel>> concurrentFindEntities(Map<Entity, Query.QueryBuilder> filterCriteria, Map<Entity, Set<String>> fieldListMap) {
+        Map<Entity, Collection<EntityModel>> resultMap = new ConcurrentHashMap<>();
+
+        //TODO, known subtypes should be under same rest call
+        filterCriteria
+                .keySet()
+                .parallelStream()
+                .forEach(
+                        entityType ->
+                                resultMap.put(entityType,
+                                        findEntities(
+                                                entityType.getApiEntityName(),
+                                                filterCriteria.get(entityType),
+                                                fieldListMap.get(entityType)
+                                        )
+                                )
+                );
+
+        return resultMap;
     }
 
     /**
