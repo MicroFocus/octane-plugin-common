@@ -12,7 +12,7 @@ import com.hpe.adm.octane.services.connection.HttpClientProvider;
 import com.hpe.adm.octane.services.connection.OctaneProvider;
 import com.hpe.adm.octane.services.exception.ServiceRuntimeException;
 import com.hpe.adm.octane.services.filtering.Entity;
-import com.hpe.adm.octane.services.ui.FormField;
+import com.hpe.adm.octane.services.ui.FormLayout;
 import com.hpe.adm.octane.services.util.OctaneUrlBuilder;
 import com.hpe.adm.octane.services.util.Util;
 import org.apache.http.client.utils.URIBuilder;
@@ -79,7 +79,7 @@ public class MetadataService {
         connectionSettingsProvider.addChangeHandler(() -> cache.clear());
     }
 
-    public List<FormField> getFormLayoutForAllEntityTypes() throws UnsupportedEncodingException {
+    public List<FormLayout> getFormLayoutForAllEntityTypes() throws UnsupportedEncodingException {
         ConnectionSettings connectionSettings = connectionSettingsProvider.getConnectionSettings();
         OctaneHttpClient httpClient = httpClientProvider.geOctaneHttpClient();
         OctaneHttpResponse response = null;
