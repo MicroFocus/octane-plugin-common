@@ -32,22 +32,34 @@ class EvertonP1MyWorkService extends EvertonP2MyWorkService implements MyWorkSer
     public Collection<EntityModel> getMyWork(Map<Entity, Set<String>> fieldListMap) {
 
         Map<Entity, Collection<EntityModel>> resultMap;
+        Map<Entity, Query.QueryBuilder> filterCriteria = dynamoMyWorkFilterCriteria.getStaticFilterCriteria();
 
         //For Everton P1 change the way MANUAL_TEST_RUNs are queried
-        Map<Entity, Query.QueryBuilder> filterCriteria = dynamoMyWorkFilterCriteria.getStaticFilterCriteria();
-        filterCriteria.put(MANUAL_TEST_RUN,
-                createUserQuery("run_by", userService.getCurrentUserId())
-                        .and(MANUAL_TEST_RUN.createMatchSubtypeQueryBuilder())
-                        .and(createNativeStatusQuery("list_node.run_native_status.blocked", "list_node.run_native_status.not_completed", "list_node.run_native_status.planned"))
-                        .and(
-                                Query.statement("parent_suite", QueryMethod.EqualTo, null)
-                                        .or(
-                                                Query.statement("parent_suite", QueryMethod.EqualTo, Query.statement("run_by", QueryMethod.EqualTo, null))
-                                        )
-                        )
-        );
+        Query.QueryBuilder runParentSuiteQuery =
+                Query.statement("parent_suite", QueryMethod.EqualTo,
+                        Query.statement("run_by", QueryMethod.EqualTo, null))
+                .and(Query.not("parent_suite", QueryMethod.EqualTo, null));
 
-        //Get entities by query
+        Query.QueryBuilder runParentNullQuery =
+                Query.statement("parent_suite", QueryMethod.EqualTo, null);
+
+        Query.QueryBuilder subtypeQuery = MANUAL_TEST_RUN.createMatchSubtypeQueryBuilder();
+
+        Query.QueryBuilder statusQuery = createNativeStatusQuery("list_node.run_native_status.blocked", "list_node.run_native_status.not_completed", "list_node.run_native_status.planned");
+
+        Query.QueryBuilder userQuery = createUserQuery("run_by", userService.getCurrentUserId());
+
+        runParentSuiteQuery = Query.QueryBuilder.parenthesis(runParentSuiteQuery);
+
+        Query.QueryBuilder manualTestRunQuery =
+                        userQuery
+                        .and(subtypeQuery)
+                        .and(statusQuery)
+                        .and(Query.QueryBuilder.parenthesis(runParentNullQuery.or(runParentSuiteQuery)));
+
+        filterCriteria.put(MANUAL_TEST_RUN, manualTestRunQuery);
+
+        //Get entities by filterCriteria
         resultMap = entityService.concurrentFindEntities(filterCriteria, fieldListMap);
 
         // Wrap into user items, for backwards compatibility with the UI
@@ -129,7 +141,7 @@ class EvertonP1MyWorkService extends EvertonP2MyWorkService implements MyWorkSer
     }
 
     @Override
-    protected EntityModel createNewUserItem(EntityModel wrappedEntityModel){
+    protected EntityModel createNewUserItem(EntityModel wrappedEntityModel) {
         EntityModel newUserItem = new EntityModel();
 
         //origin==1 means it was added manually, not because the entity matches the business rule
@@ -138,7 +150,7 @@ class EvertonP1MyWorkService extends EvertonP2MyWorkService implements MyWorkSer
         //Is clear, was added manually (origin==1)
         newUserItem.setValue(new ReferenceFieldModel("reason", null));
 
-        String entityType =  getEntityTypeName(Entity.getEntityType(wrappedEntityModel));
+        String entityType = getEntityTypeName(Entity.getEntityType(wrappedEntityModel));
 
         newUserItem.setValue(new StringFieldModel("entity_type", entityType));
         newUserItem.setValue(new ReferenceFieldModel("user", userService.getCurrentUser()));
