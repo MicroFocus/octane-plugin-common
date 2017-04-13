@@ -29,8 +29,8 @@ public enum Entity {
     PHASE("phases", "phases"),
     TRANSITION("transitions", "transition"),
     TEST_RUN("runs", "run"),
-    MANUAL_TEST_RUN(TEST_RUN,"run_manual"),
-    TEST_SUITE_RUN(TEST_RUN,"run_suite"),
+    MANUAL_TEST_RUN(TEST_RUN, "run_manual"),
+    TEST_SUITE_RUN(TEST_RUN, "run_suite"),
 
     COMMENT("comments", "comment"),
 
@@ -93,13 +93,34 @@ public enum Entity {
         return null;
     }
 
-    public static Set<Entity> getSubtypes(Entity entity){
-        if(entity.isSubtype()){
+    public static Entity getEntityType(String entityType, String entitySubtype) {
+        if (entitySubtype != null) {
+            for (Entity entity : Entity.values()) {
+                if (entity.isSubtype() && entity.getSubtypeName().equals(entitySubtype)) {
+                    return entity;
+                }
+            }
+        }
+
+        if (entityType != null) {
+            for (Entity entity : Entity.values()) {
+                if (!entity.isSubtype() && entity.getTypeName().equals(entityType)) {
+                    return entity;
+                }
+            }
+        }
+
+        return null;
+    }
+
+
+    public static Set<Entity> getSubtypes(Entity entity) {
+        if (entity.isSubtype()) {
             return Collections.emptySet();
         } else {
             Set<Entity> result = new HashSet<>();
-            for(Entity subType : Entity.values()){
-                if(entity.equals(subType.getSubtypeOf())){
+            for (Entity subType : Entity.values()) {
+                if (entity.equals(subType.getSubtypeOf())) {
                     result.add(subType);
                 }
             }
