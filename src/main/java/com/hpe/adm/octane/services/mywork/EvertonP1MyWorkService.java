@@ -107,7 +107,7 @@ class EvertonP1MyWorkService extends EvertonP2MyWorkService implements MyWorkSer
         return resultMap
                 .keySet()
                 .stream()
-                .sorted(Comparator.comparing(Enum::name))
+                .sorted(entityTypeComparator)
                 .flatMap(entityType -> resultMap.get(entityType).stream())
                 .collect(Collectors.toList());
     }

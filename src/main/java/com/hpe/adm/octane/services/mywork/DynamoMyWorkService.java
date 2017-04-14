@@ -93,7 +93,7 @@ class DynamoMyWorkService implements MyWorkService{
         return resultMap
                 .keySet()
                 .stream()
-                .sorted(Comparator.comparing(Enum::name))
+                .sorted(entityTypeComparator)
                 .flatMap(entityType -> resultMap.get(entityType).stream())
                 .collect(Collectors.toList());
     }

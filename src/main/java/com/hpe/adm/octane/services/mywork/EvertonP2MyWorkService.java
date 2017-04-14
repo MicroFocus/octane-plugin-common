@@ -1,20 +1,31 @@
 package com.hpe.adm.octane.services.mywork;
 
+import static com.hpe.adm.octane.services.filtering.Entity.COMMENT;
+import static com.hpe.adm.octane.services.mywork.MyWorkUtil.addToMyWorkEntities;
+import static com.hpe.adm.octane.services.mywork.MyWorkUtil.createUserQuery;
+import static com.hpe.adm.octane.services.mywork.MyWorkUtil.getEntityTypeName;
+
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.Set;
+import java.util.stream.Collectors;
+
 import com.google.inject.Inject;
 import com.hpe.adm.nga.sdk.Query;
 import com.hpe.adm.nga.sdk.QueryMethod;
-import com.hpe.adm.nga.sdk.model.*;
+import com.hpe.adm.nga.sdk.model.BooleanFieldModel;
+import com.hpe.adm.nga.sdk.model.EntityModel;
+import com.hpe.adm.nga.sdk.model.LongFieldModel;
+import com.hpe.adm.nga.sdk.model.ReferenceFieldModel;
+import com.hpe.adm.nga.sdk.model.StringFieldModel;
 import com.hpe.adm.octane.services.EntityService;
 import com.hpe.adm.octane.services.UserService;
 import com.hpe.adm.octane.services.connection.OctaneProvider;
 import com.hpe.adm.octane.services.filtering.Entity;
 import com.hpe.adm.octane.services.util.EntityUtil;
-
-import java.util.*;
-import java.util.stream.Collectors;
-
-import static com.hpe.adm.octane.services.filtering.Entity.COMMENT;
-import static com.hpe.adm.octane.services.mywork.MyWorkUtil.*;
 
 class EvertonP2MyWorkService implements MyWorkService {
 
@@ -43,12 +54,11 @@ class EvertonP2MyWorkService implements MyWorkService {
         userItems = sortUserItems(userItems);
         result.addAll(userItems);
 
-        //Also get comments
+        // Also get comments
         Collection<EntityModel> comments = entityService.findEntities(
                 COMMENT,
                 createUserQuery("mention_user", userService.getCurrentUserId()),
-                fieldListMap.get(COMMENT)
-        );
+                fieldListMap.get(COMMENT));
 
         result.addAll(MyWorkUtil.wrapCollectionIntoUserItem(comments, -1));
 
@@ -67,7 +77,7 @@ class EvertonP2MyWorkService implements MyWorkService {
                         Entity entityTypeRight = Entity.getEntityType(entityRight);
 
                         if (entityTypeLeft != entityTypeRight) {
-                            return entityTypeLeft.name().compareTo(entityTypeRight.name());
+                            return entityTypeComparator.compare(entityTypeLeft, entityTypeRight);
                         } else {
                             Long leftId = Long.parseLong(entityLeft.getValue("id").getValue().toString());
                             Long rightId = Long.parseLong(entityRight.getValue("id").getValue().toString());
@@ -96,18 +106,16 @@ class EvertonP2MyWorkService implements MyWorkService {
         String id = entityModel.getValue("id").getValue().toString();
 
         Query.QueryBuilder qItem = Query.statement(
-                followField, QueryMethod.EqualTo, Query.statement("id", QueryMethod.EqualTo, id)
-        );
+                followField, QueryMethod.EqualTo, Query.statement("id", QueryMethod.EqualTo, id));
 
         Query.QueryBuilder qUser = createUserQuery("user", userService.getCurrentUserId());
 
         Query.QueryBuilder qType = Query.statement("entity_type", QueryMethod.EqualTo, entityType);
         Query.QueryBuilder qOrigin = Query.statement("origin", QueryMethod.EqualTo, 1);
 
-        Collection<EntityModel> userItems =
-                entityService.findEntities(Entity.USER_ITEM,
-                        qUser.and(qType).and(qOrigin).and(qItem),
-                        null);
+        Collection<EntityModel> userItems = entityService.findEntities(Entity.USER_ITEM,
+                qUser.and(qType).and(qOrigin).and(qItem),
+                null);
 
         if (userItems.size() != 1) {
             return null;
@@ -118,7 +126,7 @@ class EvertonP2MyWorkService implements MyWorkService {
 
     @Override
     public boolean isInMyWork(EntityModel entityModel) {
-        //TODO: can be optimized
+        // TODO: can be optimized
         Collection<EntityModel> myWork = getMyWork();
         myWork = MyWorkUtil.getEntityModelsFromUserItems(myWork);
         return EntityUtil.containsEntityModel(myWork, entityModel);
