@@ -23,6 +23,7 @@ import java.util.Collection;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.function.Function;
 import java.util.stream.Collectors;
 
 import static com.hpe.adm.octane.services.util.Util.createQueryForMultipleValues;
@@ -36,6 +37,7 @@ public class MetadataService {
     @Inject
     private ConnectionSettingsProvider connectionSettingsProvider;
     private Map<Entity, Collection<FieldMetadata>> cache;
+    private Map<Entity, FormLayout> octaneFormsCache;
 
     public boolean hasFields(Entity entityType, String... fieldNames) {
 
@@ -79,7 +81,18 @@ public class MetadataService {
         connectionSettingsProvider.addChangeHandler(() -> cache.clear());
     }
 
-    public List<FormLayout> getFormLayoutForAllEntityTypes() throws UnsupportedEncodingException {
+    public Map<Entity, FormLayout> getFormLayoutForAllEntityTypes() throws UnsupportedEncodingException {
+        if (null == octaneFormsCache) {
+            connectionSettingsProvider.addChangeHandler(() -> octaneFormsCache.clear());
+            octaneFormsCache = retrieveFormsFromOctane();
+        }
+        if (octaneFormsCache.isEmpty()) {
+            octaneFormsCache = retrieveFormsFromOctane();
+        }
+        return octaneFormsCache;
+    }
+
+    private Map<Entity, FormLayout> retrieveFormsFromOctane() throws UnsupportedEncodingException {
         ConnectionSettings connectionSettings = connectionSettingsProvider.getConnectionSettings();
         OctaneHttpClient httpClient = httpClientProvider.geOctaneHttpClient();
         OctaneHttpResponse response = null;
@@ -100,7 +113,12 @@ public class MetadataService {
         } catch (Exception ex) {
             throw new ServiceRuntimeException(ex);
         }
-        return Util.parseJsonWithFormLayoutData(response);
+        List<FormLayout> formList = Util.parseJsonWithFormLayoutData(response);
+
+        return formList
+                .stream()
+                .filter(FormLayout::isDefault)
+                .collect(Collectors.toMap(FormLayout::getEntity, Function.identity()));
     }
 
 
