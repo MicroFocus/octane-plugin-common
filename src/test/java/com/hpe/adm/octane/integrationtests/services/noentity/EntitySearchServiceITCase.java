@@ -16,6 +16,6 @@ public class EntitySearchServiceITCase extends IntegrationTestBase {
     @Test
     public void testGlobalSearch() {
         //Just make sure this doesn't blow up for now
-        TestUtil.printEntities(searchService.searchGlobal("user", 25, Entity.DEFECT, Entity.USER_STORY, Entity.AUTOMATED_TEST));
+        TestUtil.printEntities(searchService.searchGlobal("story", 25, Entity.FEATURE, Entity.USER_STORY, Entity.QUALITY_STORY));
     }
 }

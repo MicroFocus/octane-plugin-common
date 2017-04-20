@@ -18,6 +18,7 @@ import org.json.JSONArray;
 import org.json.JSONObject;
 
 import java.util.*;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.stream.Collectors;
 
 public class EntitySearchService {
@@ -32,7 +33,7 @@ public class EntitySearchService {
     protected HttpClientProvider httpClientProvider;
 
     public Collection<EntityModel> searchGlobal(String queryString, int limit, Entity... entity) {
-        Map<Entity, Collection<EntityModel>> result = new LinkedHashMap<>();
+        Map<Entity, Collection<EntityModel>> result = new ConcurrentHashMap<>();
 
         Arrays
             .stream(entity)
