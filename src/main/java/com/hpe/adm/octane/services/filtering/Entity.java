@@ -24,6 +24,9 @@ public enum Entity {
     TEST("tests", "test"),
     MANUAL_TEST(Entity.TEST, "test_manual"),
     GHERKIN_TEST(Entity.TEST, "gherkin_test"),
+    AUTOMATED_TEST(Entity.TEST, "test_automated"),
+    TEST_SUITE(Entity.TEST, "test_suite"),
+
 
     TASK("tasks", "task"),
     PHASE("phases", "phases"),
@@ -112,8 +115,6 @@ public enum Entity {
 
         return null;
     }
-
-
     public static Set<Entity> getSubtypes(Entity entity) {
         if (entity.isSubtype()) {
             return Collections.emptySet();

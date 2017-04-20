@@ -4,7 +4,6 @@ import com.hpe.adm.nga.sdk.model.EntityModel;
 import com.hpe.adm.nga.sdk.model.FieldModel;
 import com.hpe.adm.nga.sdk.model.MultiReferenceFieldModel;
 import com.hpe.adm.nga.sdk.model.ReferenceFieldModel;
-import com.hpe.adm.nga.sdk.network.OctaneHttpResponse;
 import com.hpe.adm.octane.services.filtering.Entity;
 import com.hpe.adm.octane.services.ui.FormField;
 import com.hpe.adm.octane.services.ui.FormLayout;
@@ -157,12 +156,11 @@ public class Util {
         return createQueryForMultipleValues(queryParamName, (String[]) queryParamValues.toArray());
     }
 
-    public static List<FormLayout> parseJsonWithFormLayoutData(OctaneHttpResponse response) {
-        String json = response.getContent();
-        logger.debug(String.format("Response_Json: %s", new Object[]{json}));
+    public static List<FormLayout> parseJsonWithFormLayoutData(String responseJson) {
+        logger.debug("Parsing JSON response");
         List<FormLayout> entitiesFormLayout = new ArrayList<>();
-        if (response.isSuccessStatusCode() && json != null && !json.isEmpty()) {
-            JSONTokener tokener = new JSONTokener(json);
+        if (responseJson != null && !responseJson.isEmpty()) {
+            JSONTokener tokener = new JSONTokener(responseJson);
             JSONObject jsonObj = new JSONObject(tokener);
             JSONArray data = jsonObj.getJSONArray("data");
             for (int i = 0; i < data.length(); i++) {
@@ -170,13 +168,14 @@ public class Util {
                 FormLayout formLayout = new FormLayout();
                 formLayout.setFormId(Long.valueOf(tempJsonObj.getString("id")));
                 formLayout.setFormName(tempJsonObj.getString("name"));
-                formLayout.setEntity(Entity.getEntityType(tempJsonObj.getString("entity_type"), tempJsonObj.getString("entity_subtype")));
+                formLayout.setEntity(Entity.getEntityType(tempJsonObj.getString("entity_type"), tempJsonObj.optString("entity_subtype")));
                 formLayout.setFormLayoutSections(getFormLayoutSections(tempJsonObj.getJSONObject("body").getJSONObject("layout").getJSONArray("sections")));
                 formLayout.setDefaultNew(tempJsonObj.getJSONObject("body").getBoolean("isDefaultForNew"));
                 formLayout.setDefault(tempJsonObj.getJSONObject("body").getBoolean("isDefault"));
                 entitiesFormLayout.add(formLayout);
             }
         }
+        logger.debug("Parsing is DONE, and the result has: " + entitiesFormLayout.size() + " elements");
         return entitiesFormLayout;
     }
 

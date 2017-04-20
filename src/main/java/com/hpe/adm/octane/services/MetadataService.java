@@ -13,16 +13,16 @@ import com.hpe.adm.octane.services.connection.OctaneProvider;
 import com.hpe.adm.octane.services.exception.ServiceRuntimeException;
 import com.hpe.adm.octane.services.filtering.Entity;
 import com.hpe.adm.octane.services.ui.FormLayout;
+import com.hpe.adm.octane.services.util.OctaneSystemDefaultForms;
 import com.hpe.adm.octane.services.util.OctaneUrlBuilder;
 import com.hpe.adm.octane.services.util.Util;
 import org.apache.http.client.utils.URIBuilder;
 
 import java.io.UnsupportedEncodingException;
-import java.util.Arrays;
-import java.util.Collection;
-import java.util.List;
-import java.util.Map;
+import java.net.URISyntaxException;
+import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.function.Function;
 import java.util.stream.Collectors;
 
 import static com.hpe.adm.octane.services.util.Util.createQueryForMultipleValues;
@@ -36,6 +36,7 @@ public class MetadataService {
     @Inject
     private ConnectionSettingsProvider connectionSettingsProvider;
     private Map<Entity, Collection<FieldMetadata>> cache;
+    private Map<Entity, FormLayout> octaneFormsCache;
 
     public boolean hasFields(Entity entityType, String... fieldNames) {
 
@@ -79,29 +80,65 @@ public class MetadataService {
         connectionSettingsProvider.addChangeHandler(() -> cache.clear());
     }
 
-    public List<FormLayout> getFormLayoutForAllEntityTypes() throws UnsupportedEncodingException {
+    public Map<Entity, FormLayout> getFormLayoutForAllEntityTypes() throws UnsupportedEncodingException {
+        if (null == octaneFormsCache) {
+            connectionSettingsProvider.addChangeHandler(() -> octaneFormsCache.clear());
+            octaneFormsCache = retrieveFormsFromOctane();
+        }
+        if (octaneFormsCache.isEmpty()) {
+            octaneFormsCache = retrieveFormsFromOctane();
+        }
+        return octaneFormsCache;
+    }
+
+    public FormLayout getFormLayoutForSpecificEntityType(Entity entityType) throws UnsupportedEncodingException {
+        FormLayout entityOctaneForm = getFormLayoutForAllEntityTypes().get(entityType);
+        if (null == entityOctaneForm) {
+            entityOctaneForm = getSystemDefinedFormsForEntity(entityType);
+        }
+        return entityOctaneForm;
+    }
+
+    private Map<Entity, FormLayout> retrieveFormsFromOctane() throws UnsupportedEncodingException {
         ConnectionSettings connectionSettings = connectionSettingsProvider.getConnectionSettings();
         OctaneHttpClient httpClient = httpClientProvider.geOctaneHttpClient();
-        OctaneHttpResponse response = null;
         if (null == httpClient) {
             throw new ServiceRuntimeException("Failed to authenticate with current connection settings");
         }
-
+        OctaneHttpResponse response;
         URIBuilder uriBuilder = OctaneUrlBuilder.buildOctaneUri(connectionSettings, "form_layouts");
         uriBuilder.setParameter("query", createQueryForMultipleValues("entity_type", Arrays.asList(
                 "run", "defect", "quality_story",
                 "epic", "story", "run_suite",
                 "run_manual", "run_automated", "test",
                 "test_automated", "test_suite", "gherkin_test",
-                "test_manual", "work_item", "user_tag")));
+                "test_manual", "work_item", "user_tag", "task")));
+
+        OctaneHttpRequest request = null;
         try {
-            OctaneHttpRequest request = new OctaneHttpRequest.GetOctaneHttpRequest(uriBuilder.build().toASCIIString());
-            response = httpClient.execute(request);
-        } catch (Exception ex) {
-            throw new ServiceRuntimeException(ex);
+            request = new OctaneHttpRequest.GetOctaneHttpRequest(uriBuilder.build().toASCIIString());
+        } catch (URISyntaxException e) {
+            e.printStackTrace();
         }
-        return Util.parseJsonWithFormLayoutData(response);
+        response = httpClient.execute(request);
+        List<FormLayout> formList = new ArrayList<>();
+        if (response.isSuccessStatusCode()) {
+            formList = Util.parseJsonWithFormLayoutData(response.getContent());
+        }
+
+        return formList
+                .stream()
+                .filter(FormLayout::isDefault)
+                .collect(Collectors.toMap(FormLayout::getEntity, Function.identity()));
     }
 
-
+    private FormLayout getSystemDefinedFormsForEntity(Entity entityType) {
+        Map<Entity, FormLayout> formsMap;
+        List<FormLayout> formList = Util.parseJsonWithFormLayoutData(OctaneSystemDefaultForms.ALL);
+        formsMap = formList
+                .stream()
+                .filter(FormLayout::isDefault)
+                .collect(Collectors.toMap(FormLayout::getEntity, Function.identity()));
+        return formsMap.get(entityType);
+    }
 }

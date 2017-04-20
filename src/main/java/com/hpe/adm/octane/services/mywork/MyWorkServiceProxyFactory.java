@@ -27,7 +27,7 @@ public class MyWorkServiceProxyFactory {
         BooleanSupplier isEvertonP1 = () -> compareServerVersion(OctaneVersion.Operation.EQ, OctaneVersion.EVERTON_P1);
         BooleanSupplier isEvertonP2OrHigher = () -> compareServerVersion(OctaneVersion.Operation.HIGHER_EQ, OctaneVersion.EVERTON_P2);
 
-        ServiceProxyFactory<MyWorkService> myWorkProxy = new ServiceProxyFactory(MyWorkService.class);
+        ServiceProxyFactory<MyWorkService> myWorkProxy = new ServiceProxyFactory<MyWorkService>(MyWorkService.class);
 
         myWorkProxy.addService(isBeforeOrDynamo, dynamoMyWorkService);
         myWorkProxy.addService(isEvertonP1, evertonP1MyWorkService);
