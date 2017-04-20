@@ -10,7 +10,6 @@ public class FormLayout {
     private String formName;
     private List<FormLayoutSection> formLayoutSections;
     private boolean isDefault;
-    private boolean isDefaultNew;
 
     public FormLayout() {
     }
@@ -59,13 +58,5 @@ public class FormLayout {
 
     public void setDefault(boolean aDefault) {
         isDefault = aDefault;
-    }
-
-    public boolean isDefaultNew() {
-        return isDefaultNew;
-    }
-
-    public void setDefaultNew(boolean defaultNew) {
-        isDefaultNew = defaultNew;
     }
 }
