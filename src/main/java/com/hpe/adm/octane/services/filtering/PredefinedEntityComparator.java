@@ -4,12 +4,11 @@ import java.util.Arrays;
 import java.util.Comparator;
 import java.util.List;
 
-import com.hpe.adm.octane.services.filtering.Entity;
-
 public class PredefinedEntityComparator implements Comparator<Entity> {
 
-    private static final List<Entity> predefinedOrder = Arrays.asList(new Entity[] {
-            Entity.USER_STORY,
+    public static PredefinedEntityComparator instance = new PredefinedEntityComparator();
+
+    private static final List<Entity> predefinedOrder = Arrays.asList(Entity.USER_STORY,
             Entity.QUALITY_STORY,
             Entity.DEFECT,
             Entity.TASK,
@@ -17,8 +16,7 @@ public class PredefinedEntityComparator implements Comparator<Entity> {
             Entity.GHERKIN_TEST,
             Entity.TEST_SUITE_RUN,
             Entity.MANUAL_TEST_RUN,
-            Entity.COMMENT
-    });
+            Entity.COMMENT);
 
     @Override
     public int compare(Entity entityLeft, Entity entityRight) {

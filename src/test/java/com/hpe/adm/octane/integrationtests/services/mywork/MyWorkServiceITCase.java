@@ -15,7 +15,8 @@ import org.junit.Test;
 
 import java.util.Arrays;
 import java.util.Collection;
-import java.util.stream.Collectors;
+
+import static com.hpe.adm.octane.TestUtil.printEntities;
 
 /**
  * TODO: The test framework need lots improvement
@@ -90,23 +91,6 @@ public class MyWorkServiceITCase {
         }
     }
 
-    private void printEntities(Collection<EntityModel> entities) {
-        System.out.println("My Work Entities size: " + entities.size());
-        if (entities.size() != 0) {
-            String entitiesString = entities
-                    .stream()
-                    .map(MyWorkUtil::getEntityModelFromUserItem)
-                    .map(em -> {
-                        if (em.getValue("name") != null) {
-                            return em.getValue("name").getValue().toString();
-                        } else if (Entity.COMMENT == Entity.getEntityType(em)) {
-                            return "(Comment)";
-                        }
-                        return "{???}";
-                    })
-                    .collect(Collectors.joining(", "));
-            System.out.println("My Work Entities: " + entitiesString);
-        }
-    }
+
 
 }

@@ -11,16 +11,18 @@ import com.hpe.adm.octane.services.connection.ConnectionSettingsProvider;
 import com.hpe.adm.octane.services.connection.HttpClientProvider;
 import com.hpe.adm.octane.services.exception.ServiceRuntimeException;
 import com.hpe.adm.octane.services.filtering.Entity;
+import com.hpe.adm.octane.services.filtering.PredefinedEntityComparator;
 import org.apache.commons.lang.StringUtils;
 import org.apache.http.client.utils.URIBuilder;
 import org.json.JSONArray;
 import org.json.JSONObject;
 
-import java.util.ArrayList;
-import java.util.Collection;
+import java.util.*;
+import java.util.stream.Collectors;
 
 public class EntitySearchService {
 
+    private static final int DEFAULT_LIMIT = 10;
     private static final String JSON_DATA_NAME = "data";
     private static final String GLOBAL_TEXT_SEARCH_RESULT_TAG = "global_text_search_result";
 
@@ -29,7 +31,27 @@ public class EntitySearchService {
     @Inject
     protected HttpClientProvider httpClientProvider;
 
+    public Collection<EntityModel> searchGlobal(String queryString, int limit, Entity... entity) {
+        Map<Entity, Collection<EntityModel>> result = new LinkedHashMap<>();
+
+        Arrays
+            .stream(entity)
+            .parallel()
+            .forEach(entityType -> result.put(entityType, searchGlobal(queryString, limit, entityType)));
+
+        return result
+                .keySet()
+                .stream()
+                .sorted(PredefinedEntityComparator.instance)
+                .flatMap(key -> result.get(key).stream())
+                .collect(Collectors.toList());
+    }
+
     public Collection<EntityModel> searchGlobal(String queryString, Entity entity) {
+        return searchGlobal(queryString, DEFAULT_LIMIT, entity);
+    }
+
+    public Collection<EntityModel> searchGlobal(String queryString, int limit, Entity entity) {
 
         ConnectionSettings connectionSettings = connectionSettingsProvider.getConnectionSettings();
         //auth
@@ -61,18 +83,11 @@ public class EntitySearchService {
 
 
         uriBuilder.setParameter("text_search", "{\"type\":\"global\",\"text\":\""+queryString+"\"}");
-
+        uriBuilder.setParameter("limit", limit + "");
         uriBuilder.setParameter("order_by","id");
 
         if(entity.isSubtype()) {
-            String queryStr = "\"(";
-            for(Entity subtype : Entity.getSubtypes(entity)){
-                queryStr += "subtype='"+subtype.getSubtypeName()+"'||";
-            }
-            queryStr = queryStr.substring(0, queryStr.length() - 2);
-            queryStr += ")\"";
-
-            uriBuilder.setParameter("query", queryStr);
+            uriBuilder.setParameter("query", "\"((subtype='"+entity.getSubtypeName()+"'))\"");
         }
 
         try {
