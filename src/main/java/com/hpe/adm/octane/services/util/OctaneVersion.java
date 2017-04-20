@@ -115,6 +115,10 @@ public class OctaneVersion implements Comparable<OctaneVersion> {
         return sb.toString();
     }
 
+    public String getVersionString(){
+        return almVersion + "." + octaneVersion;
+    }
+
     private int nullSafeComparator(final Comparable one, final Comparable two) {
         if (one == null && two == null) {
             return 0;
