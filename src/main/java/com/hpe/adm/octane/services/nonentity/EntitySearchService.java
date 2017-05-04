@@ -60,7 +60,7 @@ public class EntitySearchService {
         //auth
         OctaneHttpClient httpClient = httpClientProvider.geOctaneHttpClient();
         if(null == httpClient){
-            throw new ServiceRuntimeException("Failed to authe nticate with current connection settings");
+            throw new ServiceRuntimeException("Failed to authenticate with current connection settings");
         }
 
         URIBuilder uriBuilder = new URIBuilder();
