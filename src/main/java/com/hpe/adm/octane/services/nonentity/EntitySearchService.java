@@ -12,6 +12,7 @@ import com.hpe.adm.octane.services.connection.HttpClientProvider;
 import com.hpe.adm.octane.services.exception.ServiceRuntimeException;
 import com.hpe.adm.octane.services.filtering.Entity;
 import com.hpe.adm.octane.services.filtering.PredefinedEntityComparator;
+import com.hpe.adm.octane.services.util.TextUtil;
 import org.apache.commons.lang.StringUtils;
 import org.apache.http.client.utils.URIBuilder;
 import org.json.JSONArray;
@@ -33,12 +34,13 @@ public class EntitySearchService {
     protected HttpClientProvider httpClientProvider;
 
     public Collection<EntityModel> searchGlobal(String queryString, int limit, Entity... entity) {
+        final String escapedQueryString = TextUtil.escapeText(queryString);
         Map<Entity, Collection<EntityModel>> result = new ConcurrentHashMap<>();
 
         Arrays
             .stream(entity)
             .parallel()
-            .forEach(entityType -> result.put(entityType, searchGlobal(queryString, limit, entityType)));
+            .forEach(entityType -> result.put(entityType, searchGlobal(escapedQueryString , limit, entityType)));
 
         return result
                 .keySet()
@@ -58,7 +60,7 @@ public class EntitySearchService {
         //auth
         OctaneHttpClient httpClient = httpClientProvider.geOctaneHttpClient();
         if(null == httpClient){
-            throw new ServiceRuntimeException("Failed to authenticate with current connection settings");
+            throw new ServiceRuntimeException("Failed to authe nticate with current connection settings");
         }
 
         URIBuilder uriBuilder = new URIBuilder();
