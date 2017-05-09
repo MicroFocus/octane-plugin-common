@@ -75,9 +75,9 @@ public class EntityService {
         if (OctaneVersion.compare(version, OctaneVersion.Operation.HIGHER, OctaneVersion.EVERTON_P2)) {
 
             //Expand is integrated into the fields param
-            final Set<String> expandFields = new HashSet<>();
+            Set<String> expandFields = new HashSet<>();
 
-            if (fields == null) {
+            if (fields != null) {
                 expandFields.addAll(fields);
             }
 
@@ -94,8 +94,12 @@ public class EntityService {
                                             .collect(Collectors.joining(","))
                                     + "}");
                 });
+            }
+
+            if(fields != null || expand != null) {
                 getRequest = getRequest.addFields(expandFields.toArray(new String[]{}));
             }
+
         } else {
             //Separate expand and fields query param
             if (expand != null) {
@@ -110,7 +114,10 @@ public class EntityService {
         return getRequest.execute();
     }
 
-    public Collection<EntityModel> findEntities(String apiEntity, Query.QueryBuilder query, Set<String> fields) {
+    /**
+     * Does not create the subtype match filter for you, like the methods that use {@link Entity} as a param
+     */
+    private Collection<EntityModel> findEntities(String apiEntity, Query.QueryBuilder query, Set<String> fields) {
         EntityList entityList = octaneProvider.getOctane().entityList(apiEntity);
         EntityListService.Get getRequest = entityList.get();
         if (query != null) {

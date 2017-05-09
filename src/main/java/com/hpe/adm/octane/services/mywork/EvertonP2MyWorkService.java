@@ -56,15 +56,19 @@ class EvertonP2MyWorkService implements MyWorkService {
         userItems = sortUserItems(userItems);
         result.addAll(userItems);
 
+        result.addAll(getCommentsAsUserItems());
+
+        return result;
+    }
+
+    private Collection<EntityModel> getCommentsAsUserItems(){
         // Also get comments
         Collection<EntityModel> comments = entityService.findEntities(
                 COMMENT,
                 createUserQuery("mention_user", userService.getCurrentUserId()),
-                fieldListMap.get(COMMENT));
+                metadataService.getFields(Entity.COMMENT));
 
-        result.addAll(MyWorkUtil.wrapCollectionIntoUserItem(comments, -1));
-
-        return result;
+        return MyWorkUtil.wrapCollectionIntoUserItem(comments, -1);
     }
 
     /**
@@ -74,30 +78,20 @@ class EvertonP2MyWorkService implements MyWorkService {
      * @return
      */
     private static Map<String, Set<String>> createExpandFieldsMap(Map<Entity, Set<String>> fieldListMap) {
-
-
         Map<String, Set<String>> result = new HashMap<>();
-
         fieldListMap.keySet().stream().forEach(entity -> {
-
             //Group by parent type if needed (only exception is task), only consider fields for relevant relations
             Entity type = entity.isSubtype() ? entity.getSubtypeOf() : entity;
-
             if (relationFieldTypeMap.values().contains(type)) {
-
                 //get the relation field for this type
                 String fieldName = relationFieldTypeMap.inverse().get(type);
-
                 if (!result.containsKey(fieldName)) {
                     result.put(fieldName, new HashSet<>());
                 }
-
                 //Add the expand clause
                 result.get(fieldName).addAll(fieldListMap.get(entity));
-
             }
         });
-
         return result;
     }
 
