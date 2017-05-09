@@ -1,31 +1,23 @@
 package com.hpe.adm.octane.services.mywork;
 
-import static com.hpe.adm.octane.services.filtering.Entity.COMMENT;
-import static com.hpe.adm.octane.services.mywork.MyWorkUtil.addToMyWorkEntities;
-import static com.hpe.adm.octane.services.mywork.MyWorkUtil.createUserQuery;
-import static com.hpe.adm.octane.services.mywork.MyWorkUtil.getEntityTypeName;
-
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.Map;
-import java.util.Set;
-import java.util.stream.Collectors;
-
+import com.google.common.collect.BiMap;
+import com.google.common.collect.HashBiMap;
 import com.google.inject.Inject;
 import com.hpe.adm.nga.sdk.Query;
 import com.hpe.adm.nga.sdk.QueryMethod;
-import com.hpe.adm.nga.sdk.model.BooleanFieldModel;
-import com.hpe.adm.nga.sdk.model.EntityModel;
-import com.hpe.adm.nga.sdk.model.LongFieldModel;
-import com.hpe.adm.nga.sdk.model.ReferenceFieldModel;
-import com.hpe.adm.nga.sdk.model.StringFieldModel;
+import com.hpe.adm.nga.sdk.model.*;
 import com.hpe.adm.octane.services.EntityService;
+import com.hpe.adm.octane.services.MetadataService;
 import com.hpe.adm.octane.services.UserService;
 import com.hpe.adm.octane.services.connection.OctaneProvider;
 import com.hpe.adm.octane.services.filtering.Entity;
 import com.hpe.adm.octane.services.util.EntityUtil;
+
+import java.util.*;
+import java.util.stream.Collectors;
+
+import static com.hpe.adm.octane.services.filtering.Entity.COMMENT;
+import static com.hpe.adm.octane.services.mywork.MyWorkUtil.*;
 
 class EvertonP2MyWorkService implements MyWorkService {
 
@@ -38,6 +30,17 @@ class EvertonP2MyWorkService implements MyWorkService {
     @Inject
     private OctaneProvider octaneProvider;
 
+    @Inject
+    private MetadataService metadataService;
+
+    private static final BiMap<String, Entity> relationFieldTypeMap = HashBiMap.create();
+    static {
+        relationFieldTypeMap.put("my_follow_items_work_item", Entity.WORK_ITEM);
+        relationFieldTypeMap.put("my_follow_items_task", Entity.TASK);
+        relationFieldTypeMap.put("my_follow_items_test", Entity.TEST);
+        relationFieldTypeMap.put("my_follow_items_run", Entity.TEST_RUN);
+    }
+
     @Override
     public Collection<EntityModel> getMyWork() {
         return getMyWork(new HashMap<>());
@@ -45,23 +48,50 @@ class EvertonP2MyWorkService implements MyWorkService {
 
     @Override
     public Collection<EntityModel> getMyWork(Map<Entity, Set<String>> fieldListMap) {
-
         Collection<EntityModel> result = new ArrayList<>();
 
         Query.QueryBuilder qUser = createUserQuery("user", userService.getCurrentUserId());
 
-        Collection<EntityModel> userItems = entityService.findEntities(Entity.USER_ITEM, qUser, null);
+        Collection<EntityModel> userItems = entityService.findEntities(Entity.USER_ITEM, qUser, metadataService.getFields(Entity.USER_ITEM), createExpandFieldsMap(fieldListMap));
         userItems = sortUserItems(userItems);
         result.addAll(userItems);
 
+        result.addAll(getCommentsAsUserItems());
+
+        return result;
+    }
+
+    private Collection<EntityModel> getCommentsAsUserItems(){
         // Also get comments
         Collection<EntityModel> comments = entityService.findEntities(
                 COMMENT,
                 createUserQuery("mention_user", userService.getCurrentUserId()),
-                fieldListMap.get(COMMENT));
+                metadataService.getFields(Entity.COMMENT));
 
-        result.addAll(MyWorkUtil.wrapCollectionIntoUserItem(comments, -1));
+        return MyWorkUtil.wrapCollectionIntoUserItem(comments, -1);
+    }
 
+    /**
+     * Converts the req fields into an expand clause for user item relations
+     *
+     * @param fieldListMap
+     * @return
+     */
+    private static Map<String, Set<String>> createExpandFieldsMap(Map<Entity, Set<String>> fieldListMap) {
+        Map<String, Set<String>> result = new HashMap<>();
+        fieldListMap.keySet().stream().forEach(entity -> {
+            //Group by parent type if needed (only exception is task), only consider fields for relevant relations
+            Entity type = entity.isSubtype() ? entity.getSubtypeOf() : entity;
+            if (relationFieldTypeMap.values().contains(type)) {
+                //get the relation field for this type
+                String fieldName = relationFieldTypeMap.inverse().get(type);
+                if (!result.containsKey(fieldName)) {
+                    result.put(fieldName, new HashSet<>());
+                }
+                //Add the expand clause
+                result.get(fieldName).addAll(fieldListMap.get(entity));
+            }
+        });
         return result;
     }
 

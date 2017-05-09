@@ -38,25 +38,24 @@ public class MetadataService {
     private Map<Entity, Collection<FieldMetadata>> cache;
     private Map<Entity, FormLayout> octaneFormsCache;
 
-    public boolean hasFields(Entity entityType, String... fieldNames) {
-
+    public Set<String> getFields(Entity entityType) {
         if (cache == null) {
             cache = new ConcurrentHashMap<>();
             init();
         }
-
         Octane octane = octaneProvider.getOctane();
-
         Collection<FieldMetadata> fields;
-
         if (!cache.containsKey(entityType)) {
             fields = octane.metadata().fields(entityType.getEntityName()).execute();
             cache.put(entityType, fields);
         } else {
             fields = cache.get(entityType);
         }
+        return fields.stream().map(FieldMetadata::getName).collect(Collectors.toSet());
+    }
 
-        List<String> responseFieldNames = fields.stream().map(FieldMetadata::getName).collect(Collectors.toList());
+    public boolean hasFields(Entity entityType, String... fieldNames) {
+        Set<String> responseFieldNames = getFields(entityType);
 
         return Arrays.stream(fieldNames)
                 .allMatch(responseFieldNames::contains);
