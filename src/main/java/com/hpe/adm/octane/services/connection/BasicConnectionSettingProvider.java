@@ -3,13 +3,14 @@ package com.hpe.adm.octane.services.connection;
 import java.util.ArrayList;
 import java.util.List;
 
-public class BasicConnectionSettingProvider implements ConnectionSettingsProvider{
+public class BasicConnectionSettingProvider implements ConnectionSettingsProvider {
 
     protected ConnectionSettings connectionSettings = new ConnectionSettings();
 
-    public BasicConnectionSettingProvider(){}
+    public BasicConnectionSettingProvider() {
+    }
 
-    public BasicConnectionSettingProvider(ConnectionSettings connectionSettings){
+    public BasicConnectionSettingProvider(ConnectionSettings connectionSettings) {
         this.connectionSettings = connectionSettings;
     }
 
@@ -20,7 +21,7 @@ public class BasicConnectionSettingProvider implements ConnectionSettingsProvide
         changeHandlers.add(changeHandler);
     }
 
-    private void callChangeHandlers(){
+    private void callChangeHandlers() {
         changeHandlers.forEach(handler -> handler.run());
     }
 
@@ -31,10 +32,8 @@ public class BasicConnectionSettingProvider implements ConnectionSettingsProvide
 
     @Override
     public void setConnectionSettings(ConnectionSettings connectionSettings) {
-        if(!this.connectionSettings.equals(connectionSettings)){
-            this.connectionSettings = connectionSettings;
-            callChangeHandlers();
-        }
+        this.connectionSettings = connectionSettings;
+        callChangeHandlers();
     }
 
 }
