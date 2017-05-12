@@ -9,6 +9,8 @@ import com.hpe.adm.nga.sdk.exception.OctaneException;
 import com.hpe.adm.nga.sdk.model.EntityModel;
 import com.hpe.adm.nga.sdk.model.FieldModel;
 import com.hpe.adm.nga.sdk.model.ReferenceFieldModel;
+import com.hpe.adm.octane.services.nonentity.OctaneVersionService;
+import com.hpe.adm.octane.services.util.OctaneVersion;
 import com.hpe.adm.octane.services.util.Util;
 import com.hpe.adm.octane.services.connection.ConnectionSettingsProvider;
 import com.hpe.adm.octane.services.connection.OctaneProvider;
@@ -21,6 +23,7 @@ import java.awt.*;
 import java.net.URI;
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.stream.Collectors;
 
 import static com.hpe.adm.octane.services.util.Util.getUiDataFromModel;
 
@@ -33,11 +36,18 @@ public class EntityService {
     @Inject
     private ConnectionSettingsProvider connectionSettingsProvider;
 
+    @Inject
+    private OctaneVersionService versionService;
+
     public Collection<EntityModel> findEntities(Entity entity) {
         return findEntities(entity, null, null);
     }
 
     public Collection<EntityModel> findEntities(Entity entity, Query.QueryBuilder query, Set<String> fields) {
+        return findEntities(entity, query, fields, null);
+    }
+
+    public Collection<EntityModel> findEntities(Entity entity, Query.QueryBuilder query, Set<String> fields, Map<String, Set<String>> expand) {
         EntityList entityList = octaneProvider.getOctane().entityList(entity.getApiEntityName());
 
         Query.QueryBuilder queryBuilder = null;
@@ -58,16 +68,56 @@ public class EntityService {
         if (queryBuilder != null) {
             getRequest = getRequest.query(queryBuilder.build());
         }
-        if (fields != null && fields.size() != 0) {
-            getRequest = getRequest.addFields(fields.toArray(new String[]{}));
-        }
-        getRequest.addOrderBy("id", true);
 
-        Collection<EntityModel> col = getRequest.execute();
-        return col;
+        OctaneVersion version = versionService.getOctaneVersion();
+        version.discardBuildNumber();
+
+        if (OctaneVersion.compare(version, OctaneVersion.Operation.HIGHER, OctaneVersion.EVERTON_P2)) {
+
+            //Expand is integrated into the fields param
+            Set<String> expandFields = new HashSet<>();
+
+            if (fields != null) {
+                expandFields.addAll(fields);
+            }
+
+            if (expand != null) {
+                expand.keySet().forEach(relationFieldName -> {
+                    if (expandFields.contains(relationFieldName)) {
+                        expandFields.remove(relationFieldName);
+                    }
+                    //re-add it with expand
+                    expandFields.add(
+                            relationFieldName + "{" +
+                                    expand.get(relationFieldName)
+                                            .stream()
+                                            .collect(Collectors.joining(","))
+                                    + "}");
+                });
+            }
+
+            if(fields != null || expand != null) {
+                getRequest = getRequest.addFields(expandFields.toArray(new String[]{}));
+            }
+
+        } else {
+            //Separate expand and fields query param
+            if (expand != null) {
+                getRequest = getRequest.expand(expand);
+            }
+            if (fields != null && fields.size() != 0) {
+                getRequest = getRequest.addFields(fields.toArray(new String[]{}));
+            }
+        }
+
+        getRequest.addOrderBy("id", true);
+        return getRequest.execute();
     }
 
-    public Collection<EntityModel> findEntities(String apiEntity, Query.QueryBuilder query, Set<String> fields) {
+    /**
+     * Does not create the subtype match filter for you, like the methods that use {@link Entity} as a param
+     */
+    private Collection<EntityModel> findEntities(String apiEntity, Query.QueryBuilder query, Set<String> fields) {
         EntityList entityList = octaneProvider.getOctane().entityList(apiEntity);
         EntityListService.Get getRequest = entityList.get();
         if (query != null) {
@@ -85,8 +135,9 @@ public class EntityService {
     /**
      * Useful when you have to fetch more than one type of entity at the same time
      * This method will make concurrent rest calls for each type of entity (key of the maps)
+     *
      * @param filterCriteria a query builder used for querying the entity type (key of the maps)
-     * @param fieldListMap a map of the fields that will be returned after querying the entity type
+     * @param fieldListMap   a map of the fields that will be returned after querying the entity type
      * @return a map with the result entities organized by entity type
      */
     public Map<Entity, Collection<EntityModel>> concurrentFindEntities(Map<Entity, Query.QueryBuilder> filterCriteria, Map<Entity, Set<String>> fieldListMap) {
@@ -124,7 +175,7 @@ public class EntityService {
                             .at(entityId.intValue())
                             .get();
 
-            if(fields != null && fields.size() != 0){
+            if (fields != null && fields.size() != 0) {
                 get = get.addFields(fields.toArray(new String[]{}));
             }
 
@@ -172,7 +223,7 @@ public class EntityService {
         for (EntityModel transition : transitions) {
             Long tempPhase = Long.valueOf(Util.getUiDataFromModel(transition.getValue("source_phase"), "id"));
             if (currentPhaseId.equals(tempPhase)) {
-                if(transition.getValue("is_primary").getValue().equals(Boolean.TRUE)){
+                if (transition.getValue("is_primary").getValue().equals(Boolean.TRUE)) {
                     possibleTransitions.add(0, transition);
                 } else {
                     possibleTransitions.add(transition);

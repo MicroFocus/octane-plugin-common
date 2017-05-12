@@ -6,6 +6,7 @@ public class OctaneVersion implements Comparable<OctaneVersion> {
     public static final OctaneVersion DYNAMO = new OctaneVersion("12.53.20");
     public static final OctaneVersion EVERTON_P1 = new OctaneVersion("12.53.21");
     public static final OctaneVersion EVERTON_P2 = new OctaneVersion("12.53.22");
+    public static final OctaneVersion EVERTON_P3 = new OctaneVersion("12.55.3");
 
     private String almVersion;
     private Integer octaneVersion;
