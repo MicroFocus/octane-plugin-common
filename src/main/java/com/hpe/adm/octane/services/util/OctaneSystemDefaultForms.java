@@ -546,6 +546,83 @@ public class OctaneSystemDefaultForms {
             "    },\n" +
             "    {\n" +
             "      \"type\": \"form_layout\",\n" +
+            "      \"creation_time\": \"2017-04-19T10:19:52Z\",\n" +
+            "      \"entity_type\": \"run\",\n" +
+            "      \"version_stamp\": 1,\n" +
+            "      \"entity_subtype\": \"run_suite\",\n" +
+            "      \"name\": \"System defined for Edit\",\n" +
+            "      \"id\": \"1027\",\n" +
+            "      \"body\": {\n" +
+            "        \"layout\": {\n" +
+            "          \"sections\": [\n" +
+            "            {\n" +
+            "              \"titleTranslationKey\": \"platform-form-designer-service-overview-section\",\n" +
+            "              \"fields\": [\n" +
+            "                {\n" +
+            "                  \"name\": \"name\",\n" +
+            "                  \"size\": \"medium\"\n" +
+            "                },\n" +
+            "                {\n" +
+            "                  \"name\": \"native_status\",\n" +
+            "                  \"size\": \"medium\"\n" +
+            "                },\n" +
+            "                {\n" +
+            "                  \"name\": \"author\",\n" +
+            "                  \"size\": \"medium\"\n" +
+            "                },\n" +
+            "                {\n" +
+            "                  \"name\": \"run_by\",\n" +
+            "                  \"size\": \"medium\"\n" +
+            "                },\n" +
+            "                {\n" +
+            "                  \"name\": \"started\",\n" +
+            "                  \"size\": \"medium\"\n" +
+            "                },\n" +
+            "                {\n" +
+            "                  \"name\": \"duration\",\n" +
+            "                  \"size\": \"medium\"\n" +
+            "                },\n" +
+            "                {\n" +
+            "                  \"name\": \"steps_num\",\n" +
+            "                  \"size\": \"medium\"\n" +
+            "                },\n" +
+            "                {\n" +
+            "                  \"name\": \"release\",\n" +
+            "                  \"size\": \"medium\"\n" +
+            "                },\n" +
+            "                {\n" +
+            "                  \"name\": \"previous_release\",\n" +
+            "                  \"size\": \"medium\"\n" +
+            "                },\n" +
+            "                {\n" +
+            "                  \"name\": \"draft_run\",\n" +
+            "                  \"size\": \"medium\"\n" +
+            "                },\n" +
+            "                {\n" +
+            "                  \"name\": \"last_modified\",\n" +
+            "                  \"size\": \"medium\"\n" +
+            "                },\n" +
+            "                {\n" +
+            "                  \"name\": \"taxonomies\",\n" +
+            "                  \"size\": \"large\"\n" +
+            "                },\n" +
+            "                {\n" +
+            "                  \"name\": \"description\",\n" +
+            "                  \"size\": \"large\"\n" +
+            "                }\n" +
+            "              ],\n" +
+            "              \"title\": \"General\"\n" +
+            "            }\n" +
+            "          ]\n" +
+            "        },\n" +
+            "        \"isDefault\": true,\n" +
+            "        \"isDefaultForNew\": true,\n" +
+            "        \"layoutKeyToOverride\": \"user.default.run.run_suite.0\"\n" +
+            "      },\n" +
+            "      \"last_modified\": \"2017-04-19T10:19:52Z\"\n" +
+            "    },\n" +
+            "    {\n" +
+            "      \"type\": \"form_layout\",\n" +
             "      \"creation_time\": \"2017-04-19T10:19:56Z\",\n" +
             "      \"entity_type\": \"run\",\n" +
             "      \"version_stamp\": 4,\n" +
