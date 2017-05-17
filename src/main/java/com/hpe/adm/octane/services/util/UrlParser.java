@@ -9,9 +9,10 @@ import java.net.URI;
 import java.net.URISyntaxException;
 import java.net.URL;
 
-import static com.hpe.adm.octane.services.util.Constants.INVALID_URL_FORMAT_MESSAGE;
-
 public class UrlParser {
+
+    private static final String INVALID_URL_FORMAT_MESSAGE = "Given server URL is not valid.";
+
     public static ConnectionSettings resolveConnectionSettings(String url, String userName, String password) throws ServiceException {
 
         ConnectionSettings connectionSettings = new ConnectionSettings();
