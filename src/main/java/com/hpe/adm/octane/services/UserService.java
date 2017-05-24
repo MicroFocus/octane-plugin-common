@@ -1,11 +1,11 @@
 package com.hpe.adm.octane.services;
 
 import com.google.inject.Inject;
-import com.hpe.adm.nga.sdk.EntityList;
 import com.hpe.adm.nga.sdk.Octane;
-import com.hpe.adm.nga.sdk.Query;
-import com.hpe.adm.nga.sdk.QueryMethod;
+import com.hpe.adm.nga.sdk.entities.EntityList;
 import com.hpe.adm.nga.sdk.model.EntityModel;
+import com.hpe.adm.nga.sdk.query.Query;
+import com.hpe.adm.nga.sdk.query.QueryMethod;
 import com.hpe.adm.octane.services.connection.ConnectionSettings;
 import com.hpe.adm.octane.services.connection.ConnectionSettingsProvider;
 import com.hpe.adm.octane.services.connection.OctaneProvider;

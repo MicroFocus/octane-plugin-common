@@ -5,14 +5,14 @@ import com.google.common.collect.BiMap;
 import com.google.common.collect.HashBiMap;
 import com.google.common.collect.Lists;
 import com.google.inject.Inject;
-import com.hpe.adm.nga.sdk.EntityListService;
 import com.hpe.adm.nga.sdk.Octane;
-import com.hpe.adm.nga.sdk.Query;
-import com.hpe.adm.nga.sdk.QueryMethod;
+import com.hpe.adm.nga.sdk.entities.GetEntities;
 import com.hpe.adm.nga.sdk.model.EntityModel;
 import com.hpe.adm.nga.sdk.model.FieldModel;
 import com.hpe.adm.nga.sdk.model.ReferenceFieldModel;
 import com.hpe.adm.nga.sdk.model.StringFieldModel;
+import com.hpe.adm.nga.sdk.query.Query;
+import com.hpe.adm.nga.sdk.query.QueryMethod;
 import com.hpe.adm.octane.services.connection.OctaneProvider;
 import com.hpe.adm.octane.services.exception.ServiceRuntimeException;
 import com.hpe.adm.octane.services.filtering.Entity;
@@ -71,7 +71,7 @@ public class CommentService {
     private Collection<EntityModel> getComments(String referenceFieldName, String id){
         Octane octane = octaneProvider.getOctane();
 
-        EntityListService.Get get = octane.entityList(Entity.COMMENT.getApiEntityName()).get();
+        GetEntities get = octane.entityList(Entity.COMMENT.getApiEntityName()).get();
 
         Query query =  Query.statement(referenceFieldName, QueryMethod.EqualTo,
                  Query.statement("id", QueryMethod.EqualTo, id)).build();

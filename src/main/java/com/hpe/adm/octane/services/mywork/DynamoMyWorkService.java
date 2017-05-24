@@ -2,9 +2,9 @@ package com.hpe.adm.octane.services.mywork;
 
 import com.google.inject.Inject;
 import com.hpe.adm.nga.sdk.Octane;
-import com.hpe.adm.nga.sdk.Query;
 import com.hpe.adm.nga.sdk.model.EntityModel;
 import com.hpe.adm.nga.sdk.model.MultiReferenceFieldModel;
+import com.hpe.adm.nga.sdk.query.Query;
 import com.hpe.adm.octane.services.EntityService;
 import com.hpe.adm.octane.services.UserService;
 import com.hpe.adm.octane.services.connection.OctaneProvider;

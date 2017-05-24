@@ -5,11 +5,11 @@ import com.google.inject.Inject;
 import com.google.inject.Injector;
 import com.hpe.adm.octane.integrationtests.util.ConfigurationUtil;
 import com.hpe.adm.octane.integrationtests.util.EntityGenerator;
-import com.hpe.adm.octane.services.connection.OctaneProvider;
-import com.hpe.adm.octane.services.di.ServiceModule;
 import com.hpe.adm.octane.services.connection.BasicConnectionSettingProvider;
 import com.hpe.adm.octane.services.connection.ConnectionSettings;
 import com.hpe.adm.octane.services.connection.ConnectionSettingsProvider;
+import com.hpe.adm.octane.services.connection.OctaneProvider;
+import com.hpe.adm.octane.services.di.ServiceModule;
 import org.junit.Before;
 
 /**

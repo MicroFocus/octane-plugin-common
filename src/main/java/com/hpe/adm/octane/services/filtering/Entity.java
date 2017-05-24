@@ -1,8 +1,9 @@
 package com.hpe.adm.octane.services.filtering;
 
-import com.hpe.adm.nga.sdk.Query;
-import com.hpe.adm.nga.sdk.QueryMethod;
+
 import com.hpe.adm.nga.sdk.model.EntityModel;
+import com.hpe.adm.nga.sdk.query.Query;
+import com.hpe.adm.nga.sdk.query.QueryMethod;
 
 import java.util.Collections;
 import java.util.HashSet;

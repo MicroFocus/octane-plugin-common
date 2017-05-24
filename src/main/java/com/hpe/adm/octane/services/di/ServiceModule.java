@@ -14,8 +14,8 @@ import com.hpe.adm.octane.services.connection.ConnectionSettings;
 import com.hpe.adm.octane.services.connection.ConnectionSettingsProvider;
 import com.hpe.adm.octane.services.connection.HttpClientProvider;
 import com.hpe.adm.octane.services.connection.OctaneProvider;
-import com.hpe.adm.octane.services.mywork.MyWorkServiceProxyFactory;
 import com.hpe.adm.octane.services.mywork.MyWorkService;
+import com.hpe.adm.octane.services.mywork.MyWorkServiceProxyFactory;
 import com.hpe.adm.octane.services.util.ClientType;
 
 public class ServiceModule extends AbstractModule {
@@ -24,10 +24,10 @@ public class ServiceModule extends AbstractModule {
 
     protected final Supplier<Injector> injectorSupplier;
 
-    private Octane                     octane;
+    private Octane octane;
     private ConnectionSettings         octaneProviderPreviousConnectionSettings = new ConnectionSettings();
 
-    private OctaneHttpClient           octaneHttpClient;
+    private OctaneHttpClient octaneHttpClient;
     private ConnectionSettings         httpClientPreviousConnectionSettings     = new ConnectionSettings();
 
     public ServiceModule(ConnectionSettingsProvider connectionSettingsProvider) {

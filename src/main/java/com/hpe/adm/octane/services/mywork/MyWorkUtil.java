@@ -1,11 +1,12 @@
 package com.hpe.adm.octane.services.mywork;
 
-import com.hpe.adm.nga.sdk.Query;
-import com.hpe.adm.nga.sdk.QueryMethod;
+
 import com.hpe.adm.nga.sdk.model.EntityModel;
 import com.hpe.adm.nga.sdk.model.LongFieldModel;
 import com.hpe.adm.nga.sdk.model.ReferenceFieldModel;
 import com.hpe.adm.nga.sdk.model.StringFieldModel;
+import com.hpe.adm.nga.sdk.query.Query;
+import com.hpe.adm.nga.sdk.query.QueryMethod;
 import com.hpe.adm.octane.services.exception.ServiceRuntimeException;
 import com.hpe.adm.octane.services.filtering.Entity;
 import com.hpe.adm.octane.services.util.EntityUtil;

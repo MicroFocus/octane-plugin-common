@@ -1,23 +1,24 @@
 package com.hpe.adm.octane.services;
 
 import com.google.inject.Inject;
-import com.hpe.adm.nga.sdk.EntityList;
-import com.hpe.adm.nga.sdk.EntityListService;
-import com.hpe.adm.nga.sdk.Query;
-import com.hpe.adm.nga.sdk.QueryMethod;
+import com.hpe.adm.nga.sdk.entities.EntityList;
+import com.hpe.adm.nga.sdk.entities.GetEntities;
+import com.hpe.adm.nga.sdk.entities.GetEntity;
 import com.hpe.adm.nga.sdk.exception.OctaneException;
 import com.hpe.adm.nga.sdk.model.EntityModel;
 import com.hpe.adm.nga.sdk.model.FieldModel;
 import com.hpe.adm.nga.sdk.model.ReferenceFieldModel;
-import com.hpe.adm.octane.services.nonentity.OctaneVersionService;
-import com.hpe.adm.octane.services.util.OctaneVersion;
-import com.hpe.adm.octane.services.util.Util;
+import com.hpe.adm.nga.sdk.query.Query;
+import com.hpe.adm.nga.sdk.query.QueryMethod;
 import com.hpe.adm.octane.services.connection.ConnectionSettingsProvider;
 import com.hpe.adm.octane.services.connection.OctaneProvider;
 import com.hpe.adm.octane.services.exception.ServiceException;
 import com.hpe.adm.octane.services.filtering.Entity;
+import com.hpe.adm.octane.services.nonentity.OctaneVersionService;
+import com.hpe.adm.octane.services.util.OctaneVersion;
 import com.hpe.adm.octane.services.util.SdkUtil;
 import com.hpe.adm.octane.services.util.UrlParser;
+import com.hpe.adm.octane.services.util.Util;
 
 import java.awt.*;
 import java.net.URI;
@@ -64,7 +65,7 @@ public class EntityService {
             }
         }
 
-        EntityListService.Get getRequest = entityList.get();
+        GetEntities getRequest = entityList.get();
         if (queryBuilder != null) {
             getRequest = getRequest.query(queryBuilder.build());
         }
@@ -103,10 +104,10 @@ public class EntityService {
         } else {
             //Separate expand and fields query param
             if (expand != null) {
-                getRequest = getRequest.expand(expand);
+                //TODO: PRIVATE EXTENSION getRequest = getRequest.expand(expand);
             }
             if (fields != null && fields.size() != 0) {
-                getRequest = getRequest.addFields(fields.toArray(new String[]{}));
+                //TODO: PRIVATE EXTENSION getRequest = getRequest.addFields(fields.toArray(new String[]{}));
             }
         }
 
@@ -119,7 +120,7 @@ public class EntityService {
      */
     private Collection<EntityModel> findEntities(String apiEntity, Query.QueryBuilder query, Set<String> fields) {
         EntityList entityList = octaneProvider.getOctane().entityList(apiEntity);
-        EntityListService.Get getRequest = entityList.get();
+        GetEntities getRequest = entityList.get();
         if (query != null) {
             getRequest = getRequest.query(query.build());
         }
@@ -169,7 +170,7 @@ public class EntityService {
      */
     public EntityModel findEntity(Entity entityType, Long entityId, Set<String> fields) throws ServiceException {
         try {
-            EntityListService.Entities.Get get =
+            GetEntity get =
                     octaneProvider.getOctane()
                             .entityList(entityType.getApiEntityName())
                             .at(entityId.intValue())

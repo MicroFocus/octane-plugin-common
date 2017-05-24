@@ -6,7 +6,7 @@
 
     <groupId>com.hpe.adm.plugins</groupId>
     <artifactId>octane-plugin-common</artifactId>
-    <version>1.2</version>
+    <version>1.3</version>
     <packaging>jar</packaging>
 
     <properties>
@@ -17,7 +17,7 @@
         <dependency>
             <groupId>com.hpe.adm.nga.sdk</groupId>
             <artifactId>sdk-src</artifactId>
-            <version>12.53.20-EXT-SNAPSHOT</version>
+            <version>12.53.21-SNAPSHOT</version>
         </dependency>
         <dependency>
             <groupId>org.jsoup</groupId>

@@ -1,8 +1,8 @@
 package com.hpe.adm.octane.services.mywork;
 
 import com.google.inject.Inject;
-import com.hpe.adm.nga.sdk.Query;
-import com.hpe.adm.nga.sdk.QueryMethod;
+import com.hpe.adm.nga.sdk.query.Query;
+import com.hpe.adm.nga.sdk.query.QueryMethod;
 import com.hpe.adm.octane.services.UserService;
 import com.hpe.adm.octane.services.filtering.Entity;
 

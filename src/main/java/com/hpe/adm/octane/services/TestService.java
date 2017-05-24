@@ -1,10 +1,11 @@
 package com.hpe.adm.octane.services;
 
+
 import com.hpe.adm.nga.sdk.Octane;
-import com.hpe.adm.nga.sdk.Query;
-import com.hpe.adm.nga.sdk.QueryMethod;
 import com.hpe.adm.nga.sdk.authentication.SimpleUserAuthentication;
 import com.hpe.adm.nga.sdk.exception.OctaneException;
+import com.hpe.adm.nga.sdk.query.Query;
+import com.hpe.adm.nga.sdk.query.QueryMethod;
 import com.hpe.adm.octane.services.connection.ConnectionSettings;
 import com.hpe.adm.octane.services.exception.ServiceException;
 import com.hpe.adm.octane.services.filtering.Entity;
