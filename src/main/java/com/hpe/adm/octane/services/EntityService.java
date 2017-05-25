@@ -5,6 +5,7 @@ import com.hpe.adm.nga.sdk.entities.EntityList;
 import com.hpe.adm.nga.sdk.entities.GetEntities;
 import com.hpe.adm.nga.sdk.entities.GetEntity;
 import com.hpe.adm.nga.sdk.exception.OctaneException;
+import com.hpe.adm.nga.sdk.extension.entities.ExtendedGetEntities;
 import com.hpe.adm.nga.sdk.model.EntityModel;
 import com.hpe.adm.nga.sdk.model.FieldModel;
 import com.hpe.adm.nga.sdk.model.ReferenceFieldModel;
@@ -104,10 +105,10 @@ public class EntityService {
         } else {
             //Separate expand and fields query param
             if (expand != null) {
-                //TODO: PRIVATE EXTENSION getRequest = getRequest.expand(expand);
+                getRequest = ((ExtendedGetEntities) getRequest).expand(expand);
             }
             if (fields != null && fields.size() != 0) {
-                //TODO: PRIVATE EXTENSION getRequest = getRequest.addFields(fields.toArray(new String[]{}));
+                getRequest = getRequest.addFields(fields.toArray(new String[]{}));
             }
         }
 

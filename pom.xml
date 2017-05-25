@@ -15,8 +15,8 @@
 
     <dependencies>
         <dependency>
-            <groupId>com.hpe.adm.nga.sdk</groupId>
-            <artifactId>sdk-src</artifactId>
+            <groupId>com.hpe.adm.nga.sdk.extension</groupId>
+            <artifactId>sdk-extension-src</artifactId>
             <version>12.53.21-SNAPSHOT</version>
         </dependency>
         <dependency>

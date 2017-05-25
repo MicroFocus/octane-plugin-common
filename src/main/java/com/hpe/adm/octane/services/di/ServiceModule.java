@@ -8,6 +8,7 @@ import com.google.inject.Injector;
 import com.google.inject.Provides;
 import com.hpe.adm.nga.sdk.Octane;
 import com.hpe.adm.nga.sdk.authentication.SimpleUserAuthentication;
+import com.hpe.adm.nga.sdk.extension.OctaneExtensionUtil;
 import com.hpe.adm.nga.sdk.network.OctaneHttpClient;
 import com.hpe.adm.nga.sdk.network.google.GoogleHttpClient;
 import com.hpe.adm.octane.services.connection.ConnectionSettings;
@@ -25,14 +26,22 @@ public class ServiceModule extends AbstractModule {
     protected final Supplier<Injector> injectorSupplier;
 
     private Octane octane;
-    private ConnectionSettings         octaneProviderPreviousConnectionSettings = new ConnectionSettings();
+    private ConnectionSettings octaneProviderPreviousConnectionSettings = new ConnectionSettings();
 
     private OctaneHttpClient octaneHttpClient;
-    private ConnectionSettings         httpClientPreviousConnectionSettings     = new ConnectionSettings();
+    private ConnectionSettings httpClientPreviousConnectionSettings = new ConnectionSettings();
 
     public ServiceModule(ConnectionSettingsProvider connectionSettingsProvider) {
         this.connectionSettingsProvider = connectionSettingsProvider;
         injectorSupplier = Suppliers.memoize(() -> Guice.createInjector(this));
+
+        OctaneExtensionUtil.enable();
+
+        //Reset in case of connection settings change
+        connectionSettingsProvider.addChangeHandler(()->{
+            octane = null;
+            octaneHttpClient = null;
+        });
     }
 
     @Override
