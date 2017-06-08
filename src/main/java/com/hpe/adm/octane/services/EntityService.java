@@ -216,7 +216,7 @@ public class EntityService {
      * @param currentPhaseId
      * @return
      */
-    public Collection<EntityModel> findPossibleTransitionFromCurrentPhase(Entity entityType, Long currentPhaseId) {
+    public Collection<EntityModel> findPossibleTransitionFromCurrentPhase(Entity entityType, String currentPhaseId) {
         Set<String> fields = new HashSet<>();
         fields.add("source_phase");
         fields.add("target_phase");
@@ -236,7 +236,7 @@ public class EntityService {
                 Query.statement("entity", QueryMethod.EqualTo, entityName), fields);
 
         for (EntityModel transition : transitions) {
-            Long tempPhase = Long.valueOf(Util.getUiDataFromModel(transition.getValue("source_phase"), "id"));
+            String tempPhase = Util.getUiDataFromModel(transition.getValue("source_phase"), "id");
             if (currentPhaseId.equals(tempPhase)) {
                 if (transition.getValue("is_primary").getValue().equals(Boolean.TRUE)) {
                     possibleTransitions.add(0, transition);
