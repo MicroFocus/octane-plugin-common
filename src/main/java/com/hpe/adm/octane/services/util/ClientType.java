@@ -44,7 +44,6 @@ public enum ClientType {
     IT_PUBLIC_INTERNAL(AccessLevelValue.PUBLIC_INTERNAL),
     IT_PROTECTED(AccessLevelValue.PROTECTED);
 
-
     public boolean isUIClient() {
         return this == HPE_MQM_UI || this == HPE_MQM_MOBILE;
     }

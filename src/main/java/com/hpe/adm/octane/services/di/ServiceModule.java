@@ -34,6 +34,12 @@ import com.hpe.adm.octane.services.util.ClientType;
 
 public class ServiceModule extends AbstractModule {
 
+    /**
+     * Client type header to be used by all rest calls by the SDK
+     * Changing the client type might restrict/permit access to certain server API
+     */
+    public static final ClientType CLIENT_TYPE = ClientType.HPE_REST_API_TECH_PREVIEW;
+
     private ConnectionSettingsProvider connectionSettingsProvider;
 
     protected final Supplier<Injector> injectorSupplier;
@@ -81,7 +87,7 @@ public class ServiceModule extends AbstractModule {
             ConnectionSettings currentConnectionSettings = connectionSettingsProvider.getConnectionSettings();
             if (!currentConnectionSettings.equals(octaneProviderPreviousConnectionSettings) || octane == null) {
                 octane = new Octane.Builder(new SimpleUserAuthentication(currentConnectionSettings.getUserName(),
-                        currentConnectionSettings.getPassword(), ClientType.HPE_REST_API_TECH_PREVIEW.name()))
+                        currentConnectionSettings.getPassword(), CLIENT_TYPE.name()))
                                 .Server(currentConnectionSettings.getBaseUrl())
                                 .sharedSpace(currentConnectionSettings.getSharedSpaceId())
                                 .workSpace(currentConnectionSettings.getWorkspaceId())
@@ -102,7 +108,7 @@ public class ServiceModule extends AbstractModule {
                 httpClientPreviousConnectionSettings = currentConnectionSettings;
             }
             SimpleUserAuthentication userAuthentication = new SimpleUserAuthentication(currentConnectionSettings.getUserName(),
-                    currentConnectionSettings.getPassword(), ClientType.HPE_REST_API_TECH_PREVIEW.name());
+                    currentConnectionSettings.getPassword(), CLIENT_TYPE.name());
             octaneHttpClient.authenticate(userAuthentication);
 
             return octaneHttpClient;

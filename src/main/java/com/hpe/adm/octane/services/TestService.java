@@ -20,9 +20,9 @@ import com.hpe.adm.nga.sdk.exception.OctaneException;
 import com.hpe.adm.nga.sdk.query.Query;
 import com.hpe.adm.nga.sdk.query.QueryMethod;
 import com.hpe.adm.octane.services.connection.ConnectionSettings;
+import com.hpe.adm.octane.services.di.ServiceModule;
 import com.hpe.adm.octane.services.exception.ServiceException;
 import com.hpe.adm.octane.services.filtering.Entity;
-import com.hpe.adm.octane.services.util.ClientType;
 import com.hpe.adm.octane.services.util.SdkUtil;
 
 import java.net.HttpURLConnection;
@@ -36,7 +36,7 @@ public class TestService {
 
     public Octane getOctane(ConnectionSettings connectionSettings){
         Octane octane = new Octane.Builder(new SimpleUserAuthentication(connectionSettings.getUserName(),
-                connectionSettings.getPassword(), ClientType.HPE_MQM_UI.name()))
+                connectionSettings.getPassword(), ServiceModule.CLIENT_TYPE.name()))
                 .Server(connectionSettings.getBaseUrl())
                 .sharedSpace(connectionSettings.getSharedSpaceId())
                 .workSpace(connectionSettings.getWorkspaceId())
