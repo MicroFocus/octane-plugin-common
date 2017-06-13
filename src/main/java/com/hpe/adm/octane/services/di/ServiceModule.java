@@ -81,7 +81,7 @@ public class ServiceModule extends AbstractModule {
             ConnectionSettings currentConnectionSettings = connectionSettingsProvider.getConnectionSettings();
             if (!currentConnectionSettings.equals(octaneProviderPreviousConnectionSettings) || octane == null) {
                 octane = new Octane.Builder(new SimpleUserAuthentication(currentConnectionSettings.getUserName(),
-                        currentConnectionSettings.getPassword(), ClientType.HPE_MQM_UI.name()))
+                        currentConnectionSettings.getPassword(), ClientType.HPE_REST_API_TECH_PREVIEW.name()))
                                 .Server(currentConnectionSettings.getBaseUrl())
                                 .sharedSpace(currentConnectionSettings.getSharedSpaceId())
                                 .workSpace(currentConnectionSettings.getWorkspaceId())
@@ -102,7 +102,7 @@ public class ServiceModule extends AbstractModule {
                 httpClientPreviousConnectionSettings = currentConnectionSettings;
             }
             SimpleUserAuthentication userAuthentication = new SimpleUserAuthentication(currentConnectionSettings.getUserName(),
-                    currentConnectionSettings.getPassword(), ClientType.HPE_MQM_UI.name());
+                    currentConnectionSettings.getPassword(), ClientType.HPE_REST_API_TECH_PREVIEW.name());
             octaneHttpClient.authenticate(userAuthentication);
 
             return octaneHttpClient;
