@@ -105,10 +105,23 @@ public enum Entity {
                     }
                 }
             }
+
+            //ClientType.HPE_REST_API_TECH_PREVIEW returns a subtype string in the type field, very cool
+            //Try searching that way too
+            String subtype = entityModel.getValue("type").getValue().toString();
+            //try finding the subtype
+            if (subtype != null) {
+                for (Entity entity : Entity.values()) {
+                    if (entity.isSubtype() && entity.getSubtypeName().equals(subtype)) {
+                        return entity;
+                    }
+                }
+            }
         }
 
         return null;
     }
+
 
     public static Entity getEntityType(String entityType, String entitySubtype) {
         if (entitySubtype != null) {

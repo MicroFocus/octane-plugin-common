@@ -103,13 +103,19 @@ public class ServiceModule extends AbstractModule {
     public HttpClientProvider geOctaneHttpClient() {
         return () -> {
             ConnectionSettings currentConnectionSettings = connectionSettingsProvider.getConnectionSettings();
+
             if (!currentConnectionSettings.equals(httpClientPreviousConnectionSettings) || null == octaneHttpClient) {
                 octaneHttpClient = new GoogleHttpClient(currentConnectionSettings.getBaseUrl());
                 httpClientPreviousConnectionSettings = currentConnectionSettings;
+
+                SimpleUserAuthentication userAuthentication =
+                        new SimpleUserAuthentication(
+                                currentConnectionSettings.getUserName(),
+                                currentConnectionSettings.getPassword(),
+                                CLIENT_TYPE.name());
+
+                octaneHttpClient.authenticate(userAuthentication);
             }
-            SimpleUserAuthentication userAuthentication = new SimpleUserAuthentication(currentConnectionSettings.getUserName(),
-                    currentConnectionSettings.getPassword(), CLIENT_TYPE.name());
-            octaneHttpClient.authenticate(userAuthentication);
 
             return octaneHttpClient;
         };
