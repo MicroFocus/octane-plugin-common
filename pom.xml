@@ -19,7 +19,7 @@
 
     <groupId>com.hpe.adm.plugins</groupId>
     <artifactId>octane-plugin-common</artifactId>
-    <version>1.3.1</version>
+    <version>1.3.2</version>
     <packaging>jar</packaging>
 
     <name>HPE ALM Octane IDE Plugins Common</name>
