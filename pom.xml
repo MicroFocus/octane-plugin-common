@@ -22,6 +22,56 @@
     <version>1.3.1</version>
     <packaging>jar</packaging>
 
+    <name>HPE ALM Octane IDE Plugins Common</name>
+    <description>
+        Service layer for ALM Octane IDE Plugins, used by:
+        https://github.com/HPSoftware/octane-intellij-plugin
+        https://github.com/HPSoftware/octane-eclipse-plugin
+    </description>
+    <url>https://github.com/HPSoftware/octane-plugin-common</url>
+
+    <licenses>
+        <license>
+            <name>Apache License, Version 2.0</name>
+            <url>http://www.apache.org/licenses/LICENSE-2.0.txt</url>
+            <distribution>repo</distribution>
+        </license>
+    </licenses>
+
+    <scm>
+        <url>https://github.com/HPSoftware/octane-plugin-common</url>
+        <connection>scm:git:https://github.com/HPSoftware/octane-plugin-common</connection>
+        <developerConnection>scm:git:git@github.com:HPSoftware/octane-plugin-common.git</developerConnection>
+    </scm>
+
+    <organization>
+        <name>Hewlett Packard Enterprise</name>
+        <url>http://www.hpe.com</url>
+    </organization>
+
+    <developers>
+        <developer>
+            <name>Alexandra Marinescu</name>
+            <email>alexandra.marinescu@hpe.com</email>
+            <organization>HPE</organization>
+        </developer>
+        <developer>
+            <name>Andras Toth</name>
+            <email>atoth@hpe.com</email>
+            <organization>HPE</organization>
+        </developer>
+        <developer>
+            <name>Octavian Savencu</name>
+            <email>osavencu@hpe.com</email>
+            <organization>HPE</organization>
+        </developer>
+        <developer>
+            <name>Tudor Dulau</name>
+            <email>dulau@hpe.com</email>
+            <organization>HPE</organization>
+        </developer>
+    </developers>
+
     <properties>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
 
@@ -207,7 +257,6 @@
                     </plugin>
                 </plugins>
             </build>
-
             <distributionManagement>
                 <repository>
                     <id>nexus</id>
@@ -218,8 +267,8 @@
                     <url>${nexus.snapshots.url}</url>
                 </snapshotRepository>
             </distributionManagement>
-
         </profile>
+
     </profiles>
 
 </project>
