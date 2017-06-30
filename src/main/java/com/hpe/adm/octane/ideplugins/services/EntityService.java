@@ -177,10 +177,12 @@ public class EntityService {
     }
 
     /**
-     * @param entityType
-     * @param entityId
-     * @return
-     * @throws ServiceException
+     * Return a single entity model
+     * @param entityType {@link Entity}
+     * @param entityId id
+     * @param fields fields to be returned for the entity
+     * @return EntityModel
+     * @throws ServiceException on sdk error
      */
     public EntityModel findEntity(Entity entityType, Long entityId, Set<String> fields) throws ServiceException {
         try {
@@ -212,9 +214,9 @@ public class EntityService {
     /**
      * Get next possible phases for an entity
      *
-     * @param entityType
-     * @param currentPhaseId
-     * @return
+     * @param entityType {@link Entity}
+     * @param currentPhaseId id of the current phase object
+     * @return list of {@link Entity#PHASE}
      */
     public Collection<EntityModel> findPossibleTransitionFromCurrentPhase(Entity entityType, String currentPhaseId) {
         Set<String> fields = new HashSet<>();

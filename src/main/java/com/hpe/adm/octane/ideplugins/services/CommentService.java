@@ -96,8 +96,8 @@ public class CommentService {
 
     /**
      * Add comment to entity
-     * @param entityType
-     * @param id
+     * @param entityType {@link Entity}
+     * @param id entity id
      * @param text should be html
      */
     public void postComment(Entity entityType, String id, String text){

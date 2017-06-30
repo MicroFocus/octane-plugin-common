@@ -44,9 +44,9 @@ public class MyWorkUtil {
     /**
      * Constructs a metaphase query builder to match "logical_name":"metaphase.entity.phasename",
      *
-     * @param entity
-     * @param phases
-     * @return
+     * @param entity type of Entity for phase query
+     * @param phases desired phases
+     * @return QueryBuilder to use for filtering
      */
     static Query.QueryBuilder createPhaseQuery(Entity entity, String... phases) {
         Query.QueryBuilder phaseQueryBuilder = null;
@@ -67,8 +67,9 @@ public class MyWorkUtil {
     }
 
     /**
-     * @param logicalNames
-     * @return
+     * Create query bulder to match native status
+     * @param logicalNames logical names of native statuses to match
+     * @return query builder to filter native status
      */
     static Query.QueryBuilder createNativeStatusQuery(String... logicalNames) {
         Query.QueryBuilder nativeStatusQueryBuilder = null;
@@ -91,8 +92,8 @@ public class MyWorkUtil {
 
     /**
      * Fetch the entity model wrapped in the user item for the UI
-     * @param userItem
-     * @return
+     * @param userItem {@link EntityModel} of type Entity.USER_ITEM
+     * @return inner entity model
      */
     public static EntityModel getEntityModelFromUserItem(EntityModel userItem){
         if(Entity.USER_ITEM != Entity.getEntityType(userItem)){
@@ -112,8 +113,9 @@ public class MyWorkUtil {
     /**
      * Used for backwards compatibility for older server version
      * For older server version plain entity models will be wrapped in user items
-     * @param entityModel
-     * @return
+     * @param entityModel any {@link EntityModel}
+     * @param origin origin field for the resulting user item
+     * @return Entity.USER_ITEM containing the param
      */
     static EntityModel wrapEntityModelIntoUserItem(EntityModel entityModel, long origin){
         EntityModel userItem = new EntityModel();
@@ -174,14 +176,12 @@ public class MyWorkUtil {
     }
 
     /**
-     * Check if the user item is dismissible or not, uses field "origin" from user item. <br>
+     * Check if the user item is dismissible or not, uses field "origin" from user item.
      * Origin field value meaning:
-     *     <ul>
-     *         <li>0: was added by business rule (matched some query, for eg. user story in phase new</li>
-     *         <li>1: was added by right click -> context menu -> "Add to My Work"</li>
-     *     </ul>
-     * @param userItem
-     * @return
+     *     <p>0: was added by business rule (matched some query, for eg. user story in phase new </p>
+     *     <p>1: was added by right click - context menu - "Add to My Work" </p>
+     * @param userItem {@link EntityModel} of type Entity.USER_ITEM
+     * @return true or false, based on the origin field
      */
     public static boolean isUserItemDismissible(EntityModel userItem){
         verifyUserItem(userItem);

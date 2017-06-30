@@ -41,11 +41,11 @@ public class TextUtil {
     }
 
     /**
-     * This method was called to escape special characters from a text (e.g. when searching for text having \ or ` will make the REST call crash)
-     *      - a split on the text was required because the query failed mostly when the special character was isolated (e.g. " texttext text <<specialChar>> text text")
-     *      - an inner enum class was used for this method as it is only used for char escaping; it was not designed for public usage.
+     * This method was called to escape special characters from a text (e.g. when searching for text having \ or ` will make the REST call crash) <br>
+     *      - a split on the text was required because the query failed mostly when the special character was isolated (e.g. " texttext text {specialChar} text text") <br>
+     *      - an inner enum class was used for this method as it is only used for char escaping; it was not designed for public usage. <br>
      *
-     * @param text
+     * @param text input text to be escaped
      * @return String text with escaped special characters
      */
     public static String escapeText(String text) {

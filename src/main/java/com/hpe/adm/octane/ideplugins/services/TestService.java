@@ -61,6 +61,8 @@ public class TestService {
     /**
      * Attempts to connect to given url, basic validations should be done first
      * Check if the current connection settings are valid
+     * @param connectionSettings instance of {@link ConnectionSettings} to test
+     * @throws ServiceException on connection error
      */
     public void testConnection(ConnectionSettings connectionSettings) throws ServiceException {
 

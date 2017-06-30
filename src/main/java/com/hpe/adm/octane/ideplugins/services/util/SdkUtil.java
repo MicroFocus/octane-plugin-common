@@ -21,8 +21,8 @@ public class SdkUtil {
     /**
      * Attempt to get the error message from and OctaneException, if it fails returns null instead
      *
-     * @param ex
-     * @return
+     * @param ex OctaneException from the sdk
+     * @return error string for the UI
      */
     public static String getMessageFromOctaneException(OctaneException ex) {
         String message = ex.getError().getDescription();

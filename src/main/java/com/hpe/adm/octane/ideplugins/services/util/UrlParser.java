@@ -119,10 +119,10 @@ public class UrlParser {
     /**
      * Create an octane ui link from an entity
      *
-     * @param connectionSettings
-     * @param entityType
-     * @param id
-     * @return
+     * @param connectionSettings for the base url info
+     * @param entityType added to url
+     * @param id entity id
+     * @return URI to Octane web ui, to display the entity
      */
     public static URI createEntityWebURI(ConnectionSettings connectionSettings, Entity entityType, Integer id) {
         //ex: http://myd-vm24085.hpeswlab.net:8080/ui/entity-navigation?p=1001/1002&entityType=test&id=1001

@@ -89,8 +89,8 @@ public class ConnectionSettings {
 
     /**
      * Compare all fields except the password field
-     * @param o
-     * @return
+     * @param o other object
+     * @return true if all fields except the "password" field are equal
      */
     public boolean equalsExceptPassword(Object o) {
         if (this == o) return true;
@@ -107,10 +107,6 @@ public class ConnectionSettings {
         return true;
     }
 
-    /**
-     * Check if all field values are null of empty
-     * @return
-     */
     public boolean isEmpty(){
         return isStringEmpty(baseUrl) &&
                 sharedSpaceId==null &&
@@ -135,7 +131,8 @@ public class ConnectionSettings {
 
     /**
      * Set the internal state of the object to math the param
-     * @param connectionSettings
+     * @param connectionSettings {@link ConnectionSettings} to be copied
+     * @return copy of param
      */
     public static ConnectionSettings getCopy(ConnectionSettings connectionSettings){
         return new ConnectionSettings(

@@ -61,7 +61,7 @@ public class UserService {
 
     /**
      * Well this is horrible, this method is needed because cross filtering work item owner by name does not work
-     * @return
+     * @return id of the current user from the service context
      */
     public Long getCurrentUserId(){
         EntityModel user = getCurrentUser();

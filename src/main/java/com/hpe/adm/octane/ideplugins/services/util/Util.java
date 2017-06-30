@@ -48,8 +48,8 @@ public class Util {
     /**
      * This method is for displaying in the UI only
      *
-     * @param fieldModel
-     * @return
+     * @param fieldModel from an {@link EntityModel}
+     * @return string value of the field
      */
     public static String getUiDataFromModel(FieldModel fieldModel) {
         return getUiDataFromModel(fieldModel, "name");
@@ -58,9 +58,9 @@ public class Util {
     /**
      * This method is for displaying in the UI only
      *
-     * @param fieldModel
-     * @param neededProperty
-     * @return
+     * @param fieldModel fieldModel from an {@link EntityModel}
+     * @param neededProperty can check {@link ReferenceFieldModel} and {@link MultiReferenceFieldModel} for property to use
+     * @return string value of the field
      */
     public static String getUiDataFromModel(FieldModel fieldModel, String neededProperty) {
         String result = "";
