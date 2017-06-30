@@ -16,10 +16,8 @@ package com.hpe.adm.octane.ideplugins.integrationtests;
 import com.google.inject.Guice;
 import com.google.inject.Inject;
 import com.google.inject.Injector;
-import com.hpe.adm.octane.ideplugins.integrationtests.util.ConfigurationUtil;
 import com.hpe.adm.octane.ideplugins.integrationtests.util.EntityGenerator;
-import com.hpe.adm.octane.ideplugins.services.connection.BasicConnectionSettingProvider;
-import com.hpe.adm.octane.ideplugins.services.connection.ConnectionSettings;
+import com.hpe.adm.octane.ideplugins.integrationtests.util.PropertyUtil;
 import com.hpe.adm.octane.ideplugins.services.connection.ConnectionSettingsProvider;
 import com.hpe.adm.octane.ideplugins.services.connection.OctaneProvider;
 import com.hpe.adm.octane.ideplugins.services.di.ServiceModule;
@@ -30,25 +28,21 @@ import org.junit.Before;
  */
 public abstract class IntegrationTestBase {
 
-    private Injector injector;
-
     protected EntityGenerator entityGenerator;
 
     @Before
     public void setup () {
-        injector = Guice.createInjector(new ServiceModule(readConnectionSettingsFromFile()));
+
+        ConnectionSettingsProvider connectionSettings = PropertyUtil.readFormVmArgs() != null ?
+                PropertyUtil.readFormVmArgs() : PropertyUtil.readFromPropFile();
+
+        if(connectionSettings == null){
+            throw new RuntimeException("Cannot retrieve connection settings from either vm args or prop file, cannot run tests");
+        }
+
+        Injector injector = Guice.createInjector(new ServiceModule(connectionSettings));
         injector.injectMembers(this);
         entityGenerator = new EntityGenerator(injector.getInstance(OctaneProvider.class));
-    }
-
-    private ConnectionSettingsProvider readConnectionSettingsFromFile(){
-        ConnectionSettings connectionSettings = new ConnectionSettings();
-        connectionSettings.setBaseUrl(ConfigurationUtil.getString(ConfigurationUtil.PropertyKeys.URL));
-        connectionSettings.setSharedSpaceId(ConfigurationUtil.getLong(ConfigurationUtil.PropertyKeys.SHAREDSPACE));
-        connectionSettings.setWorkspaceId(ConfigurationUtil.getLong(ConfigurationUtil.PropertyKeys.WORKSPACE));
-        connectionSettings.setUserName(ConfigurationUtil.getString(ConfigurationUtil.PropertyKeys.USERNAME));
-        connectionSettings.setPassword(ConfigurationUtil.getString(ConfigurationUtil.PropertyKeys.PASSWORD));
-        return new BasicConnectionSettingProvider(connectionSettings);
     }
 
 }
