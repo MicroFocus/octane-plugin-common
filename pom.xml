@@ -17,9 +17,9 @@
          xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
     <modelVersion>4.0.0</modelVersion>
 
-    <groupId>com.hpe.adm.ideplugins</groupId>
+    <groupId>com.hpe.adm.octane.ideplugins</groupId>
     <artifactId>octane-plugin-common</artifactId>
-    <version>1.3.2</version>
+    <version>1.4</version>
     <packaging>jar</packaging>
 
     <name>HPE ALM Octane IDE Plugins Common</name>
@@ -79,17 +79,18 @@
         <java.target.version>1.8</java.target.version>
         <maven-compiler.version>3.6.1</maven-compiler.version>
 
-        <nexus-staging-maven-plugin.version>1.6.7</nexus-staging-maven-plugin.version>
+        <nexus-staging-maven-plugin.version>1.6.8</nexus-staging-maven-plugin.version>
         <maven-gpg-plugin.version>1.5</maven-gpg-plugin.version>
         <maven-source-plugin.version>2.2.1</maven-source-plugin.version>
         <maven-surefire.version>2.19.1</maven-surefire.version>
+        <maven-javadoc-plugin.version>2.10.4</maven-javadoc-plugin.version>
     </properties>
 
     <dependencies>
         <dependency>
             <groupId>com.hpe.adm.nga.sdk.extension</groupId>
             <artifactId>sdk-extension-src</artifactId>
-            <version>12.53.21-SNAPSHOT</version>
+            <version>12.55.4</version>
         </dependency>
         <dependency>
             <groupId>org.jsoup</groupId>
@@ -120,29 +121,33 @@
     </dependencies>
 
     <build>
-        <pluginManagement>
-            <plugins>
-                <plugin>
-                    <groupId>org.apache.maven.plugins</groupId>
-                    <artifactId>maven-compiler-plugin</artifactId>
-                    <version>${maven-compiler.version}</version>
-                    <configuration>
-                        <source>${java.source.version}</source>
-                        <target>${java.target.version}</target>
-                    </configuration>
-                </plugin>
-                <plugin>
-                    <groupId>org.apache.maven.plugins</groupId>
-                    <artifactId>maven-surefire-plugin</artifactId>
-                    <version>${maven-surefire.version}</version>
-                </plugin>
-                <plugin>
-                    <groupId>org.apache.maven.plugins</groupId>
-                    <artifactId>maven-javadoc-plugin</artifactId>
-                    <version>${maven-javadoc-plugin.version}</version>
-                </plugin>
-            </plugins>
-        </pluginManagement>
+        <plugins>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-compiler-plugin</artifactId>
+                <version>${maven-compiler.version}</version>
+                <configuration>
+                    <source>${java.source.version}</source>
+                    <target>${java.target.version}</target>
+                </configuration>
+            </plugin>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-surefire-plugin</artifactId>
+                <version>${maven-surefire.version}</version>
+                <configuration>
+                    <includes>
+                        <include>**/*ITCase.java</include>
+                        <include>**/*UTCase.java</include>
+                    </includes>
+                </configuration>
+            </plugin>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-javadoc-plugin</artifactId>
+                <version>${maven-javadoc-plugin.version}</version>
+            </plugin>
+        </plugins>
     </build>
 
     <profiles>
