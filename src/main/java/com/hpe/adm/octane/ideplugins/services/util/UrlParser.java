@@ -34,7 +34,7 @@ public class UrlParser {
         try {
             siteUrl = new URL(url);
             siteUrl.toURI(); // does the extra checking required for validation of URI
-            if (!"http".equals(siteUrl.getProtocol()) && !"https".equals(siteUrl.getProtocol())) {
+            if (!"http" .equals(siteUrl.getProtocol()) && !"https" .equals(siteUrl.getProtocol())) {
                 throw new Exception();
             }
             int paramIndex = url.indexOf("p=");
@@ -120,29 +120,30 @@ public class UrlParser {
      * Create an octane ui link from an entity
      *
      * @param connectionSettings for the base url info
-     * @param entityType added to url
-     * @param id entity id
+     * @param entityType         added to url
+     * @param id                 entity id
      * @return URI to Octane web ui, to display the entity
      */
     public static URI createEntityWebURI(ConnectionSettings connectionSettings, Entity entityType, Integer id) {
         //ex: http://myd-vm24085.hpeswlab.net:8080/ui/entity-navigation?p=1001/1002&entityType=test&id=1001
-        StringBuilder sb = new StringBuilder();
+        StringBuilder stringBuilder = new StringBuilder();
 
-        sb.append(connectionSettings.getBaseUrl());
-        sb.append("/ui/entity-navigation?p=");
-        sb.append(connectionSettings.getSharedSpaceId() + "/" + connectionSettings.getWorkspaceId());
-        sb.append("&entityType=" + entityType.getTypeName());
-        sb.append("&id=" + id);
+        stringBuilder
+                .append(connectionSettings.getBaseUrl())
+                .append("/ui/entity-navigation?p=")
+                .append(connectionSettings.getSharedSpaceId())
+                .append("/")
+                .append(connectionSettings.getWorkspaceId())
+                .append("&entityType=").append(entityType.getTypeName())
+                .append("&id=").append(id);
 
-        URI uri = null;
+        URI uri;
 
         try {
-            uri = new URI(sb.toString());
+            uri = new URI(stringBuilder.toString());
         } catch (URISyntaxException e) {
-            e.printStackTrace();
             throw new ServiceRuntimeException(e);
         }
-
         return uri;
     }
 
