@@ -84,7 +84,7 @@ public class EntityService {
             getRequest = getRequest.query(queryBuilder.build());
         }
 
-        OctaneVersion version = versionService.getOctaneVersion();
+        OctaneVersion version = versionService.getOctaneVersion(true);
         version.discardBuildNumber();
 
         if (OctaneVersion.compare(version, OctaneVersion.Operation.HIGHER, OctaneVersion.EVERTON_P2)) {

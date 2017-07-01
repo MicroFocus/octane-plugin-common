@@ -29,6 +29,8 @@ import com.hpe.adm.octane.ideplugins.services.util.OctaneVersion;
  */
 public class OctaneVersionService {
 
+    public static final OctaneVersion fallbackVersion = OctaneVersion.EVERTON_P3;
+
     @Inject
     private ConnectionSettingsProvider connectionSettingsProvider;
 
@@ -37,7 +39,7 @@ public class OctaneVersionService {
 
     private static String getVersionString(ConnectionSettings connectionSettings) {
         try {
-            OctaneHttpRequest request = new OctaneHttpRequest.GetOctaneHttpRequest(connectionSettings.getBaseUrl() + "/admin/server/version");
+            OctaneHttpRequest request = new OctaneHttpRequest.GetOctaneHttpRequest(getServerVersionUrl(connectionSettings));
             OctaneHttpClient octaneHttpClient = new GoogleHttpClient(connectionSettings.getBaseUrl());
             OctaneHttpResponse response = octaneHttpClient.execute(request);
             String jsonString = response.getContent();
@@ -48,17 +50,29 @@ public class OctaneVersionService {
         }
     }
 
-    /**
-     * If the server version cannot be fetched it assumes it's the latest version
-     *
-     * @return OctaneVersion of the current connection settings
-     */
+    public static String getServerVersionUrl(ConnectionSettings connectionSettings){
+        return connectionSettings.getBaseUrl() + "/admin/server/version";
+    }
+
     public OctaneVersion getOctaneVersion() {
         if (versionString == null) {
             connectionSettingsProvider.addChangeHandler(resetVersionRunnable);
             versionString = getVersionString(connectionSettingsProvider.getConnectionSettings());
         }
         return new OctaneVersion(versionString);
+    }
+
+    public OctaneVersion getOctaneVersion(boolean useFallback) {
+        try {
+            return getOctaneVersion();
+        } catch (Exception ex){
+            if(useFallback){
+                versionString = fallbackVersion.getVersionString();
+                return fallbackVersion;
+            } else {
+                throw ex;
+            }
+        }
     }
 
     public static OctaneVersion getOctaneVersion(ConnectionSettings connectionSettings) {

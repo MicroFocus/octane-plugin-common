@@ -55,7 +55,7 @@ public class MyWorkServiceProxyFactory {
     }
 
     private boolean compareServerVersion(OctaneVersion.Operation operation, OctaneVersion otherVersion){
-        OctaneVersion version = octaneVersionService.getOctaneVersion();
+        OctaneVersion version = octaneVersionService.getOctaneVersion(true);
         version.discardBuildNumber();
         return OctaneVersion.compare(version, operation, otherVersion);
     }
