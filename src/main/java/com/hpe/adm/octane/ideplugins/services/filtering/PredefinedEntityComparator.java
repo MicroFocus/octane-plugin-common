@@ -29,7 +29,8 @@ public class PredefinedEntityComparator implements Comparator<Entity> {
             Entity.GHERKIN_TEST,
             Entity.TEST_SUITE_RUN,
             Entity.MANUAL_TEST_RUN,
-            Entity.COMMENT);
+            Entity.COMMENT,
+            Entity.REQUIREMENT);
 
     @Override
     public int compare(Entity entityLeft, Entity entityRight) {
