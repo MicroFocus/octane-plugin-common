@@ -13,27 +13,51 @@
 
 package com.hpe.adm.octane.ideplugins.integrationtests;
 
+import com.google.api.client.json.Json;
 import com.google.inject.Guice;
 import com.google.inject.Inject;
 import com.google.inject.Injector;
+import com.hpe.adm.nga.sdk.Octane;
+import com.hpe.adm.nga.sdk.authentication.Authentication;
+import com.hpe.adm.nga.sdk.authentication.SimpleUserAuthentication;
+import com.hpe.adm.nga.sdk.model.EntityModel;
+import com.hpe.adm.nga.sdk.network.OctaneHttpClient;
+import com.hpe.adm.nga.sdk.network.OctaneHttpRequest;
+import com.hpe.adm.nga.sdk.network.OctaneHttpResponse;
+import com.hpe.adm.nga.sdk.network.OctaneRequest;
+import com.hpe.adm.nga.sdk.network.google.GoogleHttpClient;
 import com.hpe.adm.octane.ideplugins.integrationtests.util.EntityGenerator;
 import com.hpe.adm.octane.ideplugins.integrationtests.util.PropertyUtil;
+import com.hpe.adm.octane.ideplugins.integrationtests.util.WorkSpace;
 import com.hpe.adm.octane.ideplugins.services.connection.ConnectionSettingsProvider;
+import com.hpe.adm.octane.ideplugins.services.connection.HttpClientProvider;
 import com.hpe.adm.octane.ideplugins.services.connection.OctaneProvider;
 import com.hpe.adm.octane.ideplugins.services.di.ServiceModule;
+import com.hpe.adm.octane.ideplugins.services.util.ClientType;
+import com.sun.org.apache.xpath.internal.SourceTree;
+import org.json.JSONArray;
+import org.json.JSONObject;
+import org.json.JSONTokener;
 import org.junit.Before;
+import org.junit.BeforeClass;
+import org.junit.Test;
+import sun.net.www.http.HttpClient;
+
+import java.util.Collection;
 
 /**
  * Enables the use of the {@link Inject} annotation
  */
-public abstract class IntegrationTestBase {
+@WorkSpace(clean=true)
+public class IntegrationTestBase {
 
     protected EntityGenerator entityGenerator;
+    ConnectionSettingsProvider connectionSettings;
 
     @Before
-    public void setup () {
+    public  void setup () {
 
-        ConnectionSettingsProvider connectionSettings = PropertyUtil.readFormVmArgs() != null ?
+         connectionSettings = PropertyUtil.readFormVmArgs() != null ?
                 PropertyUtil.readFormVmArgs() : PropertyUtil.readFromPropFile();
 
         if(connectionSettings == null){
@@ -44,5 +68,50 @@ public abstract class IntegrationTestBase {
         injector.injectMembers(this);
         entityGenerator = new EntityGenerator(injector.getInstance(OctaneProvider.class));
     }
+
+    @Test
+    public void createWorkSpace(){
+
+        String postUrl = connectionSettings.getConnectionSettings().getBaseUrl() + "/api/shared_spaces/" +
+                            connectionSettings.getConnectionSettings().getSharedSpaceId() + "/workspaces";
+
+        String urlDomain =connectionSettings.getConnectionSettings().getBaseUrl();
+
+        JSONObject dataSet = new JSONObject();
+        JSONObject credentialsJson = new JSONObject();
+        credentialsJson.put("name","test_workspace1");
+        credentialsJson.put("description","Created from intellij");
+        JSONArray jsonArray = new JSONArray();
+        jsonArray.put(credentialsJson);
+        dataSet.put("data",jsonArray);
+
+        System.out.println(dataSet.toString());
+
+        OctaneHttpRequest postNewWorkspaceRequest = new OctaneHttpRequest.PostOctaneHttpRequest(postUrl,OctaneHttpRequest.JSON_CONTENT_TYPE,dataSet.toString());
+        OctaneHttpClient octaneHttpClient = new GoogleHttpClient(urlDomain);
+        octaneHttpClient.authenticate(new SimpleUserAuthentication(connectionSettings.getConnectionSettings().getUserName(),connectionSettings.getConnectionSettings().getPassword(), ClientType.HPE_MQM_UI.name()));
+        OctaneHttpResponse response;
+
+        try{
+            response = octaneHttpClient.execute(postNewWorkspaceRequest);
+        }
+        catch(Exception e){
+            e.printStackTrace();
+        }
+
+        octaneHttpClient.signOut();
+    }
+
+    public void createWorkItem(){
+
+    }
+
+    public void createUserStory(){}
+
+    public void createQualityStory(){}
+
+    public void createDefect(){}
+
+    public void createWorkItemRoot(){}
 
 }
