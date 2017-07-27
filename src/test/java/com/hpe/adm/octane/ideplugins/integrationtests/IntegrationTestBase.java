@@ -29,6 +29,7 @@ import com.hpe.adm.nga.sdk.network.google.GoogleHttpClient;
 import com.hpe.adm.octane.ideplugins.integrationtests.util.EntityGenerator;
 import com.hpe.adm.octane.ideplugins.integrationtests.util.PropertyUtil;
 import com.hpe.adm.octane.ideplugins.integrationtests.util.WorkSpace;
+import com.hpe.adm.octane.ideplugins.services.EntityService;
 import com.hpe.adm.octane.ideplugins.services.connection.ConnectionSettingsProvider;
 import com.hpe.adm.octane.ideplugins.services.connection.HttpClientProvider;
 import com.hpe.adm.octane.ideplugins.services.connection.OctaneProvider;
@@ -48,19 +49,19 @@ import java.util.Collection;
 /**
  * Enables the use of the {@link Inject} annotation
  */
-@WorkSpace(clean=true)
+@WorkSpace(clean = true)
 public class IntegrationTestBase {
 
     protected EntityGenerator entityGenerator;
     ConnectionSettingsProvider connectionSettings;
 
     @Before
-    public  void setup () {
+    public void setup() {
 
-         connectionSettings = PropertyUtil.readFormVmArgs() != null ?
+        connectionSettings = PropertyUtil.readFormVmArgs() != null ?
                 PropertyUtil.readFormVmArgs() : PropertyUtil.readFromPropFile();
 
-        if(connectionSettings == null){
+        if (connectionSettings == null) {
             throw new RuntimeException("Cannot retrieve connection settings from either vm args or prop file, cannot run tests");
         }
 
@@ -70,48 +71,49 @@ public class IntegrationTestBase {
     }
 
     @Test
-    public void createWorkSpace(){
+    public void createWorkSpace() {
 
         String postUrl = connectionSettings.getConnectionSettings().getBaseUrl() + "/api/shared_spaces/" +
-                            connectionSettings.getConnectionSettings().getSharedSpaceId() + "/workspaces";
+                connectionSettings.getConnectionSettings().getSharedSpaceId() + "/workspaces";
 
-        String urlDomain =connectionSettings.getConnectionSettings().getBaseUrl();
+        String urlDomain = connectionSettings.getConnectionSettings().getBaseUrl();
 
         JSONObject dataSet = new JSONObject();
         JSONObject credentialsJson = new JSONObject();
-        credentialsJson.put("name","test_workspace1");
-        credentialsJson.put("description","Created from intellij");
+        credentialsJson.put("name", "test_workspace1");
+        credentialsJson.put("description", "Created from intellij");
         JSONArray jsonArray = new JSONArray();
         jsonArray.put(credentialsJson);
-        dataSet.put("data",jsonArray);
+        dataSet.put("data", jsonArray);
 
         System.out.println(dataSet.toString());
 
-        OctaneHttpRequest postNewWorkspaceRequest = new OctaneHttpRequest.PostOctaneHttpRequest(postUrl,OctaneHttpRequest.JSON_CONTENT_TYPE,dataSet.toString());
+        OctaneHttpRequest postNewWorkspaceRequest = new OctaneHttpRequest.PostOctaneHttpRequest(postUrl, OctaneHttpRequest.JSON_CONTENT_TYPE, dataSet.toString());
         OctaneHttpClient octaneHttpClient = new GoogleHttpClient(urlDomain);
-        octaneHttpClient.authenticate(new SimpleUserAuthentication(connectionSettings.getConnectionSettings().getUserName(),connectionSettings.getConnectionSettings().getPassword(), ClientType.HPE_MQM_UI.name()));
+        octaneHttpClient.authenticate(new SimpleUserAuthentication(connectionSettings.getConnectionSettings().getUserName(), connectionSettings.getConnectionSettings().getPassword(), ClientType.HPE_MQM_UI.name()));
         OctaneHttpResponse response;
 
-        try{
+        JSONObject responseJson = null;
+        try {
             response = octaneHttpClient.execute(postNewWorkspaceRequest);
-        }
-        catch(Exception e){
+            responseJson = new JSONObject(response.getContent());
+        } catch (Exception e) {
             e.printStackTrace();
         }
 
         octaneHttpClient.signOut();
+
+        assert responseJson.equals(dataSet);
+
     }
 
-    public void createWorkItem(){
+//    public void createEntity() {
+//        EntityService entityService = new EntityService();
+//
+//        entityService.
+//                entityGenerator.createEntityModel()
+//
+//    }
 
-    }
-
-    public void createUserStory(){}
-
-    public void createQualityStory(){}
-
-    public void createDefect(){}
-
-    public void createWorkItemRoot(){}
 
 }
