@@ -39,6 +39,8 @@ import com.hpe.adm.octane.ideplugins.services.filtering.Entity;
 import com.hpe.adm.octane.ideplugins.services.util.ClientType;
 import com.sun.org.apache.xpath.internal.SourceTree;
 import org.apache.commons.logging.impl.Log4JLogger;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.json.JSONArray;
 import org.json.JSONObject;
 import org.json.JSONTokener;
@@ -53,13 +55,15 @@ import java.lang.annotation.Target;
 import java.lang.reflect.AnnotatedType;
 import java.util.Collection;
 
+import static org.junit.Assert.fail;
+
 /**
  * Enables the use of the {@link Inject} annotation
  */
 public abstract class IntegrationTestBase {
 
 
-    final Log4JLogger logger = new Log4JLogger();
+    private final Logger logger = LogManager.getLogger(IntegrationTestBase.class.getName().toString());
 
     protected EntityGenerator entityGenerator;
 
@@ -123,7 +127,7 @@ public abstract class IntegrationTestBase {
 
         } catch (Exception e) {
             logger.error("Error while trying to get the response when creating a new workspace!");
-            Assert.fail(e.toString());
+            fail(e.toString());
         }
         JSONObject responseJson = new JSONObject(response.getContent());
         octaneHttpClient.signOut();
@@ -131,12 +135,39 @@ public abstract class IntegrationTestBase {
         return responseJson.getLong("id");
     }
 
-    public void createEntity() {
+    public EntityModel createEntity() {
 
-        EntityModel entityModel = entityGenerator.createEntityModel(Entity.WORK_ITEM);
+        Entity userStory = Entity.USER_STORY;
 
-        //OctaneHttpRequest request = new OctaneHttpRequest.
+        EntityModel entityModel = entityGenerator.createEntityModel(userStory);
 
+        EntityService entityService = new EntityService();
+
+        Collection<EntityModel> entities = entityService.findEntities(Entity.USER_STORY);
+
+        try {
+            assert entities.contains(entityModel);
+        }
+        catch(Exception e){
+            logger.error("Error the entity could not be created");
+            Assert.fail();
+        }
+
+        for(EntityModel em : entities){
+            if(em.equals(entityModel))
+                return em;
+        }
+        return null;
+    }
+
+    public void deleteEntity(){
+
+    }
+
+    public void createUSer(){
+        Entity newUser = Entity.USER_ITEM;
+
+        EntityModel entityModel = entityGenerator.createEntityModel(newUser);
     }
 
 
