@@ -38,9 +38,11 @@ import com.hpe.adm.octane.ideplugins.services.di.ServiceModule;
 import com.hpe.adm.octane.ideplugins.services.filtering.Entity;
 import com.hpe.adm.octane.ideplugins.services.util.ClientType;
 import com.sun.org.apache.xpath.internal.SourceTree;
+import org.apache.commons.logging.impl.Log4JLogger;
 import org.json.JSONArray;
 import org.json.JSONObject;
 import org.json.JSONTokener;
+import org.junit.Assert;
 import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
@@ -56,7 +58,11 @@ import java.util.Collection;
  */
 public abstract class IntegrationTestBase {
 
+
+    final Log4JLogger logger = new Log4JLogger();
+
     protected EntityGenerator entityGenerator;
+
     ConnectionSettingsProvider connectionSettings;
 
     @Before
@@ -116,7 +122,8 @@ public abstract class IntegrationTestBase {
             response = octaneHttpClient.execute(postNewWorkspaceRequest);
 
         } catch (Exception e) {
-            e.printStackTrace();
+            logger.error("Error while trying to get the response when creating a new workspace!");
+            Assert.fail(e.toString());
         }
         JSONObject responseJson = new JSONObject(response.getContent());
         octaneHttpClient.signOut();
@@ -125,10 +132,10 @@ public abstract class IntegrationTestBase {
     }
 
     public void createEntity() {
-        EntityService entityService = new EntityService();
 
+        EntityModel entityModel = entityGenerator.createEntityModel(Entity.WORK_ITEM);
 
-        //entityGenerator.createEntityModel(entityService.findEntity(Entity.WORK_ITEM,));
+        //OctaneHttpRequest request = new OctaneHttpRequest.
 
     }
 
