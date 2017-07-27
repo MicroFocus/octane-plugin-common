@@ -30,10 +30,12 @@ import com.hpe.adm.octane.ideplugins.integrationtests.util.EntityGenerator;
 import com.hpe.adm.octane.ideplugins.integrationtests.util.PropertyUtil;
 import com.hpe.adm.octane.ideplugins.integrationtests.util.WorkSpace;
 import com.hpe.adm.octane.ideplugins.services.EntityService;
+import com.hpe.adm.octane.ideplugins.services.connection.ConnectionSettings;
 import com.hpe.adm.octane.ideplugins.services.connection.ConnectionSettingsProvider;
 import com.hpe.adm.octane.ideplugins.services.connection.HttpClientProvider;
 import com.hpe.adm.octane.ideplugins.services.connection.OctaneProvider;
 import com.hpe.adm.octane.ideplugins.services.di.ServiceModule;
+import com.hpe.adm.octane.ideplugins.services.filtering.Entity;
 import com.hpe.adm.octane.ideplugins.services.util.ClientType;
 import com.sun.org.apache.xpath.internal.SourceTree;
 import org.json.JSONArray;
@@ -44,13 +46,16 @@ import org.junit.BeforeClass;
 import org.junit.Test;
 import sun.net.www.http.HttpClient;
 
+import java.lang.annotation.Annotation;
+import java.lang.annotation.Target;
+import java.lang.reflect.AnnotatedType;
 import java.util.Collection;
 
 /**
  * Enables the use of the {@link Inject} annotation
  */
-@WorkSpace(clean = true)
-public class IntegrationTestBase {
+@Deprecated
+public abstract class IntegrationTestBase {
 
     protected EntityGenerator entityGenerator;
     ConnectionSettingsProvider connectionSettings;
@@ -61,6 +66,22 @@ public class IntegrationTestBase {
         connectionSettings = PropertyUtil.readFormVmArgs() != null ?
                 PropertyUtil.readFormVmArgs() : PropertyUtil.readFromPropFile();
 
+        Annotation[] ants = this.getClass().getDeclaredAnnotations();
+
+
+        for (Annotation annotation : ants) {
+            if (annotation.toString().contains("WorkSpace(clean=")) {
+                if (annotation.toString().contains("true")) {
+                    //create a new workspace
+                    ConnectionSettings cs = connectionSettings.getConnectionSettings();
+                    cs.setWorkspaceId(createWorkSpace());
+                    connectionSettings.setConnectionSettings(cs);
+                    break;
+                }
+            }
+        }
+
+
         if (connectionSettings == null) {
             throw new RuntimeException("Cannot retrieve connection settings from either vm args or prop file, cannot run tests");
         }
@@ -70,8 +91,7 @@ public class IntegrationTestBase {
         entityGenerator = new EntityGenerator(injector.getInstance(OctaneProvider.class));
     }
 
-    @Test
-    public void createWorkSpace() {
+    public Long createWorkSpace() {
 
         String postUrl = connectionSettings.getConnectionSettings().getBaseUrl() + "/api/shared_spaces/" +
                 connectionSettings.getConnectionSettings().getSharedSpaceId() + "/workspaces";
@@ -91,29 +111,26 @@ public class IntegrationTestBase {
         OctaneHttpRequest postNewWorkspaceRequest = new OctaneHttpRequest.PostOctaneHttpRequest(postUrl, OctaneHttpRequest.JSON_CONTENT_TYPE, dataSet.toString());
         OctaneHttpClient octaneHttpClient = new GoogleHttpClient(urlDomain);
         octaneHttpClient.authenticate(new SimpleUserAuthentication(connectionSettings.getConnectionSettings().getUserName(), connectionSettings.getConnectionSettings().getPassword(), ClientType.HPE_MQM_UI.name()));
-        OctaneHttpResponse response;
+        OctaneHttpResponse response = null;
 
-        JSONObject responseJson = null;
         try {
             response = octaneHttpClient.execute(postNewWorkspaceRequest);
-            responseJson = new JSONObject(response.getContent());
+
         } catch (Exception e) {
             e.printStackTrace();
         }
-
+        JSONObject responseJson = new JSONObject(response.getContent());
         octaneHttpClient.signOut();
 
-        assert responseJson.equals(dataSet);
-
+        return responseJson.getLong("id");
     }
 
-//    public void createEntity() {
-//        EntityService entityService = new EntityService();
-//
-//        entityService.
-//                entityGenerator.createEntityModel()
-//
-//    }
+    public void createEntity() {
+        EntityService entityService = new EntityService();
+
+        //entityGenerator.createEntityModel(new Entity());
+
+    }
 
 
 }
