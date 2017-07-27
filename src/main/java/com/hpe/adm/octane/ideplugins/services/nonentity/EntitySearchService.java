@@ -40,7 +40,6 @@ import java.util.stream.Collectors;
 
 public class EntitySearchService {
 
-    private static final int DEFAULT_LIMIT = 10;
     private static final String JSON_DATA_NAME = "data";
     private static final String GLOBAL_TEXT_SEARCH_RESULT_TAG = "global_text_search_result";
 
@@ -66,14 +65,10 @@ public class EntitySearchService {
                 .collect(Collectors.toList());
     }
 
-    public Collection<EntityModel> searchGlobal(String queryString, Entity entity) {
-        return searchGlobal(queryString, DEFAULT_LIMIT, entity);
-    }
 
     public Collection<EntityModel> searchGlobal(String queryString, int limit, Entity entity) {
 
         ConnectionSettings connectionSettings = connectionSettingsProvider.getConnectionSettings();
-        //auth
         OctaneHttpClient httpClient = httpClientProvider.geOctaneHttpClient();
         if(null == httpClient){
             throw new ServiceRuntimeException("Failed to authenticate with current connection settings");

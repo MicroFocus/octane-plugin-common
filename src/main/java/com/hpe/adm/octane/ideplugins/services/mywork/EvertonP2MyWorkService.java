@@ -52,6 +52,7 @@ class EvertonP2MyWorkService implements MyWorkService {
         relationFieldTypeMap.put("my_follow_items_task", Entity.TASK);
         relationFieldTypeMap.put("my_follow_items_test", Entity.TEST);
         relationFieldTypeMap.put("my_follow_items_run", Entity.TEST_RUN);
+        relationFieldTypeMap.put("my_follow_items_requirement", Entity.REQUIREMENT_BASE_ENTITY);
     }
 
     @Override
