@@ -72,24 +72,40 @@ public abstract class IntegrationTestBase {
     @Before
     public void setup() {
 
-        connectionSettings = PropertyUtil.readFormVmArgs() != null ?
-                PropertyUtil.readFormVmArgs() : PropertyUtil.readFromPropFile();
 
         Annotation[] annotations = this.getClass().getDeclaredAnnotations();
 
 
+
+        boolean cleanWorkspace = false;
+
         for (Annotation annotation : annotations) {
-            if(annotation instanceof WorkSpace){
-                if( ((WorkSpace) annotation).clean()){
+            if (annotation instanceof WorkSpace) {
+                if (((WorkSpace) annotation).clean()) {
                     //create a new workspace
+                    connectionSettings = PropertyUtil.readFromPropFile();
                     ConnectionSettings cs = connectionSettings.getConnectionSettings();
                     cs.setWorkspaceId(createWorkSpace());
                     connectionSettings.setConnectionSettings(cs);
+                    cleanWorkspace = true;
                     break;
                 }
             }
         }
 
+        if (!cleanWorkspace) {
+
+            connectionSettings = PropertyUtil.readFormVmArgs();
+            ConnectionSettings cs = connectionSettings.getConnectionSettings();
+            long defaultWorkspaceId = getDefaultWorkspaceId();
+
+            if(defaultWorkspaceId > 0)
+                    cs.setWorkspaceId(defaultWorkspaceId);
+            else{
+                    cs.setWorkspaceId(createWorkSpace());
+            }
+            connectionSettings.setConnectionSettings(cs);
+        }
 
         if (connectionSettings == null) {
             throw new RuntimeException("Cannot retrieve connection settings from either vm args or prop file, cannot run tests");
@@ -135,6 +151,30 @@ public abstract class IntegrationTestBase {
         return responseJson.getLong("id");
     }
 
+    public long getDefaultWorkspaceId() {
+        String postUrl = connectionSettings.getConnectionSettings().getBaseUrl() + "/api/shared_spaces/" +
+                connectionSettings.getConnectionSettings().getSharedSpaceId() + "/workspaces";
+
+        String urlDomain = connectionSettings.getConnectionSettings().getBaseUrl();
+
+        OctaneHttpRequest getAllWorkspacesRequest = new OctaneHttpRequest.GetOctaneHttpRequest(postUrl);
+        OctaneHttpClient octaneHttpClient = new GoogleHttpClient(urlDomain);
+        octaneHttpClient.authenticate(new SimpleUserAuthentication(connectionSettings.getConnectionSettings().getUserName(), connectionSettings.getConnectionSettings().getPassword(), ClientType.HPE_MQM_UI.name()));
+        OctaneHttpResponse response = null;
+
+        try {
+            response = octaneHttpClient.execute(getAllWorkspacesRequest);
+        } catch (Exception e) {
+            logger.error("Exception while trying to get all the workspaces");
+            fail(e.toString());
+        }
+        JSONArray responseJson = new JSONArray(response.getContent());
+        if(responseJson.length() == 0)
+            return -1;
+
+        return ((JSONObject) responseJson.get(0)).getLong("id");
+    }
+
     public EntityModel createEntity() {
 
         Entity userStory = Entity.USER_STORY;
@@ -147,24 +187,23 @@ public abstract class IntegrationTestBase {
 
         try {
             assert entities.contains(entityModel);
-        }
-        catch(Exception e){
+        } catch (Exception e) {
             logger.error("Error the entity could not be created");
             Assert.fail();
         }
 
-        for(EntityModel em : entities){
-            if(em.equals(entityModel))
+        for (EntityModel em : entities) {
+            if (em.equals(entityModel))
                 return em;
         }
         return null;
     }
 
-    public void deleteEntity(){
+    public void deleteEntity() {
 
     }
 
-    public void createUSer(){
+    public void createUSer() {
         Entity newUser = Entity.USER_ITEM;
 
         EntityModel entityModel = entityGenerator.createEntityModel(newUser);
