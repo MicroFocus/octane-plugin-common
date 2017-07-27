@@ -54,7 +54,6 @@ import java.util.Collection;
 /**
  * Enables the use of the {@link Inject} annotation
  */
-@Deprecated
 public abstract class IntegrationTestBase {
 
     protected EntityGenerator entityGenerator;
@@ -66,12 +65,12 @@ public abstract class IntegrationTestBase {
         connectionSettings = PropertyUtil.readFormVmArgs() != null ?
                 PropertyUtil.readFormVmArgs() : PropertyUtil.readFromPropFile();
 
-        Annotation[] ants = this.getClass().getDeclaredAnnotations();
+        Annotation[] annotations = this.getClass().getDeclaredAnnotations();
 
 
-        for (Annotation annotation : ants) {
-            if (annotation.toString().contains("WorkSpace(clean=")) {
-                if (annotation.toString().contains("true")) {
+        for (Annotation annotation : annotations) {
+            if(annotation instanceof WorkSpace){
+                if( ((WorkSpace) annotation).clean()){
                     //create a new workspace
                     ConnectionSettings cs = connectionSettings.getConnectionSettings();
                     cs.setWorkspaceId(createWorkSpace());
@@ -128,7 +127,8 @@ public abstract class IntegrationTestBase {
     public void createEntity() {
         EntityService entityService = new EntityService();
 
-        //entityGenerator.createEntityModel(new Entity());
+
+        //entityGenerator.createEntityModel(entityService.findEntity(Entity.WORK_ITEM,));
 
     }
 
