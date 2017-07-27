@@ -75,15 +75,13 @@ public abstract class IntegrationTestBase {
 
         Annotation[] annotations = this.getClass().getDeclaredAnnotations();
 
-
-
         boolean cleanWorkspace = false;
 
         for (Annotation annotation : annotations) {
             if (annotation instanceof WorkSpace) {
                 if (((WorkSpace) annotation).clean()) {
                     //create a new workspace
-                    connectionSettings = PropertyUtil.readFromPropFile();
+                    connectionSettings = PropertyUtil.readFormVmArgs() != null ? PropertyUtil.readFormVmArgs() : PropertyUtil.readFromPropFile();
                     ConnectionSettings cs = connectionSettings.getConnectionSettings();
                     cs.setWorkspaceId(createWorkSpace());
                     connectionSettings.setConnectionSettings(cs);
@@ -95,14 +93,14 @@ public abstract class IntegrationTestBase {
 
         if (!cleanWorkspace) {
 
-            connectionSettings = PropertyUtil.readFormVmArgs();
+            connectionSettings = PropertyUtil.readFormVmArgs() != null ? PropertyUtil.readFormVmArgs() : PropertyUtil.readFromPropFile();
             ConnectionSettings cs = connectionSettings.getConnectionSettings();
             long defaultWorkspaceId = getDefaultWorkspaceId();
 
-            if(defaultWorkspaceId > 0)
-                    cs.setWorkspaceId(defaultWorkspaceId);
-            else{
-                    cs.setWorkspaceId(createWorkSpace());
+            if (defaultWorkspaceId > 0)
+                cs.setWorkspaceId(defaultWorkspaceId);
+            else {
+                cs.setWorkspaceId(createWorkSpace());
             }
             connectionSettings.setConnectionSettings(cs);
         }
@@ -168,11 +166,12 @@ public abstract class IntegrationTestBase {
             logger.error("Exception while trying to get all the workspaces");
             fail(e.toString());
         }
-        JSONArray responseJson = new JSONArray(response.getContent());
-        if(responseJson.length() == 0)
+        JSONObject responseJson = new JSONObject(response.getContent());
+        JSONArray workspaces = responseJson.getJSONArray("data");
+        if (workspaces.length() == 0)
             return -1;
 
-        return ((JSONObject) responseJson.get(0)).getLong("id");
+        return ((JSONObject) workspaces.get(0)).getLong("id");
     }
 
     public EntityModel createEntity() {
