@@ -66,7 +66,8 @@ import static org.junit.Assert.fail;
 /**
  * Enables the use of the {@link Inject} annotation
  */
-public abstract class IntegrationTestBase {
+@WorkSpace(clean = true)
+public  class IntegrationTestBase {
 
 
     private final Logger logger = LogManager.getLogger(IntegrationTestBase.class.getName().toString());
@@ -84,9 +85,10 @@ public abstract class IntegrationTestBase {
      */
     @Before
     public void setup() {
+        /*
         Annotation[] annotations = this.getClass().getDeclaredAnnotations();
 
-        boolean cleanWorkspace = findWorkSpaceAnnotation(annotations);
+        boolean cleanWorkspace = findAnnotation(annotations, WorkSpace.class);
 
         if (cleanWorkspace) {
             connectionSettings = PropertyUtil.readFormVmArgs() != null ? PropertyUtil.readFormVmArgs() : PropertyUtil.readFromPropFile();
@@ -127,6 +129,14 @@ public abstract class IntegrationTestBase {
         Injector injector = Guice.createInjector(serviceModule);
         injector.injectMembers(this);
         entityGenerator = new EntityGenerator(injector.getInstance(OctaneProvider.class));
+        */
+    }
+
+    @Test
+    public void testAnno(){
+        Annotation[] annotations = this.getClass().getAnnotations();
+       WorkSpace workSpaceAnnotaton =  getAnnotation(annotations, WorkSpace.class);
+        System.out.println(workSpaceAnnotaton.clean());
     }
 
     /**
@@ -134,17 +144,26 @@ public abstract class IntegrationTestBase {
      * @param annotations - of the subclass
      * @return boolean - found or not
      */
-    private boolean findWorkSpaceAnnotation(Annotation[] annotations) {
-
+    public <A extends Annotation> A getAnnotation(Annotation[] annotations, Class<A> annotationClass) {
         for (Annotation annotation : annotations) {
-            if (annotation instanceof WorkSpace) {
-                if (((WorkSpace) annotation).clean()) {
-                    return true;
-                }
+            if (annotation.annotationType().equals(annotationClass)) {
+                return (A) annotation;
             }
         }
-        return false;
+        return null;
     }
+
+    private Object findAnnotation(Annotation[] annotations, Class t) {
+
+//        for (Annotation annotation : annotations) {
+//            if (annotation.getClass().equals(t)) {
+//                return (T) annotation;
+//            }
+//        }
+        return null;
+    }
+
+
 
     /**
      * This method will look for the User annotation in the implementing subclass
