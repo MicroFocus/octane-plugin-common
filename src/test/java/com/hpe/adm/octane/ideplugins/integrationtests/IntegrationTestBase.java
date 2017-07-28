@@ -21,6 +21,8 @@ import com.hpe.adm.nga.sdk.Octane;
 import com.hpe.adm.nga.sdk.authentication.Authentication;
 import com.hpe.adm.nga.sdk.authentication.SimpleUserAuthentication;
 import com.hpe.adm.nga.sdk.model.EntityModel;
+import com.hpe.adm.nga.sdk.model.FieldModel;
+import com.hpe.adm.nga.sdk.model.StringFieldModel;
 import com.hpe.adm.nga.sdk.network.OctaneHttpClient;
 import com.hpe.adm.nga.sdk.network.OctaneHttpRequest;
 import com.hpe.adm.nga.sdk.network.OctaneHttpResponse;
@@ -55,6 +57,9 @@ import java.lang.annotation.Annotation;
 import java.lang.annotation.Target;
 import java.lang.reflect.AnnotatedType;
 import java.util.Collection;
+import java.util.Collections;
+import java.util.HashSet;
+import java.util.Set;
 
 import static org.junit.Assert.fail;
 
@@ -69,6 +74,8 @@ public abstract class IntegrationTestBase {
     protected EntityGenerator entityGenerator;
 
     ConnectionSettingsProvider connectionSettings;
+
+    ServiceModule serviceModule;
 
 
     /**
@@ -104,16 +111,20 @@ public abstract class IntegrationTestBase {
             throw new RuntimeException("Cannot retrieve connection settings from either vm args or prop file, cannot run tests");
         }
 
+        serviceModule = new ServiceModule(connectionSettings);
+
         boolean createNewUser = findUserAnnotation(annotations);
 
         if(createNewUser) {
-            createUSer();
+            createNewUser();
         } else {
             //find all users and choose the first one - if there are no users create one
             //TODO
         }
 
-        Injector injector = Guice.createInjector(new ServiceModule(connectionSettings));
+
+
+        Injector injector = Guice.createInjector(serviceModule);
         injector.injectMembers(this);
         entityGenerator = new EntityGenerator(injector.getInstance(OctaneProvider.class));
     }
@@ -177,6 +188,7 @@ public abstract class IntegrationTestBase {
         OctaneHttpClient octaneHttpClient = new GoogleHttpClient(urlDomain);
         octaneHttpClient.authenticate(new SimpleUserAuthentication(connectionSettings.getConnectionSettings().getUserName(), connectionSettings.getConnectionSettings().getPassword(), ClientType.HPE_MQM_UI.name()));
         OctaneHttpResponse response = null;
+
 
         try {
             response = octaneHttpClient.execute(postNewWorkspaceRequest);
@@ -251,7 +263,7 @@ public abstract class IntegrationTestBase {
     /**
      * This method will create a new user with hardcoded user info -John Doe
      */
-    public void createUSer() {
+    public void createUser() {
         String postUrl = connectionSettings.getConnectionSettings().getBaseUrl() + "/api/shared_spaces/" +
                 connectionSettings.getConnectionSettings().getSharedSpaceId() + "/users";
 
@@ -285,6 +297,29 @@ public abstract class IntegrationTestBase {
         }
         JSONObject responseJson = new JSONObject(response.getContent());
         octaneHttpClient.signOut();
+
+    }
+
+    public void createNewUser(){
+        EntityModel userEntityModel = new EntityModel();
+        Set<FieldModel> fields = new HashSet<>();
+        FieldModel typeField = new StringFieldModel("type","user");
+        FieldModel firstName = new StringFieldModel("first_name","john");
+        FieldModel lastName = new StringFieldModel("last_name","doe");
+        FieldModel email = new StringFieldModel("email","john.doe@hpe.com");
+        FieldModel fullname = new StringFieldModel("full_name","John Doe");
+        fields.add(typeField);
+        fields.add(lastName);
+        fields.add(firstName);
+        fields.add(email);
+        fields.add(fullname);
+        userEntityModel.setValues(fields);
+
+        OctaneProvider octaneProvider = serviceModule.getOctane();
+        Octane octane = octaneProvider.getOctane();
+
+
+        octane.entityList("users").create().entities(Collections.singletonList(userEntityModel));
 
     }
 
