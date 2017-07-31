@@ -28,10 +28,7 @@ import com.hpe.adm.nga.sdk.network.OctaneHttpRequest;
 import com.hpe.adm.nga.sdk.network.OctaneHttpResponse;
 import com.hpe.adm.nga.sdk.network.OctaneRequest;
 import com.hpe.adm.nga.sdk.network.google.GoogleHttpClient;
-import com.hpe.adm.octane.ideplugins.integrationtests.util.EntityGenerator;
-import com.hpe.adm.octane.ideplugins.integrationtests.util.PropertyUtil;
-import com.hpe.adm.octane.ideplugins.integrationtests.util.User;
-import com.hpe.adm.octane.ideplugins.integrationtests.util.WorkSpace;
+import com.hpe.adm.octane.ideplugins.integrationtests.util.*;
 import com.hpe.adm.octane.ideplugins.services.EntityService;
 import com.hpe.adm.octane.ideplugins.services.connection.ConnectionSettings;
 import com.hpe.adm.octane.ideplugins.services.connection.ConnectionSettingsProvider;
@@ -121,7 +118,14 @@ public abstract class IntegrationTestBase {
             createNewUser();
         }
 
+        //check the entities needed for the context
+        Entities entities = getAnnotation(annotations,Entities.class);
 
+        Entity[] entitiesArray = entities.requiredEntities();
+
+        for(Entity newEntity : entitiesArray){
+            createEntity(newEntity);
+        }
 
         Injector injector = Guice.createInjector(serviceModule);
         injector.injectMembers(this);
