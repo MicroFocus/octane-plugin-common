@@ -66,7 +66,7 @@ import static org.junit.Assert.fail;
 /**
  * Enables the use of the {@link Inject} annotation
  */
-@WorkSpace(clean = true)
+
 public abstract class IntegrationTestBase {
 
 
@@ -115,14 +115,10 @@ public abstract class IntegrationTestBase {
 
         serviceModule = new ServiceModule(connectionSettings);
 
-        User userAnnotation = getAnnotation(annotations,User.class);
+        User userAnnotation = getAnnotation(annotations, User.class);
 
-        if(userAnnotation.create()) {
+        if (userAnnotation.create()) {
             createNewUser();
-        } else {
-            //find all users and choose the first one - if there are no users create one
-            //TODO
-            logger.debug("This feature is not implemented yet");
         }
 
 
@@ -136,9 +132,10 @@ public abstract class IntegrationTestBase {
 
     /**
      * * This method will look for an annotation in the implementing subclass
-     * @param annotations - annotations of the implementing subclass
+     *
+     * @param annotations     - annotations of the implementing subclass
      * @param annotationClass - annotation type to look for
-     * @param <A> - generic annotation class
+     * @param <A>             - generic annotation class
      * @return the instance of that annotation or null in case it isn't found
      */
     public <A extends Annotation> A getAnnotation(Annotation[] annotations, Class<A> annotationClass) {
@@ -152,6 +149,7 @@ public abstract class IntegrationTestBase {
 
     /**
      * This method will create a new workspace
+     *
      * @return workspace_id
      */
     public Long createWorkSpace() {
@@ -192,6 +190,7 @@ public abstract class IntegrationTestBase {
 
     /**
      * This method will look for workspaces
+     *
      * @return the workspace_id of the first workspace obtained, -1 if no workspace is found
      */
     public long getDefaultWorkspaceId() {
@@ -219,88 +218,47 @@ public abstract class IntegrationTestBase {
         return ((JSONObject) workspaces.get(0)).getLong("id");
     }
 
-    public EntityModel createEntity() {
+    public void createEntity(Entity entity) {
 
-        Entity userStory = Entity.USER_STORY;
+        OctaneProvider octaneProvider = serviceModule.getOctane();
+        EntityGenerator entityGenerator = new EntityGenerator(octaneProvider);
 
-        EntityModel entityModel = entityGenerator.createEntityModel(userStory);
+        EntityModel entityModel = entityGenerator.createEntityModel(entity);
 
-        EntityService entityService = new EntityService();
+        Octane octane = octaneProvider.getOctane();
 
-        Collection<EntityModel> entities = entityService.findEntities(Entity.USER_STORY);
+        octane.entityList(entity.getApiEntityName()).create().entities(Collections.singletonList(entityModel));
+    }
 
-        try {
-            assert entities.contains(entityModel);
-        } catch (Exception e) {
-            logger.debug("Error the entity could not be created");
-            Assert.fail();
-        }
+    public void deleteEntity(Entity entity){
+        OctaneProvider octaneProvider = serviceModule.getOctane();
+        EntityGenerator entityGenerator = new EntityGenerator(octaneProvider);
 
-        for (EntityModel em : entities) {
-            if (em.equals(entityModel))
-                return em;
-        }
-        return null;
+        EntityModel entityModel = entityGenerator.createEntityModel(entity);
+
+        entityGenerator.deleteEntityModel(entityModel);
     }
 
     public void deleteEntity(EntityModel entityModel) {
         entityGenerator.deleteEntityModel(entityModel);
     }
 
-    /**
-     * This method will create a new user with hardcoded user info -John Doe
-     */
-    public void createUser() {
-        String postUrl = connectionSettings.getConnectionSettings().getBaseUrl() + "/api/shared_spaces/" +
-                connectionSettings.getConnectionSettings().getSharedSpaceId() + "/users";
 
-        String urlDomain = connectionSettings.getConnectionSettings().getBaseUrl();
-
-        JSONObject dataSet = new JSONObject();
-        JSONObject userJson = new JSONObject();
-        userJson.put("type", "user");
-        userJson.put("first_name", "john");
-        userJson.put("last_name", "doe");
-        userJson.put("email", "john.doe@hpe.com");
-        userJson.put("full_name", "John Doe");
-        JSONArray jsonArray = new JSONArray();
-        jsonArray.put(userJson);
-        dataSet.put("data", jsonArray);
-
-
-        OctaneHttpRequest postNewWorkspaceRequest = new OctaneHttpRequest.PostOctaneHttpRequest(postUrl, OctaneHttpRequest.JSON_CONTENT_TYPE, dataSet.toString());
-        OctaneHttpClient octaneHttpClient = new GoogleHttpClient(urlDomain);
-        octaneHttpClient.authenticate(new SimpleUserAuthentication(connectionSettings.getConnectionSettings().getUserName(), connectionSettings.getConnectionSettings().getPassword(), ClientType.HPE_MQM_UI.name()));
-        OctaneHttpResponse response = null;
-
-        try {
-            response = octaneHttpClient.execute(postNewWorkspaceRequest);
-
-        } catch (Exception e) {
-
-            logger.error("Error while trying to get the response when creating a new user!");
-            e.printStackTrace();
-            fail(e.toString());
-        }
-        JSONObject responseJson = new JSONObject(response.getContent());
-        octaneHttpClient.signOut();
-
-    }
-
-    public void createNewUser(){
+    public void createNewUser() {
         EntityModel userEntityModel = new EntityModel();
         Set<FieldModel> fields = new HashSet<>();
 
-        fields.add(new StringFieldModel("full_name","John Doe"));
-        fields.add(new StringFieldModel("last_name","doe"));
-        fields.add(new StringFieldModel("type","user"));
-        fields.add(new StringFieldModel("first_name","john"));
-        fields.add(new StringFieldModel("email","john.doe@hpe.com"));
+        fields.add(new StringFieldModel("full_name", "John Doe"));
+        fields.add(new StringFieldModel("last_name", "doe"));
+        fields.add(new StringFieldModel("type", "user"));
+        fields.add(new StringFieldModel("first_name", "john"));
+        fields.add(new StringFieldModel("email", "john.doe@hpe.com"));
         userEntityModel.setValues(fields);
+
+
 
         OctaneProvider octaneProvider = serviceModule.getOctane();
         Octane octane = octaneProvider.getOctane();
-
 
         octane.entityList("users").create().entities(Collections.singletonList(userEntityModel));
 
