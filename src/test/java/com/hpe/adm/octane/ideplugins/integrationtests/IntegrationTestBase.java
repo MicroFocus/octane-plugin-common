@@ -20,8 +20,10 @@ import com.google.inject.Injector;
 import com.hpe.adm.nga.sdk.Octane;
 import com.hpe.adm.nga.sdk.authentication.Authentication;
 import com.hpe.adm.nga.sdk.authentication.SimpleUserAuthentication;
+import com.hpe.adm.nga.sdk.entities.GetEntities;
 import com.hpe.adm.nga.sdk.model.EntityModel;
 import com.hpe.adm.nga.sdk.model.FieldModel;
+import com.hpe.adm.nga.sdk.model.ReferenceFieldModel;
 import com.hpe.adm.nga.sdk.model.StringFieldModel;
 import com.hpe.adm.nga.sdk.network.OctaneHttpClient;
 import com.hpe.adm.nga.sdk.network.OctaneHttpRequest;
@@ -53,10 +55,7 @@ import sun.net.www.http.HttpClient;
 import java.lang.annotation.Annotation;
 import java.lang.annotation.Target;
 import java.lang.reflect.AnnotatedType;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.HashSet;
-import java.util.Set;
+import java.util.*;
 
 import static org.junit.Assert.fail;
 
@@ -248,6 +247,11 @@ public abstract class IntegrationTestBase {
     }
 
 
+    public void createRelations(EntityModel user,EntityModel entityModel){
+
+        user.setValue(new ReferenceFieldModel("userrel",entityModel));
+    }
+
     public void createNewUser() {
         EntityModel userEntityModel = new EntityModel();
         Set<FieldModel> fields = new HashSet<>();
@@ -257,8 +261,8 @@ public abstract class IntegrationTestBase {
         fields.add(new StringFieldModel("type", "user"));
         fields.add(new StringFieldModel("first_name", "john"));
         fields.add(new StringFieldModel("email", "john.doe@hpe.com"));
+        fields.add(new ReferenceFieldModel("userrel", new EntityModel()));
         userEntityModel.setValues(fields);
-
 
 
         OctaneProvider octaneProvider = serviceModule.getOctane();
@@ -268,5 +272,12 @@ public abstract class IntegrationTestBase {
 
     }
 
+//    public EntityModel getUserById(long id){
+//        EntityService entityService = new EntityService();
+//        List<EntityModel> entities = entityService.findEntity(Entity.WORKSPACE_USER,id);
+//
+//        GetEntities entities = octane.entityList("users").get();
+//
+//    }
 
 }
