@@ -67,7 +67,7 @@ import static org.junit.Assert.fail;
  * Enables the use of the {@link Inject} annotation
  */
 @WorkSpace(clean = true)
-public  class IntegrationTestBase {
+public abstract class IntegrationTestBase {
 
 
     private final Logger logger = LogManager.getLogger(IntegrationTestBase.class.getName().toString());
@@ -85,12 +85,12 @@ public  class IntegrationTestBase {
      */
     @Before
     public void setup() {
-        /*
+
         Annotation[] annotations = this.getClass().getDeclaredAnnotations();
 
-        boolean cleanWorkspace = findAnnotation(annotations, WorkSpace.class);
+        WorkSpace workSpaceAnnotation = getAnnotation(annotations, WorkSpace.class);
 
-        if (cleanWorkspace) {
+        if (workSpaceAnnotation.clean()) {
             connectionSettings = PropertyUtil.readFormVmArgs() != null ? PropertyUtil.readFormVmArgs() : PropertyUtil.readFromPropFile();
             ConnectionSettings cs = connectionSettings.getConnectionSettings();
             cs.setWorkspaceId(createWorkSpace());
@@ -115,13 +115,14 @@ public  class IntegrationTestBase {
 
         serviceModule = new ServiceModule(connectionSettings);
 
-        boolean createNewUser = findUserAnnotation(annotations);
+        User userAnnotation = getAnnotation(annotations,User.class);
 
-        if(createNewUser) {
+        if(userAnnotation.create()) {
             createNewUser();
         } else {
             //find all users and choose the first one - if there are no users create one
             //TODO
+            logger.debug("This feature is not implemented yet");
         }
 
 
@@ -129,20 +130,16 @@ public  class IntegrationTestBase {
         Injector injector = Guice.createInjector(serviceModule);
         injector.injectMembers(this);
         entityGenerator = new EntityGenerator(injector.getInstance(OctaneProvider.class));
-        */
+
     }
 
-    @Test
-    public void testAnno(){
-        Annotation[] annotations = this.getClass().getAnnotations();
-       WorkSpace workSpaceAnnotaton =  getAnnotation(annotations, WorkSpace.class);
-        System.out.println(workSpaceAnnotaton.clean());
-    }
 
     /**
-     * This method will look for the workspace annotation in the implementing subclass
-     * @param annotations - of the subclass
-     * @return boolean - found or not
+     * * This method will look for an annotation in the implementing subclass
+     * @param annotations - annotations of the implementing subclass
+     * @param annotationClass - annotation type to look for
+     * @param <A> - generic annotation class
+     * @return the instance of that annotation or null in case it isn't found
      */
     public <A extends Annotation> A getAnnotation(Annotation[] annotations, Class<A> annotationClass) {
         for (Annotation annotation : annotations) {
@@ -151,35 +148,6 @@ public  class IntegrationTestBase {
             }
         }
         return null;
-    }
-
-    private Object findAnnotation(Annotation[] annotations, Class t) {
-
-//        for (Annotation annotation : annotations) {
-//            if (annotation.getClass().equals(t)) {
-//                return (T) annotation;
-//            }
-//        }
-        return null;
-    }
-
-
-
-    /**
-     * This method will look for the User annotation in the implementing subclass
-     * @param annotations - of the subclass
-     * @return boolean - found or not
-     */
-    private boolean findUserAnnotation(Annotation[] annotations) {
-
-        for (Annotation annotation : annotations) {
-            if (annotation instanceof User) {
-                if (((User) annotation).create()) {
-                    return true;
-                }
-            }
-        }
-        return false;
     }
 
     /**
@@ -322,16 +290,12 @@ public  class IntegrationTestBase {
     public void createNewUser(){
         EntityModel userEntityModel = new EntityModel();
         Set<FieldModel> fields = new HashSet<>();
-        FieldModel typeField = new StringFieldModel("type","user");
-        FieldModel firstName = new StringFieldModel("first_name","john");
-        FieldModel lastName = new StringFieldModel("last_name","doe");
-        FieldModel email = new StringFieldModel("email","john.doe@hpe.com");
-        FieldModel fullname = new StringFieldModel("full_name","John Doe");
-        fields.add(typeField);
-        fields.add(lastName);
-        fields.add(firstName);
-        fields.add(email);
-        fields.add(fullname);
+
+        fields.add(new StringFieldModel("full_name","John Doe"));
+        fields.add(new StringFieldModel("last_name","doe"));
+        fields.add(new StringFieldModel("type","user"));
+        fields.add(new StringFieldModel("first_name","john"));
+        fields.add(new StringFieldModel("email","john.doe@hpe.com"));
         userEntityModel.setValues(fields);
 
         OctaneProvider octaneProvider = serviceModule.getOctane();
