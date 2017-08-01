@@ -37,6 +37,7 @@ import com.hpe.adm.octane.ideplugins.services.connection.ConnectionSettingsProvi
 import com.hpe.adm.octane.ideplugins.services.connection.HttpClientProvider;
 import com.hpe.adm.octane.ideplugins.services.connection.OctaneProvider;
 import com.hpe.adm.octane.ideplugins.services.di.ServiceModule;
+import com.hpe.adm.octane.ideplugins.services.exception.ServiceException;
 import com.hpe.adm.octane.ideplugins.services.filtering.Entity;
 import com.hpe.adm.octane.ideplugins.services.util.ClientType;
 import com.sun.org.apache.xpath.internal.SourceTree;
@@ -56,6 +57,7 @@ import java.lang.annotation.Annotation;
 import java.lang.annotation.Target;
 import java.lang.reflect.AnnotatedType;
 import java.util.*;
+import java.util.stream.Collectors;
 
 import static org.junit.Assert.fail;
 
@@ -118,11 +120,11 @@ public abstract class IntegrationTestBase {
         }
 
         //check the entities needed for the context
-        Entities entities = getAnnotation(annotations,Entities.class);
+        Entities entities = getAnnotation(annotations, Entities.class);
 
         Entity[] entitiesArray = entities.requiredEntities();
 
-        for(Entity newEntity : entitiesArray){
+        for (Entity newEntity : entitiesArray) {
             createEntity(newEntity);
         }
 
@@ -233,7 +235,7 @@ public abstract class IntegrationTestBase {
         octane.entityList(entity.getApiEntityName()).create().entities(Collections.singletonList(entityModel));
     }
 
-    public void deleteEntity(Entity entity){
+    public void deleteEntity(Entity entity) {
         OctaneProvider octaneProvider = serviceModule.getOctane();
         EntityGenerator entityGenerator = new EntityGenerator(octaneProvider);
 
@@ -247,9 +249,9 @@ public abstract class IntegrationTestBase {
     }
 
 
-    public void createRelations(EntityModel user,EntityModel entityModel){
+    public void createRelations(EntityModel user, EntityModel entityModel) {
 
-        user.setValue(new ReferenceFieldModel("userrel",entityModel));
+        user.setValue(new ReferenceFieldModel("userrel", entityModel));
     }
 
     public void createNewUser() {
@@ -272,12 +274,24 @@ public abstract class IntegrationTestBase {
 
     }
 
-//    public EntityModel getUserById(long id){
-//        EntityService entityService = new EntityService();
-//        List<EntityModel> entities = entityService.findEntity(Entity.WORKSPACE_USER,id);
-//
-//        GetEntities entities = octane.entityList("users").get();
-//
-//    }
+    public List<EntityModel> getUsers() {
+
+        EntityService entityService = new EntityService();
+        List<EntityModel> entities = entityService.findEntities(Entity.WORKSPACE_USER).stream().collect(Collectors.toList());
+        return entities;
+    }
+
+    public EntityModel getUserById(long id) {
+        EntityService entityService = new EntityService();
+        try {
+            EntityModel entity = entityService.findEntity(Entity.WORKSPACE_USER, id);
+            return entity;
+        } catch (ServiceException e) {
+            e.printStackTrace();
+            logger.debug("There was an issue with retrieving the user with id " + id);
+        }
+        return null;
+
+    }
 
 }
