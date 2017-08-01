@@ -65,7 +65,7 @@ import static org.junit.Assert.fail;
  * Enables the use of the {@link Inject} annotation
  */
 
-public abstract class IntegrationTestBase {
+public class IntegrationTestBase {
 
 
     private final Logger logger = LogManager.getLogger(IntegrationTestBase.class.getName().toString());
@@ -88,7 +88,7 @@ public abstract class IntegrationTestBase {
 
         WorkSpace workSpaceAnnotation = getAnnotation(annotations, WorkSpace.class);
 
-        if (workSpaceAnnotation.clean()) {
+        if (workSpaceAnnotation != null && workSpaceAnnotation.clean()) {
             connectionSettings = PropertyUtil.readFormVmArgs() != null ? PropertyUtil.readFormVmArgs() : PropertyUtil.readFromPropFile();
             ConnectionSettings cs = connectionSettings.getConnectionSettings();
             cs.setWorkspaceId(createWorkSpace());
@@ -115,18 +115,21 @@ public abstract class IntegrationTestBase {
 
         User userAnnotation = getAnnotation(annotations, User.class);
 
-        if (userAnnotation.create()) {
+        if (userAnnotation != null && userAnnotation.create()) {
             createNewUser();
         }
 
         //check the entities needed for the context
         Entities entities = getAnnotation(annotations, Entities.class);
 
-        Entity[] entitiesArray = entities.requiredEntities();
+        if(entities != null) {
+            Entity[] entitiesArray = entities.requiredEntities();
 
-        for (Entity newEntity : entitiesArray) {
-            createEntity(newEntity);
+            for (Entity newEntity : entitiesArray) {
+               createEntity(newEntity);
+            }
         }
+
 
         Injector injector = Guice.createInjector(serviceModule);
         injector.injectMembers(this);
@@ -223,25 +226,23 @@ public abstract class IntegrationTestBase {
         return ((JSONObject) workspaces.get(0)).getLong("id");
     }
 
-    public void createEntity(Entity entity) {
+    @Test
+    public void testMethod() {
+        Entity entity = Entity.DEFECT;
+        deleteEntity(createEntity(entity));
+    }
+
+
+    public EntityModel createEntity(Entity entity) {
 
         OctaneProvider octaneProvider = serviceModule.getOctane();
-        EntityGenerator entityGenerator = new EntityGenerator(octaneProvider);
-
         EntityModel entityModel = entityGenerator.createEntityModel(entity);
 
         Octane octane = octaneProvider.getOctane();
 
         octane.entityList(entity.getApiEntityName()).create().entities(Collections.singletonList(entityModel));
-    }
 
-    public void deleteEntity(Entity entity) {
-        OctaneProvider octaneProvider = serviceModule.getOctane();
-        EntityGenerator entityGenerator = new EntityGenerator(octaneProvider);
-
-        EntityModel entityModel = entityGenerator.createEntityModel(entity);
-
-        entityGenerator.deleteEntityModel(entityModel);
+        return entityModel;
     }
 
     public void deleteEntity(EntityModel entityModel) {
