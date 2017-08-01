@@ -21,15 +21,14 @@ import com.hpe.adm.nga.sdk.Octane;
 import com.hpe.adm.nga.sdk.authentication.Authentication;
 import com.hpe.adm.nga.sdk.authentication.SimpleUserAuthentication;
 import com.hpe.adm.nga.sdk.entities.GetEntities;
-import com.hpe.adm.nga.sdk.model.EntityModel;
-import com.hpe.adm.nga.sdk.model.FieldModel;
-import com.hpe.adm.nga.sdk.model.ReferenceFieldModel;
-import com.hpe.adm.nga.sdk.model.StringFieldModel;
+import com.hpe.adm.nga.sdk.model.*;
 import com.hpe.adm.nga.sdk.network.OctaneHttpClient;
 import com.hpe.adm.nga.sdk.network.OctaneHttpRequest;
 import com.hpe.adm.nga.sdk.network.OctaneHttpResponse;
 import com.hpe.adm.nga.sdk.network.OctaneRequest;
 import com.hpe.adm.nga.sdk.network.google.GoogleHttpClient;
+import com.hpe.adm.nga.sdk.query.Query;
+import com.hpe.adm.nga.sdk.query.QueryMethod;
 import com.hpe.adm.octane.ideplugins.integrationtests.util.*;
 import com.hpe.adm.octane.ideplugins.services.EntityService;
 import com.hpe.adm.octane.ideplugins.services.connection.ConnectionSettings;
@@ -65,7 +64,7 @@ import static org.junit.Assert.fail;
  * Enables the use of the {@link Inject} annotation
  */
 
-public class IntegrationTestBase {
+public abstract class IntegrationTestBase {
 
 
     private final Logger logger = LogManager.getLogger(IntegrationTestBase.class.getName().toString());
@@ -122,11 +121,11 @@ public class IntegrationTestBase {
         //check the entities needed for the context
         Entities entities = getAnnotation(annotations, Entities.class);
 
-        if(entities != null) {
+        if (entities != null) {
             Entity[] entitiesArray = entities.requiredEntities();
 
             for (Entity newEntity : entitiesArray) {
-               createEntity(newEntity);
+                createEntity(newEntity);
             }
         }
 
@@ -202,12 +201,12 @@ public class IntegrationTestBase {
      * @return the workspace_id of the first workspace obtained, -1 if no workspace is found
      */
     public long getDefaultWorkspaceId() {
-        String postUrl = connectionSettings.getConnectionSettings().getBaseUrl() + "/api/shared_spaces/" +
+        String getUrl = connectionSettings.getConnectionSettings().getBaseUrl() + "/api/shared_spaces/" +
                 connectionSettings.getConnectionSettings().getSharedSpaceId() + "/workspaces";
 
         String urlDomain = connectionSettings.getConnectionSettings().getBaseUrl();
 
-        OctaneHttpRequest getAllWorkspacesRequest = new OctaneHttpRequest.GetOctaneHttpRequest(postUrl);
+        OctaneHttpRequest getAllWorkspacesRequest = new OctaneHttpRequest.GetOctaneHttpRequest(getUrl);
         OctaneHttpClient octaneHttpClient = new GoogleHttpClient(urlDomain);
         octaneHttpClient.authenticate(new SimpleUserAuthentication(connectionSettings.getConnectionSettings().getUserName(), connectionSettings.getConnectionSettings().getPassword(), ClientType.HPE_MQM_UI.name()));
         OctaneHttpResponse response = null;
@@ -224,12 +223,6 @@ public class IntegrationTestBase {
             return -1;
 
         return ((JSONObject) workspaces.get(0)).getLong("id");
-    }
-
-    @Test
-    public void testMethod() {
-        Entity entity = Entity.DEFECT;
-        deleteEntity(createEntity(entity));
     }
 
 
@@ -255,37 +248,64 @@ public class IntegrationTestBase {
         user.setValue(new ReferenceFieldModel("userrel", entityModel));
     }
 
+
     public void createNewUser() {
         EntityModel userEntityModel = new EntityModel();
         Set<FieldModel> fields = new HashSet<>();
 
-        fields.add(new StringFieldModel("full_name", "John Doe"));
-        fields.add(new StringFieldModel("last_name", "doe"));
-        fields.add(new StringFieldModel("type", "user"));
+        List<EntityModel> roles = getRoles();
+        if (roles == null) {
+            logger.debug("failed to obtain the roles in the environment");
+            return;
+        }
+
+        fields.add(new StringFieldModel("full_name", "John Doei"));
+        fields.add(new StringFieldModel("last_name", "doei"));
+        fields.add(new StringFieldModel("type", "workspace_user"));
         fields.add(new StringFieldModel("first_name", "john"));
-        fields.add(new StringFieldModel("email", "john.doe@hpe.com"));
-        fields.add(new ReferenceFieldModel("userrel", new EntityModel()));
+        fields.add(new StringFieldModel("email", "john.doei@hpe.com"));
+        fields.add(new MultiReferenceFieldModel("roles", Collections.singletonList(roles.get(0))));
         userEntityModel.setValues(fields);
 
-
         OctaneProvider octaneProvider = serviceModule.getOctane();
-        Octane octane = octaneProvider.getOctane();
 
-        octane.entityList("users").create().entities(Collections.singletonList(userEntityModel));
+        Octane octane = octaneProvider.getOctane();
+        octane.entityList("workspace_users").create().entities(Collections.singletonList(userEntityModel)).execute();
 
     }
 
-    public List<EntityModel> getUsers() {
 
-        EntityService entityService = new EntityService();
-        List<EntityModel> entities = entityService.findEntities(Entity.WORKSPACE_USER).stream().collect(Collectors.toList());
+    public List<EntityModel> getRoles() {
+
+        OctaneProvider octaneProvider = serviceModule.getOctane();
+
+        Octane octane = octaneProvider.getOctane();
+
+        return octane.entityList("user_roles").get().execute().stream().collect(Collectors.toList());
+    }
+
+
+    public List<EntityModel> getUsers() {
+        EntityService entityService = serviceModule.getInstance(EntityService.class);
+
+        Set<String> mySet = new HashSet<>();
+        mySet.add("roles");
+
+
+        List<EntityModel> entities = new ArrayList<>(entityService.findEntities(
+                Entity.WORKSPACE_USER,
+                null,
+                mySet)
+        );
+        System.out.println(entities);
         return entities;
     }
 
     public EntityModel getUserById(long id) {
-        EntityService entityService = new EntityService();
+        EntityService entityService = serviceModule.getInstance(EntityService.class);
         try {
             EntityModel entity = entityService.findEntity(Entity.WORKSPACE_USER, id);
+            System.out.println(entity);
             return entity;
         } catch (ServiceException e) {
             e.printStackTrace();
