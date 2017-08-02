@@ -124,7 +124,7 @@ public class MetadataService {
                 "epic", "story", "run_suite",
                 "run_manual", "run_automated", "test",
                 "test_automated", "test_suite", "gherkin_test",
-                "test_manual", "work_item", "user_tag", "task")));
+                "test_manual", "work_item", "user_tag", "task", "requirement_document")));
 
         OctaneHttpRequest request = null;
         try {

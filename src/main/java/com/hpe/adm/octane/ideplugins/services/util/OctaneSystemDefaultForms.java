@@ -894,9 +894,57 @@ public class OctaneSystemDefaultForms {
             "        \"layoutKeyToOverride\": \"user.default.test.test_manual.0\"\n" +
             "      },\n" +
             "      \"last_modified\": \"2017-04-19T13:40:21Z\"\n" +
-            "    }\n" +
+            "    },\n" +
+            "    {\n" +
+            "		\"type\": \"form_layout\",\n" +
+            "		\"workspace_id\": 1004,\n" +
+            "		\"creation_time\": \"2017-08-02T07:15:31Z\",\n" +
+            "		\"entity_type\": \"requirement\",\n" +
+            "		\"version_stamp\": 2,\n" +
+            "		\"entity_subtype\": \"requirement_document\",\n" +
+            "		\"name\": \"System defined for Edit\",\n" +
+            "		\"id\": \"1003\",\n" +
+            "		\"body\": {\n" +
+            "			\"layout\": {\n" +
+            "				\"sections\": [\n" +
+            "					{\n" +
+            "						\"fields\": [\n" +
+            "							{\n" +
+            "								\"name\": \"description\",\n" +
+            "								\"size\": \"large\"\n" +
+            "							},\n" +
+            "							{\n" +
+            "								\"name\": \"author\",\n" +
+            "								\"size\": \"medium\"\n" +
+            "							},\n" +
+            "							{\n" +
+            "								\"name\": \"owner\",\n" +
+            "								\"size\": \"medium\"\n" +
+            "							},\n" +
+            "							{\n" +
+            "								\"name\": \"release\",\n" +
+            "								\"size\": \"medium\"\n" +
+            "							},\n" +
+            "							{\n" +
+            "								\"name\": \"creation_time\",\n" +
+            "								\"size\": \"medium\"\n" +
+            "							},\n" +
+            "							{\n" +
+            "								\"name\": \"last_modified\",\n" +
+            "								\"size\": \"medium\"\n" +
+            "							}\n" +
+            "						],\n" +
+            "						\"title\": \"General\"\n" +
+            "					}\n" +
+            "				]\n" +
+            "			},\n" +
+            "			\"isDefaultForNew\": false,\n" +
+            "			\"isDefault\": true\n" +
+            "		},\n" +
+            "		\"last_modified\": \"2017-08-02T07:21:10Z\"\n" +
+            "    },\n" +
             "  ],\n" +
             "  \"exceeds_total_count\": false\n" +
+            "  },\n" +
             "}";
-
 }
