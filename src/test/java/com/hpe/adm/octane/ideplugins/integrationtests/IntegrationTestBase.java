@@ -13,48 +13,32 @@
 
 package com.hpe.adm.octane.ideplugins.integrationtests;
 
-import com.google.api.client.json.Json;
 import com.google.inject.Guice;
 import com.google.inject.Inject;
 import com.google.inject.Injector;
 import com.hpe.adm.nga.sdk.Octane;
-import com.hpe.adm.nga.sdk.authentication.Authentication;
 import com.hpe.adm.nga.sdk.authentication.SimpleUserAuthentication;
-import com.hpe.adm.nga.sdk.entities.GetEntities;
 import com.hpe.adm.nga.sdk.model.*;
 import com.hpe.adm.nga.sdk.network.OctaneHttpClient;
 import com.hpe.adm.nga.sdk.network.OctaneHttpRequest;
 import com.hpe.adm.nga.sdk.network.OctaneHttpResponse;
-import com.hpe.adm.nga.sdk.network.OctaneRequest;
 import com.hpe.adm.nga.sdk.network.google.GoogleHttpClient;
-import com.hpe.adm.nga.sdk.query.Query;
-import com.hpe.adm.nga.sdk.query.QueryMethod;
 import com.hpe.adm.octane.ideplugins.integrationtests.util.*;
 import com.hpe.adm.octane.ideplugins.services.EntityService;
 import com.hpe.adm.octane.ideplugins.services.connection.ConnectionSettings;
 import com.hpe.adm.octane.ideplugins.services.connection.ConnectionSettingsProvider;
-import com.hpe.adm.octane.ideplugins.services.connection.HttpClientProvider;
 import com.hpe.adm.octane.ideplugins.services.connection.OctaneProvider;
 import com.hpe.adm.octane.ideplugins.services.di.ServiceModule;
 import com.hpe.adm.octane.ideplugins.services.exception.ServiceException;
 import com.hpe.adm.octane.ideplugins.services.filtering.Entity;
 import com.hpe.adm.octane.ideplugins.services.util.ClientType;
-import com.sun.org.apache.xpath.internal.SourceTree;
-import org.apache.commons.logging.impl.Log4JLogger;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.json.JSONArray;
 import org.json.JSONObject;
-import org.json.JSONTokener;
-import org.junit.Assert;
 import org.junit.Before;
-import org.junit.BeforeClass;
-import org.junit.Test;
-import sun.net.www.http.HttpClient;
 
 import java.lang.annotation.Annotation;
-import java.lang.annotation.Target;
-import java.lang.reflect.AnnotatedType;
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -71,9 +55,9 @@ public abstract class IntegrationTestBase {
 
     protected EntityGenerator entityGenerator;
 
-    ConnectionSettingsProvider connectionSettings;
+    private ConnectionSettingsProvider connectionSettingsProvider;
 
-    ServiceModule serviceModule;
+    private ServiceModule serviceModule;
 
 
     /**
@@ -81,21 +65,21 @@ public abstract class IntegrationTestBase {
      * implementing class
      */
     @Before
-    public void setup() {
+    public void setUp() {
 
         Annotation[] annotations = this.getClass().getDeclaredAnnotations();
 
         WorkSpace workSpaceAnnotation = getAnnotation(annotations, WorkSpace.class);
 
         if (workSpaceAnnotation != null && workSpaceAnnotation.clean()) {
-            connectionSettings = PropertyUtil.readFormVmArgs() != null ? PropertyUtil.readFormVmArgs() : PropertyUtil.readFromPropFile();
-            ConnectionSettings cs = connectionSettings.getConnectionSettings();
-            cs.setWorkspaceId(createWorkSpace());
-            connectionSettings.setConnectionSettings(cs);
+            connectionSettingsProvider = PropertyUtil.readFormVmArgs() != null ? PropertyUtil.readFormVmArgs() : PropertyUtil.readFromPropFile();
+            ConnectionSettings connectionSettings = connectionSettingsProvider.getConnectionSettings();
+            connectionSettings.setWorkspaceId(createWorkSpace());
+            connectionSettingsProvider.setConnectionSettings(connectionSettings);
         } else {
 
-            connectionSettings = PropertyUtil.readFormVmArgs() != null ? PropertyUtil.readFormVmArgs() : PropertyUtil.readFromPropFile();
-            ConnectionSettings cs = connectionSettings.getConnectionSettings();
+            connectionSettingsProvider = PropertyUtil.readFormVmArgs() != null ? PropertyUtil.readFormVmArgs() : PropertyUtil.readFromPropFile();
+            ConnectionSettings cs = connectionSettingsProvider.getConnectionSettings();
             long defaultWorkspaceId = getDefaultWorkspaceId();
 
             if (defaultWorkspaceId > 0)
@@ -103,14 +87,14 @@ public abstract class IntegrationTestBase {
             else {
                 cs.setWorkspaceId(createWorkSpace());
             }
-            connectionSettings.setConnectionSettings(cs);
+            connectionSettingsProvider.setConnectionSettings(cs);
         }
 
-        if (connectionSettings == null) {
+        if (connectionSettingsProvider == null) {
             throw new RuntimeException("Cannot retrieve connection settings from either vm args or prop file, cannot run tests");
         }
 
-        serviceModule = new ServiceModule(connectionSettings);
+        serviceModule = new ServiceModule(connectionSettingsProvider);
 
         User userAnnotation = getAnnotation(annotations, User.class);
 
@@ -161,10 +145,10 @@ public abstract class IntegrationTestBase {
      */
     public Long createWorkSpace() {
 
-        String postUrl = connectionSettings.getConnectionSettings().getBaseUrl() + "/api/shared_spaces/" +
-                connectionSettings.getConnectionSettings().getSharedSpaceId() + "/workspaces";
+        String postUrl = connectionSettingsProvider.getConnectionSettings().getBaseUrl() + "/api/shared_spaces/" +
+                connectionSettingsProvider.getConnectionSettings().getSharedSpaceId() + "/workspaces";
 
-        String urlDomain = connectionSettings.getConnectionSettings().getBaseUrl();
+        String urlDomain = connectionSettingsProvider.getConnectionSettings().getBaseUrl();
 
         JSONObject dataSet = new JSONObject();
         JSONObject credentialsJson = new JSONObject();
@@ -178,7 +162,7 @@ public abstract class IntegrationTestBase {
 
         OctaneHttpRequest postNewWorkspaceRequest = new OctaneHttpRequest.PostOctaneHttpRequest(postUrl, OctaneHttpRequest.JSON_CONTENT_TYPE, dataSet.toString());
         OctaneHttpClient octaneHttpClient = new GoogleHttpClient(urlDomain);
-        octaneHttpClient.authenticate(new SimpleUserAuthentication(connectionSettings.getConnectionSettings().getUserName(), connectionSettings.getConnectionSettings().getPassword(), ClientType.HPE_MQM_UI.name()));
+        octaneHttpClient.authenticate(new SimpleUserAuthentication(connectionSettingsProvider.getConnectionSettings().getUserName(), connectionSettingsProvider.getConnectionSettings().getPassword(), ClientType.HPE_MQM_UI.name()));
         OctaneHttpResponse response = null;
 
 
@@ -201,14 +185,14 @@ public abstract class IntegrationTestBase {
      * @return the workspace_id of the first workspace obtained, -1 if no workspace is found
      */
     public long getDefaultWorkspaceId() {
-        String getUrl = connectionSettings.getConnectionSettings().getBaseUrl() + "/api/shared_spaces/" +
-                connectionSettings.getConnectionSettings().getSharedSpaceId() + "/workspaces";
+        String getUrl = connectionSettingsProvider.getConnectionSettings().getBaseUrl() + "/api/shared_spaces/" +
+                connectionSettingsProvider.getConnectionSettings().getSharedSpaceId() + "/workspaces";
 
-        String urlDomain = connectionSettings.getConnectionSettings().getBaseUrl();
+        String urlDomain = connectionSettingsProvider.getConnectionSettings().getBaseUrl();
 
         OctaneHttpRequest getAllWorkspacesRequest = new OctaneHttpRequest.GetOctaneHttpRequest(getUrl);
         OctaneHttpClient octaneHttpClient = new GoogleHttpClient(urlDomain);
-        octaneHttpClient.authenticate(new SimpleUserAuthentication(connectionSettings.getConnectionSettings().getUserName(), connectionSettings.getConnectionSettings().getPassword(), ClientType.HPE_MQM_UI.name()));
+        octaneHttpClient.authenticate(new SimpleUserAuthentication(connectionSettingsProvider.getConnectionSettings().getUserName(), connectionSettingsProvider.getConnectionSettings().getPassword(), ClientType.HPE_MQM_UI.name()));
         OctaneHttpResponse response = null;
 
         try {
