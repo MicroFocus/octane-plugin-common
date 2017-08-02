@@ -43,7 +43,6 @@ public class PropertyUtil {
                 Stream.of(
                         PropertyKeys.URL,
                         PropertyKeys.SHARED_SPACE,
-                        //PropertyKeys.WORKSPACE,
                         PropertyKeys.USERNAME,
                         PropertyKeys.PASSWORD
                 ).allMatch(propertyKey -> props.keySet().contains(propertyKey.keyStr));
