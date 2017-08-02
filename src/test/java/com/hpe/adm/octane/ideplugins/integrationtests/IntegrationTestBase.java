@@ -90,7 +90,6 @@ public abstract class IntegrationTestBase {
             throw new RuntimeException("Cannot retrieve connection settings from either vm args or prop file, cannot run tests");
         }
         serviceModule = new ServiceModule(connectionSettingsProvider);
-
         User userAnnotation = getAnnotation(annotations, User.class);
         if (userAnnotation != null && userAnnotation.create()) {
             createNewUser();
@@ -106,7 +105,6 @@ public abstract class IntegrationTestBase {
                 createEntity(newEntity);
             }
         }
-
         nativeStatus = new EntityModel("type", "list_node");
         nativeStatus.setValue(new StringFieldModel("id", "1094"));
     }
@@ -132,7 +130,7 @@ public abstract class IntegrationTestBase {
     /**
      * This method will create a new workspace
      *
-     * @return workspace_id
+     * @return workspace_id of the newly created workspace
      */
     public Long createWorkSpace() {
         String postUrl = connectionSettingsProvider.getConnectionSettings().getBaseUrl() + "/api/shared_spaces/" +
@@ -152,7 +150,6 @@ public abstract class IntegrationTestBase {
         OctaneHttpResponse response = null;
         try {
             response = octaneHttpClient.execute(postNewWorkspaceRequest);
-
         } catch (Exception e) {
             logger.error("Error while trying to get the response when creating a new workspace!");
             fail(e.toString());
@@ -175,7 +172,6 @@ public abstract class IntegrationTestBase {
         OctaneHttpClient octaneHttpClient = new GoogleHttpClient(urlDomain);
         octaneHttpClient.authenticate(new SimpleUserAuthentication(connectionSettingsProvider.getConnectionSettings().getUserName(), connectionSettingsProvider.getConnectionSettings().getPassword(), ClientType.HPE_MQM_UI.name()));
         OctaneHttpResponse response = null;
-
         try {
             response = octaneHttpClient.execute(getAllWorkspacesRequest);
         } catch (Exception e) {
@@ -186,7 +182,6 @@ public abstract class IntegrationTestBase {
         JSONArray workspaces = responseJson.getJSONArray("data");
         if (workspaces.length() == 0)
             return -1;
-
         return ((JSONObject) workspaces.get(0)).getLong("id");
     }
 
@@ -229,7 +224,6 @@ public abstract class IntegrationTestBase {
     public void createNewUser() {
         EntityModel userEntityModel = new EntityModel();
         Set<FieldModel> fields = new HashSet<>();
-
         List<EntityModel> roles = getRoles();
         if (roles == null) {
             logger.debug("failed to obtain the roles in the environment");
@@ -267,7 +261,6 @@ public abstract class IntegrationTestBase {
      */
     public List<EntityModel> getUsers() {
         EntityService entityService = serviceModule.getInstance(EntityService.class);
-
         Set<String> mySet = new HashSet<>();
         mySet.add("roles");
 
@@ -323,12 +316,10 @@ public abstract class IntegrationTestBase {
      * @return the built entityModel
      */
     public EntityModel createTask(EntityModel userStory, String taskName) {
-
         EntityModel taskEntityModel = new EntityModel("type", "task");
         taskEntityModel.setValue(new StringFieldModel("name", taskName));
         taskEntityModel.setValue(new ReferenceFieldModel("story", userStory));
         Entity entity = Entity.getEntityType(taskEntityModel);
-
         OctaneProvider octaneProvider = serviceModule.getOctane();
         Octane octane = octaneProvider.getOctane();
         return octane.entityList(entity.getApiEntityName()).create().entities(Collections.singletonList(taskEntityModel)).execute().iterator().next();
