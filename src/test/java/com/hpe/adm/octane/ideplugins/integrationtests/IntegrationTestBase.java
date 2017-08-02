@@ -107,8 +107,8 @@ public abstract class IntegrationTestBase {
             }
         }
 
-        nativeStatus = new EntityModel("type","list_node");
-        nativeStatus.setValue(new StringFieldModel("id","1094"));
+        nativeStatus = new EntityModel("type", "list_node");
+        nativeStatus.setValue(new StringFieldModel("id", "1094"));
     }
 
 
@@ -300,16 +300,16 @@ public abstract class IntegrationTestBase {
     }
 
 
-
-    public ServiceModule getServiceModule(){
+    public ServiceModule getServiceModule() {
         return serviceModule;
     }
 
     /**
      * This method will return the first release in the list of releases
+     *
      * @return
      */
-    public EntityModel getRelease(){
+    public EntityModel getRelease() {
         OctaneProvider octaneProvider = serviceModule.getOctane();
         Octane octane = octaneProvider.getOctane();
         return octane.entityList("releases").get().execute().iterator().next();
@@ -317,11 +317,12 @@ public abstract class IntegrationTestBase {
 
     /**
      * This method is going to create a Task
+     *
      * @param userStory - user story to attach the task to
-     * @param taskName - the name of the task
+     * @param taskName  - the name of the task
      * @return the built entityModel
      */
-    public EntityModel createTask(EntityModel userStory, String taskName){
+    public EntityModel createTask(EntityModel userStory, String taskName) {
 
         EntityModel taskEntityModel = new EntityModel("type", "task");
         taskEntityModel.setValue(new StringFieldModel("name", taskName));
@@ -335,18 +336,19 @@ public abstract class IntegrationTestBase {
 
     /**
      * This method will create a manual test run
+     *
      * @param manualTest - the Manual Test to which the test run is planned
-     * @param name - the name of the run
+     * @param name       - the name of the run
      * @return the entityModel of the run
      */
-    public EntityModel createManualRun(EntityModel manualTest,String name){
+    public EntityModel createManualRun(EntityModel manualTest, String name) {
 
-        EntityModel manualRun = new EntityModel("type","run");
-        manualRun.setValue(new StringFieldModel("name","a1"));
-        manualRun.setValue(new StringFieldModel("subtype","run_manual"));
-        manualRun.setValue(new ReferenceFieldModel("native_status",nativeStatus));
-        manualRun.setValue(new ReferenceFieldModel("release",getRelease()));
-        manualRun.setValue(new ReferenceFieldModel("test",manualTest));
+        EntityModel manualRun = new EntityModel("type", "run");
+        manualRun.setValue(new StringFieldModel("name", "a1"));
+        manualRun.setValue(new StringFieldModel("subtype", "run_manual"));
+        manualRun.setValue(new ReferenceFieldModel("native_status", nativeStatus));
+        manualRun.setValue(new ReferenceFieldModel("release", getRelease()));
+        manualRun.setValue(new ReferenceFieldModel("test", manualTest));
         Entity entity = Entity.getEntityType(manualRun);
         OctaneProvider octaneProvider = serviceModule.getOctane();
         Octane octane = octaneProvider.getOctane();
@@ -355,15 +357,16 @@ public abstract class IntegrationTestBase {
 
     /**
      * This method will create a Test Suite
+     *
      * @param name the name of the test suite
      * @return the entityModel of the test suite, null if not created
      */
-    public EntityModel createTestSuite(String name){
-        EntityModel testSuite = new EntityModel("type","test");
-        testSuite.setValue(new StringFieldModel("name",name));
-        testSuite.setValue(new StringFieldModel("subtype","test_suite"));
+    public EntityModel createTestSuite(String name) {
+        EntityModel testSuite = new EntityModel("type", "test");
+        testSuite.setValue(new StringFieldModel("name", name));
+        testSuite.setValue(new StringFieldModel("subtype", "test_suite"));
         Entity entity = Entity.getEntityType(testSuite);
-        OctaneProvider octaneProvider = getServiceModule().getOctane();
+        OctaneProvider octaneProvider = serviceModule.getOctane();
         Octane octane = octaneProvider.getOctane();
 
         return octane.entityList(entity.getApiEntityName()).create().entities(Collections.singletonList(testSuite)).execute().iterator().next();
@@ -371,23 +374,40 @@ public abstract class IntegrationTestBase {
 
     /**
      * this method will create a test suite run
-     * @param testSuite the test suite which is used to create the test suite run
+     *
+     * @param testSuite        the test suite which is used to create the test suite run
      * @param testSuiteRunName the name of the suite run
      * @return the created entityModel of the suite run
      */
-    public EntityModel createTestSuiteRun(EntityModel testSuite,String testSuiteRunName){
-        EntityModel testSuiteRun = new EntityModel("type","run");
-        testSuiteRun.setValue(new StringFieldModel("name",testSuiteRunName));
-        testSuiteRun.setValue(new StringFieldModel("subtype","run_suite"));
-        testSuiteRun.setValue(new ReferenceFieldModel("native_status",getNativeStatus()));
-        testSuiteRun.setValue(new ReferenceFieldModel("release",getRelease()));
-        testSuiteRun.setValue(new ReferenceFieldModel("test",testSuite));
+    public EntityModel createTestSuiteRun(EntityModel testSuite, String testSuiteRunName) {
+        EntityModel testSuiteRun = new EntityModel("type", "run");
+        testSuiteRun.setValue(new StringFieldModel("name", testSuiteRunName));
+        testSuiteRun.setValue(new StringFieldModel("subtype", "run_suite"));
+        testSuiteRun.setValue(new ReferenceFieldModel("native_status", getNativeStatus()));
+        testSuiteRun.setValue(new ReferenceFieldModel("release", getRelease()));
+        testSuiteRun.setValue(new ReferenceFieldModel("test", testSuite));
         Entity entity = Entity.getEntityType(testSuiteRun);
         OctaneProvider octaneProvider = serviceModule.getOctane();
         Octane octane = octaneProvider.getOctane();
         return octane.entityList(entity.getApiEntityName()).create().entities(Collections.singletonList(testSuiteRun)).execute().iterator().next();
     }
-    public EntityModel getNativeStatus(){
+
+    public EntityModel getNativeStatus() {
         return nativeStatus;
+    }
+
+    /**
+     * This method creates an automated test
+     * @param testName - the name of the new automated test
+     * @return the newly created automated test entityModel
+     */
+    public EntityModel createAutomatedTest(String testName) {
+        EntityModel automatedTest = new EntityModel("type", "test");
+        automatedTest.setValue(new StringFieldModel("subtype", "test_automated"));
+        automatedTest.setValue(new StringFieldModel("name", testName));
+        Entity entity = Entity.getEntityType(automatedTest);
+        OctaneProvider octaneProvider = getServiceModule().getOctane();
+        Octane octane = octaneProvider.getOctane();
+        return octane.entityList(entity.getApiEntityName()).create().entities(Collections.singletonList(automatedTest)).execute().iterator().next();
     }
 }
