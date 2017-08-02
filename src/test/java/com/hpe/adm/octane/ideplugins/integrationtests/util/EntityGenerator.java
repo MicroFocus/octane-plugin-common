@@ -61,7 +61,10 @@ public class EntityGenerator {
         }
 
         newEntity.setValue(new StringFieldModel("name", generateEntityName(entity)));
-        newEntity.setValue(new ReferenceFieldModel("parent", getWorkItemRoot()));
+
+        if(!entity.getApiEntityName().contains("test") && !entity.getApiEntityName().contains("task")) {
+            newEntity.setValue(new ReferenceFieldModel("parent", getWorkItemRoot()));
+        }
         newEntity.setValue(new ReferenceFieldModel("phase", getDefaultPhase(entity)));
 
         Collection<EntityModel> createdEntities = octaneProvider
