@@ -137,11 +137,11 @@ public abstract class IntegrationTestBase {
                 connectionSettingsProvider.getConnectionSettings().getSharedSpaceId() + "/workspaces";
         String urlDomain = connectionSettingsProvider.getConnectionSettings().getBaseUrl();
         JSONObject dataSet = new JSONObject();
-        JSONObject credentialsJson = new JSONObject();
-        credentialsJson.put("name", "test_workspace1");
-        credentialsJson.put("description", "Created from intellij");
+        JSONObject credentials = new JSONObject();
+        credentials.put("name", "test_workspace1");
+        credentials.put("description", "Created from intellij");
         JSONArray jsonArray = new JSONArray();
-        jsonArray.put(credentialsJson);
+        jsonArray.put(credentials);
         dataSet.put("data", jsonArray);
         System.out.println(dataSet.toString());
         OctaneHttpRequest postNewWorkspaceRequest = new OctaneHttpRequest.PostOctaneHttpRequest(postUrl, OctaneHttpRequest.JSON_CONTENT_TYPE, dataSet.toString());
