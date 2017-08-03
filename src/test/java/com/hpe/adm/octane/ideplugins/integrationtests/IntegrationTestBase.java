@@ -426,4 +426,10 @@ public abstract class IntegrationTestBase {
         Octane octane = octaneProvider.getOctane();
         octane.entityList(entity.getApiEntityName()).update().entities(Collections.singleton(backlogItem)).execute();
     }
+
+    public List<EntityModel> getMyWorkItems(){
+        MyWorkService myWorkService = serviceModule.getMyWorkService();
+
+        return myWorkService.getMyWork().stream().collect(Collectors.toList());
+    }
 }
