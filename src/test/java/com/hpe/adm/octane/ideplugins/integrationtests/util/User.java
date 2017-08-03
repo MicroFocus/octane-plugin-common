@@ -15,4 +15,6 @@ import java.lang.annotation.Target;
 public @interface User {
 
     boolean create();
+    String firstName();
+    String lastName();
 }

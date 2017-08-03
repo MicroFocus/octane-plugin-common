@@ -92,7 +92,7 @@ public abstract class IntegrationTestBase {
         serviceModule = new ServiceModule(connectionSettingsProvider);
         User userAnnotation = getAnnotation(annotations, User.class);
         if (userAnnotation != null && userAnnotation.create()) {
-            createNewUser();
+            createNewUser(userAnnotation.firstName(),userAnnotation.lastName());
         }
         Injector injector = Guice.createInjector(serviceModule);
         injector.injectMembers(this);
@@ -219,9 +219,9 @@ public abstract class IntegrationTestBase {
     }
 
     /**
-     * This method creates a new hardcoded user
+     * This method creates a new user
      */
-    public void createNewUser() {
+    public void createNewUser(String firstName,String lastName) {
         EntityModel userEntityModel = new EntityModel();
         Set<FieldModel> fields = new HashSet<>();
         List<EntityModel> roles = getRoles();
@@ -229,11 +229,11 @@ public abstract class IntegrationTestBase {
             logger.debug("failed to obtain the roles in the environment");
             return;
         }
-        fields.add(new StringFieldModel("full_name", "John Doei"));
-        fields.add(new StringFieldModel("last_name", "doei"));
+        fields.add(new StringFieldModel("full_name", firstName + lastName));
+        fields.add(new StringFieldModel("last_name", lastName));
         fields.add(new StringFieldModel("type", "workspace_user"));
-        fields.add(new StringFieldModel("first_name", "john"));
-        fields.add(new StringFieldModel("email", "john.doei@hpe.com"));
+        fields.add(new StringFieldModel("first_name", firstName));
+        fields.add(new StringFieldModel("email", firstName+"."+lastName +"@hpe.com"));
         fields.add(new MultiReferenceFieldModel("roles", Collections.singletonList(roles.get(0))));
         userEntityModel.setValues(fields);
 
@@ -246,7 +246,7 @@ public abstract class IntegrationTestBase {
     /**
      * This method will retrieve all the possible roles that can be assigned to a user
      *
-     * @return
+     * @return - a list of enitityModels representing the possible roles
      */
     public List<EntityModel> getRoles() {
         OctaneProvider octaneProvider = serviceModule.getOctane();
@@ -296,7 +296,7 @@ public abstract class IntegrationTestBase {
     /**
      * This method will return the first release in the list of releases
      *
-     * @return
+     * @return the entityModel of the release
      */
     public EntityModel getRelease() {
         OctaneProvider octaneProvider = serviceModule.getOctane();
