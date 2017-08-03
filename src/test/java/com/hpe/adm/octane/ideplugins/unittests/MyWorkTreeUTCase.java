@@ -7,27 +7,34 @@ import com.hpe.adm.octane.ideplugins.integrationtests.util.WorkSpace;
 import com.hpe.adm.octane.ideplugins.services.filtering.Entity;
 import org.junit.Test;
 
-@WorkSpace(clean = true)
-@Entities(requiredEntities = {Entity.DEFECT,Entity.DEFECT,Entity.QUALITY_STORY,Entity.QUALITY_STORY,
-        Entity.MANUAL_TEST,Entity.MANUAL_TEST,Entity.GHERKIN_TEST,Entity.GHERKIN_TEST})
+@WorkSpace(clean = false)
 public class MyWorkTreeUTCase extends IntegrationTestBase {
 
     @Test
     public void testAddEntities() {
 
-        EntityModel testModel = createEntity(Entity.MANUAL_TEST);
-        createManualRun(testModel, "a2");
-        createManualRun(testModel, "a3");
+        createEntity(Entity.DEFECT);
+        addToMyWork(createEntity(Entity.DEFECT));
 
-        EntityModel userStoryEntityModel = createEntity(Entity.USER_STORY);
-        createTask(userStoryEntityModel, "task1");
-        createTask(userStoryEntityModel, "task2");
+        createEntity(Entity.QUALITY_STORY);
+        addToMyWork(createEntity(Entity.QUALITY_STORY));
+
+        createEntity(Entity.MANUAL_TEST);
+
+        createEntity(Entity.GHERKIN_TEST);
+        addToMyWork(createEntity(Entity.GHERKIN_TEST));
+
+        addToMyWork(createManualRun(createEntity(Entity.MANUAL_TEST), "a2"));
+        createManualRun(createEntity(Entity.MANUAL_TEST), "a3");
+
+        addToMyWork(createTask(createEntity(Entity.USER_STORY), "task1"));
+        createTask(createEntity(Entity.USER_STORY), "task2");
 
         createTestSuite("suite 1");
         createTestSuite("suite 2");
 
         createTestSuiteRun(createTestSuite("test suite 3"), "test suite run 1");
-        createTestSuiteRun(createTestSuite("test suite 3"), "test suite run 2");
+        addToMyWork(createTestSuiteRun(createTestSuite("test suite 3"), "test suite run 2"));
 
         createAutomatedTest("automated test 1");
         createAutomatedTest("automated test 2");
