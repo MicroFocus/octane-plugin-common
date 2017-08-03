@@ -9,6 +9,7 @@ import java.lang.annotation.Target;
 /**
  * This annotation is to be used on the classes that extend the IntegrationTestBase class
  * the parameter create is used to state if the environment asks for a new user or not
+ * the parameters refering to the name of the user are to enable the possibility to create custom users
  */
 @Retention(RetentionPolicy.RUNTIME)
 @Target(ElementType.TYPE)

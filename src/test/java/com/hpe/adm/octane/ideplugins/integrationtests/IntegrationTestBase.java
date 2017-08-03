@@ -219,7 +219,7 @@ public abstract class IntegrationTestBase {
     }
 
     /**
-     * This method creates a new user
+     * This method creates a new user with default password: Welcome1
      */
     public void createNewUser(String firstName,String lastName) {
         EntityModel userEntityModel = new EntityModel();
@@ -234,6 +234,7 @@ public abstract class IntegrationTestBase {
         fields.add(new StringFieldModel("type", "workspace_user"));
         fields.add(new StringFieldModel("first_name", firstName));
         fields.add(new StringFieldModel("email", firstName+"."+lastName +"@hpe.com"));
+        fields.add(new StringFieldModel("password", "Welcome1"));
         fields.add(new MultiReferenceFieldModel("roles", Collections.singletonList(roles.get(0))));
         userEntityModel.setValues(fields);
 
