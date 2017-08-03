@@ -31,6 +31,8 @@ import com.hpe.adm.octane.ideplugins.services.connection.OctaneProvider;
 import com.hpe.adm.octane.ideplugins.services.di.ServiceModule;
 import com.hpe.adm.octane.ideplugins.services.exception.ServiceException;
 import com.hpe.adm.octane.ideplugins.services.filtering.Entity;
+import com.hpe.adm.octane.ideplugins.services.mywork.MyWorkService;
+import com.hpe.adm.octane.ideplugins.services.mywork.MyWorkUtil;
 import com.hpe.adm.octane.ideplugins.services.util.ClientType;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -394,5 +396,27 @@ public abstract class IntegrationTestBase {
         OctaneProvider octaneProvider = serviceModule.getOctane();
         Octane octane = octaneProvider.getOctane();
         return octane.entityList(entity.getApiEntityName()).create().entities(Collections.singletonList(automatedTest)).execute().iterator().next();
+    }
+
+
+
+    public void addToMyWork(EntityModel entityModel){
+        MyWorkService myWorkService = serviceModule.getInstance(MyWorkService.class);
+
+        try {
+            myWorkService.addToMyWork(entityModel);
+        }catch(Throwable e) {
+            e.printStackTrace();
+        }
+    }
+
+    public void setOwner(EntityModel backlogItem, EntityModel owner){
+
+        backlogItem.setValue(new ReferenceFieldModel("owner",owner));
+        Entity entity = Entity.getEntityType(backlogItem);
+        OctaneProvider octaneProvider = serviceModule.getOctane();
+        Octane octane = octaneProvider.getOctane();
+        octane.entityList(entity.getApiEntityName()).update().entities(Collections.singleton(backlogItem)).execute();
+
     }
 }
