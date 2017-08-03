@@ -399,7 +399,10 @@ public abstract class IntegrationTestBase {
     }
 
 
-
+    /**
+     * This method will add an entity into the my work section
+     * @param entityModel - the entity to be added
+     */
     public void addToMyWork(EntityModel entityModel){
         MyWorkService myWorkService = serviceModule.getInstance(MyWorkService.class);
 
@@ -410,6 +413,11 @@ public abstract class IntegrationTestBase {
         }
     }
 
+    /**
+     * This method will set a user to be the owner of another entity
+     * @param backlogItem - the backlog item
+     * @param owner - the user
+     */
     public void setOwner(EntityModel backlogItem, EntityModel owner){
 
         backlogItem.setValue(new ReferenceFieldModel("owner",owner));
@@ -417,6 +425,5 @@ public abstract class IntegrationTestBase {
         OctaneProvider octaneProvider = serviceModule.getOctane();
         Octane octane = octaneProvider.getOctane();
         octane.entityList(entity.getApiEntityName()).update().entities(Collections.singleton(backlogItem)).execute();
-
     }
 }
