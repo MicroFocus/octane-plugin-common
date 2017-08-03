@@ -293,10 +293,6 @@ public abstract class IntegrationTestBase {
     }
 
 
-    public ServiceModule getServiceModule() {
-        return serviceModule;
-    }
-
     /**
      * This method will return the first release in the list of releases
      *
@@ -374,7 +370,7 @@ public abstract class IntegrationTestBase {
         EntityModel testSuiteRun = new EntityModel("type", "run");
         testSuiteRun.setValue(new StringFieldModel("name", testSuiteRunName));
         testSuiteRun.setValue(new StringFieldModel("subtype", "run_suite"));
-        testSuiteRun.setValue(new ReferenceFieldModel("native_status", getNativeStatus()));
+        testSuiteRun.setValue(new ReferenceFieldModel("native_status", nativeStatus));
         testSuiteRun.setValue(new ReferenceFieldModel("release", getRelease()));
         testSuiteRun.setValue(new ReferenceFieldModel("test", testSuite));
         Entity entity = Entity.getEntityType(testSuiteRun);
@@ -383,9 +379,6 @@ public abstract class IntegrationTestBase {
         return octane.entityList(entity.getApiEntityName()).create().entities(Collections.singletonList(testSuiteRun)).execute().iterator().next();
     }
 
-    public EntityModel getNativeStatus() {
-        return nativeStatus;
-    }
 
     /**
      * This method creates an automated test
@@ -397,7 +390,7 @@ public abstract class IntegrationTestBase {
         automatedTest.setValue(new StringFieldModel("subtype", "test_automated"));
         automatedTest.setValue(new StringFieldModel("name", testName));
         Entity entity = Entity.getEntityType(automatedTest);
-        OctaneProvider octaneProvider = getServiceModule().getOctane();
+        OctaneProvider octaneProvider = serviceModule.getOctane();
         Octane octane = octaneProvider.getOctane();
         return octane.entityList(entity.getApiEntityName()).create().entities(Collections.singletonList(automatedTest)).execute().iterator().next();
     }
