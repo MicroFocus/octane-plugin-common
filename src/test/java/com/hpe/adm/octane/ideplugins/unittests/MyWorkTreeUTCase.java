@@ -24,11 +24,11 @@ public class MyWorkTreeUTCase extends IntegrationTestBase {
         createEntity(Entity.GHERKIN_TEST);
         addToMyWork(createEntity(Entity.GHERKIN_TEST));
 
-        addToMyWork(createManualRun(createEntity(Entity.MANUAL_TEST), "a2"));
-        createManualRun(createEntity(Entity.MANUAL_TEST), "a3");
+        addToMyWork(createManualRun(createEntity(Entity.MANUAL_TEST), "manual test 1"));
+        createManualRun(createEntity(Entity.MANUAL_TEST), "manual test 2");
 
-        addToMyWork(createTask(createEntity(Entity.USER_STORY), "task1"));
-        createTask(createEntity(Entity.USER_STORY), "task2");
+        addToMyWork(createTask(createEntity(Entity.USER_STORY), "task 1"));
+        createTask(createEntity(Entity.USER_STORY), "task 2");
 
         createTestSuite("suite 1");
         createTestSuite("suite 2");
