@@ -18,7 +18,7 @@ import java.util.stream.Stream;
 public class MyWorkTreeUTCase extends IntegrationTestBase {
 
 
-    public List<EntityModel> testAddEntities() {
+    private List<EntityModel> testAddEntities() {
         List<EntityModel> entities = new ArrayList<>();
         entities.add(createEntity(Entity.DEFECT));
 
@@ -60,6 +60,14 @@ public class MyWorkTreeUTCase extends IntegrationTestBase {
         return entityModels;
     }
 
+    /**
+     * This method is generating 3 entities of each entity type
+     * Out of this 3 entities 1 will be added to my work section using the method addToMyWork
+     * Another entity will be added to my work section by updating their owner sections
+     * the last entity will be left as a backlog item
+     * The test checks whether the methods add the items to my work and verifies if they are present using the method
+     * getMyWork()
+     */
     @Test
     public void setUpMyWorkTree() {
         List<EntityModel> entitiesForMyWork = testAddEntities();
@@ -74,19 +82,21 @@ public class MyWorkTreeUTCase extends IntegrationTestBase {
 
         boolean expectedWorkItems = false;
         int rounds = 0;
+        int itemCount = workItems.size();
         for (EntityModel entityModel : workItems) {
             rounds++;
             ReferenceFieldModel subField = null;
-            if (entityModel.getValue("entity_type").getValue().toString().equals("work_item")) {
+            String entityType = entityModel.getValue("entity_type").getValue().toString();
+            if (entityType.equals("work_item")) {
                 subField = (ReferenceFieldModel) entityModel.getValue("my_follow_items_work_item");
             }
-            if (entityModel.getValue("entity_type").getValue().toString().equals("test")) {
+            if (entityType.equals("test")) {
                 subField = (ReferenceFieldModel) entityModel.getValue("my_follow_items_test");
             }
-            if (entityModel.getValue("entity_type").getValue().toString().equals("run")) {
+            if (entityType.equals("run")) {
                 subField = (ReferenceFieldModel) entityModel.getValue("my_follow_items_run");
             }
-            if (entityModel.getValue("entity_type").getValue().toString().equals("task")) {
+            if (entityType.equals("task")) {
                 subField = (ReferenceFieldModel) entityModel.getValue("my_follow_items_task");
             }
             for (EntityModel entityModel1 : myWorkEntities) {
@@ -98,7 +108,7 @@ public class MyWorkTreeUTCase extends IntegrationTestBase {
             if (!expectedWorkItems) {
                 break;
             }
-            if (rounds == workItems.size()) {
+            if (rounds == itemCount) {
                 break;
             }
             expectedWorkItems = false;

@@ -62,7 +62,8 @@ public class EntityGenerator {
 
         newEntity.setValue(new StringFieldModel("name", generateEntityName(entity)));
 
-        if(!entity.getApiEntityName().contains("test") && !entity.getApiEntityName().contains("task")) {
+        String type = entity.getApiEntityName();
+        if(!type.contains("test") && !type.contains("task")) {
             newEntity.setValue(new ReferenceFieldModel("parent", getWorkItemRoot()));
         }
         newEntity.setValue(new ReferenceFieldModel("phase", getDefaultPhase(entity)));
