@@ -11,6 +11,8 @@ import org.junit.Test;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 @WorkSpace(clean = false)
 public class MyWorkTreeUTCase extends IntegrationTestBase {
@@ -62,10 +64,13 @@ public class MyWorkTreeUTCase extends IntegrationTestBase {
     public void setUpMyWorkTree() {
         List<EntityModel> entitiesForMyWork = testAddEntities();
         List<EntityModel> entities = testAddEntities();
+        List<EntityModel> entitiesWithOwners = addToMyWorkByOwnerField(testAddEntities());
         List<EntityModel> entityModelsInMyWork = addEntitiesToMyWork(entitiesForMyWork);
         List<EntityModel> workItems = getMyWorkItems();
 
-        assert entityModelsInMyWork.size() == workItems.size();
+        List<EntityModel> myWorkEntities = Stream.concat(entityModelsInMyWork.stream(), entitiesWithOwners.stream()).collect(Collectors.toList());
+
+        assert myWorkEntities.size() == workItems.size();
 
         boolean expectedWorkItems = false;
         int rounds = 0;
@@ -84,7 +89,7 @@ public class MyWorkTreeUTCase extends IntegrationTestBase {
             if (entityModel.getValue("entity_type").getValue().toString().equals("task")) {
                 subField = (ReferenceFieldModel) entityModel.getValue("my_follow_items_task");
             }
-            for (EntityModel entityModel1 : entityModelsInMyWork) {
+            for (EntityModel entityModel1 : myWorkEntities) {
                 if (subField.getValue().getValue("id").getValue().toString().equals(entityModel1.getValue("id").getValue().toString())) {
                     expectedWorkItems = true;
                     break;
@@ -101,5 +106,18 @@ public class MyWorkTreeUTCase extends IntegrationTestBase {
         assert expectedWorkItems;
     }
 
+
+    public List<EntityModel> addToMyWorkByOwnerField(List<EntityModel> backlogItems) {
+        EntityModel currentUser = getCurrentUser();
+        List<EntityModel> entityModels = new ArrayList<>();
+        for (EntityModel entityModel : backlogItems) {
+            if (entityModel.getValue("type").getValue().equals("test_automated") || entityModel.getValue("type").getValue().equals("test_suite") || entityModel.getValue("type").getValue().toString().contains("run")) {
+                continue;
+            }
+            setOwner(entityModel, currentUser);
+            entityModels.add(entityModel);
+        }
+        return entityModels;
+    }
 
 }
