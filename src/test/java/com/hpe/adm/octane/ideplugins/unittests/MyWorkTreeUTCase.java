@@ -1,6 +1,7 @@
 package com.hpe.adm.octane.ideplugins.unittests;
 
 import com.hpe.adm.nga.sdk.model.EntityModel;
+import com.hpe.adm.nga.sdk.model.ReferenceFieldModel;
 import com.hpe.adm.octane.ideplugins.integrationtests.IntegrationTestBase;
 import com.hpe.adm.octane.ideplugins.integrationtests.util.Entities;
 import com.hpe.adm.octane.ideplugins.integrationtests.util.WorkSpace;
@@ -13,7 +14,6 @@ import java.util.UUID;
 
 @WorkSpace(clean = false)
 public class MyWorkTreeUTCase extends IntegrationTestBase {
-
 
 
     public List<EntityModel> testAddEntities() {
@@ -47,10 +47,10 @@ public class MyWorkTreeUTCase extends IntegrationTestBase {
 
 
     private List<EntityModel> addEntitiesToMyWork(List<EntityModel> entities) {
-        List<EntityModel> entityModels  = new ArrayList<>();
+        List<EntityModel> entityModels = new ArrayList<>();
         for (EntityModel entityModel : entities) {
             if (entityModel.getValue("type").getValue().equals("test_automated") || entityModel.getValue("type").getValue().equals("test_suite")) {
-                    continue;
+                continue;
             }
             addToMyWork(entityModel);
             entityModels.add(entityModel);
@@ -64,16 +64,36 @@ public class MyWorkTreeUTCase extends IntegrationTestBase {
         List<EntityModel> entities = testAddEntities();
         List<EntityModel> entityModelsInMyWork = addEntitiesToMyWork(entitiesForMyWork);
         List<EntityModel> workItems = getMyWorkItems();
-        boolean expectedWorkItems = false;
+
         assert entityModelsInMyWork.size() == workItems.size();
-        for(EntityModel entityModel: workItems){
-            for(EntityModel entityModel1: entityModelsInMyWork){
-                if(entityModel.getValue("id").getValue() == (entityModel1.getValue("id").getValue())){
+
+        boolean expectedWorkItems = false;
+        int rounds = 0;
+        for (EntityModel entityModel : workItems) {
+            rounds++;
+            ReferenceFieldModel subField = null;
+            if (entityModel.getValue("entity_type").getValue().toString().equals("work_item")) {
+                subField = (ReferenceFieldModel) entityModel.getValue("my_follow_items_work_item");
+            }
+            if (entityModel.getValue("entity_type").getValue().toString().equals("test")) {
+                subField = (ReferenceFieldModel) entityModel.getValue("my_follow_items_test");
+            }
+            if (entityModel.getValue("entity_type").getValue().toString().equals("run")) {
+                subField = (ReferenceFieldModel) entityModel.getValue("my_follow_items_run");
+            }
+            if (entityModel.getValue("entity_type").getValue().toString().equals("task")) {
+                subField = (ReferenceFieldModel) entityModel.getValue("my_follow_items_task");
+            }
+            for (EntityModel entityModel1 : entityModelsInMyWork) {
+                if (subField.getValue().getValue("id").getValue().toString().equals(entityModel1.getValue("id").getValue().toString())) {
                     expectedWorkItems = true;
                     break;
                 }
             }
-            if(!expectedWorkItems){
+            if (!expectedWorkItems) {
+                break;
+            }
+            if (rounds == workItems.size()) {
                 break;
             }
             expectedWorkItems = false;
