@@ -17,6 +17,7 @@ import com.google.common.collect.BiMap;
 import com.google.common.collect.HashBiMap;
 
 import java.lang.reflect.InvocationHandler;
+import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.lang.reflect.Proxy;
 import java.util.function.BooleanSupplier;
@@ -46,7 +47,12 @@ public class ServiceProxyFactory<T> {
                     .findFirst()
                     .get();
 
-            return method.invoke(service, args);
+
+            try {
+                return method.invoke(service, args);
+            } catch (InvocationTargetException ite) {
+                throw ite.getCause();
+            }
         }
     }
 

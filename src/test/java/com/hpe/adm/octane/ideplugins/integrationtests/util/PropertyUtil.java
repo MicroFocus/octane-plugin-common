@@ -43,7 +43,6 @@ public class PropertyUtil {
                 Stream.of(
                         PropertyKeys.URL,
                         PropertyKeys.SHARED_SPACE,
-                        PropertyKeys.WORKSPACE,
                         PropertyKeys.USERNAME,
                         PropertyKeys.PASSWORD
                 ).allMatch(propertyKey -> props.keySet().contains(propertyKey.keyStr));
@@ -55,7 +54,6 @@ public class PropertyUtil {
             connectionSettings.setBaseUrl(props.getProperty(PropertyKeys.URL.keyStr));
             try {
                 connectionSettings.setSharedSpaceId(Long.valueOf(props.getProperty(PropertyKeys.SHARED_SPACE.keyStr)));
-                connectionSettings.setWorkspaceId(Long.valueOf(props.getProperty(PropertyKeys.WORKSPACE.keyStr)));
             } catch (NumberFormatException ex) {
                 throw new RuntimeException("Failed to parse shared space/workspace id as number: " + ex);
             }
@@ -90,7 +88,6 @@ public class PropertyUtil {
                 Stream.of(
                         PropertyKeys.URL,
                         PropertyKeys.SHARED_SPACE,
-                        PropertyKeys.WORKSPACE,
                         PropertyKeys.USERNAME,
                         PropertyKeys.PASSWORD
                 ).allMatch(propertyKey -> fileProps.keySet().contains(propertyKey.keyStr));
@@ -101,7 +98,6 @@ public class PropertyUtil {
             ConnectionSettings connectionSettings = new ConnectionSettings();
             connectionSettings.setBaseUrl(getString(PropertyKeys.URL));
             connectionSettings.setSharedSpaceId(getLong(PropertyKeys.SHARED_SPACE));
-            connectionSettings.setWorkspaceId(getLong(PropertyKeys.WORKSPACE));
             connectionSettings.setUserName(getString(PropertyKeys.USERNAME));
             connectionSettings.setPassword(getString(PropertyKeys.PASSWORD));
             return new BasicConnectionSettingProvider(connectionSettings);
