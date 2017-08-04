@@ -94,7 +94,7 @@ public abstract class IntegrationTestBase {
         serviceModule = new ServiceModule(connectionSettingsProvider);
         User userAnnotation = getAnnotation(annotations, User.class);
         if (userAnnotation != null && userAnnotation.create()) {
-            createNewUser(userAnnotation.firstName(),userAnnotation.lastName());
+            createNewUser(userAnnotation.firstName(), userAnnotation.lastName());
         }
         Injector injector = Guice.createInjector(serviceModule);
         injector.injectMembers(this);
@@ -223,7 +223,7 @@ public abstract class IntegrationTestBase {
     /**
      * This method creates a new user with default password: Welcome1
      */
-    public void createNewUser(String firstName,String lastName) {
+    public void createNewUser(String firstName, String lastName) {
         EntityModel userEntityModel = new EntityModel();
         Set<FieldModel> fields = new HashSet<>();
         List<EntityModel> roles = getRoles();
@@ -235,15 +235,31 @@ public abstract class IntegrationTestBase {
         fields.add(new StringFieldModel("last_name", lastName));
         fields.add(new StringFieldModel("type", "workspace_user"));
         fields.add(new StringFieldModel("first_name", firstName));
-        fields.add(new StringFieldModel("email", firstName+"."+lastName +"@hpe.com"));
+        fields.add(new StringFieldModel("email", firstName + "." + lastName + "@hpe.com"));
         fields.add(new StringFieldModel("password", "Welcome1"));
         fields.add(new MultiReferenceFieldModel("roles", Collections.singletonList(roles.get(0))));
         userEntityModel.setValues(fields);
-
         OctaneProvider octaneProvider = serviceModule.getOctane();
-
         Octane octane = octaneProvider.getOctane();
         octane.entityList("workspace_users").create().entities(Collections.singletonList(userEntityModel)).execute();
+    }
+
+    /**
+     * This method will return the current user
+     *
+     * @return the user entityModel if found, null otterwise
+     */
+    public EntityModel getCurrentUser() {
+        OctaneProvider octaneProvider = serviceModule.getOctane();
+        Octane octane = octaneProvider.getOctane();
+        List<EntityModel> users = octane.entityList("workspace_users").get().execute().stream().collect(Collectors.toList());
+
+        for (EntityModel user : users) {
+            if (user.getValue("email").getValue().toString().equals(connectionSettingsProvider.getConnectionSettings().getUserName().toString())) {
+                return user;
+            }
+        }
+        return null;
     }
 
     /**
@@ -385,6 +401,7 @@ public abstract class IntegrationTestBase {
 
     /**
      * This method creates an automated test
+     *
      * @param testName - the name of the new automated test
      * @return the newly created automated test entityModel
      */
@@ -401,33 +418,42 @@ public abstract class IntegrationTestBase {
 
     /**
      * This method will add an entity into the my work section
+     *
      * @param entityModel - the entity to be added
      */
-    public void addToMyWork(EntityModel entityModel){
+    public void addToMyWork(EntityModel entityModel) {
         MyWorkService myWorkService = serviceModule.getInstance(MyWorkService.class);
 
         try {
             myWorkService.addToMyWork(entityModel);
-        }catch(Throwable e) {
+        } catch (Throwable e) {
             e.printStackTrace();
         }
     }
 
     /**
      * This method will set a user to be the owner of another entity
+     *
      * @param backlogItem - the backlog item
-     * @param owner - the user
+     * @param owner       - the user
      */
-    public void setOwner(EntityModel backlogItem, EntityModel owner){
-
-        backlogItem.setValue(new ReferenceFieldModel("owner",owner));
-        Entity entity = Entity.getEntityType(backlogItem);
+    public void setOwner(EntityModel backlogItem, EntityModel owner) {
+        EntityModel updatedEntityModel = new EntityModel();
+        updatedEntityModel.setValue(backlogItem.getValue("id"));
+        updatedEntityModel.setValue(backlogItem.getValue("type"));
+        updatedEntityModel.setValue(new ReferenceFieldModel("owner", owner));
+        Entity entity = Entity.getEntityType(updatedEntityModel);
         OctaneProvider octaneProvider = serviceModule.getOctane();
         Octane octane = octaneProvider.getOctane();
-        octane.entityList(entity.getApiEntityName()).update().entities(Collections.singleton(backlogItem)).execute();
+        octane.entityList(entity.getApiEntityName()).update().entities(Collections.singleton(updatedEntityModel)).execute();
     }
 
-    public List<EntityModel> getMyWorkItems(){
+    /**
+     * This method will retrieve the items in My Work
+     *
+     * @return a list of entities representing the items in my work
+     */
+    public List<EntityModel> getMyWorkItems() {
         MyWorkService myWorkService = serviceModule.getMyWorkService();
 
         return myWorkService.getMyWork().stream().collect(Collectors.toList());
