@@ -222,14 +222,16 @@ public abstract class IntegrationTestBase {
 
     /**
      * Creates a new user with default password: Welcome1
+     *
+     * @return the newly created user entityModel, null if it could not be created
      */
-    public void createNewUser(String firstName, String lastName) {
+    public EntityModel createNewUser(String firstName, String lastName) {
         EntityModel userEntityModel = new EntityModel();
         Set<FieldModel> fields = new HashSet<>();
         List<EntityModel> roles = getRoles();
         if (roles == null) {
             logger.debug("failed to obtain the roles in the environment");
-            return;
+            return null;
         }
         fields.add(new StringFieldModel("full_name", firstName + lastName));
         fields.add(new StringFieldModel("last_name", lastName));
@@ -241,7 +243,7 @@ public abstract class IntegrationTestBase {
         userEntityModel.setValues(fields);
         OctaneProvider octaneProvider = serviceModule.getOctane();
         Octane octane = octaneProvider.getOctane();
-        octane.entityList("workspace_users").create().entities(Collections.singletonList(userEntityModel)).execute();
+        return octane.entityList("workspace_users").create().entities(Collections.singletonList(userEntityModel)).execute().iterator().next();
     }
 
     /**

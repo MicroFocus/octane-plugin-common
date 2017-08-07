@@ -21,120 +21,67 @@ public class ConnectionSettingsUTCase extends IntegrationTestBase {
 
     private final Logger logger = LogManager.getLogger(IntegrationTestBase.class.getName().toString());
 
-    @Test
-    public void validateCorrectCredentials() {
-        ConnectionSettings connectionSettings = connectionSettingsProvider.getConnectionSettings();
-        OctaneHttpClient octaneHttpClient = new GoogleHttpClient(connectionSettings.getBaseUrl());
-        EntityModel entityModel = getCurrentUser();
+    private TestService testService = new TestService();
+
+
+    private boolean validateCredentials(String username, String password, String baseUrl) {
+
+        OctaneHttpClient octaneHttpClient = new GoogleHttpClient(baseUrl);
         try {
-            assert octaneHttpClient.authenticate(new SimpleUserAuthentication(entityModel.getValue("email").getValue().toString(), "Welcome1", ClientType.HPE_MQM_UI.name()));
+            return octaneHttpClient.authenticate(new SimpleUserAuthentication(username, password, ClientType.HPE_MQM_UI.name()));
         } catch (OctaneException e) {
             String errorMessage = SdkUtil.getMessageFromOctaneException(e);
             logger.error(errorMessage);
+            return false;
         }
     }
 
     @Test
-    public void validateCorrectUserIncorrectPasswordCredentials() {
+    public void testValidateCredentials() {
         ConnectionSettings connectionSettings = connectionSettingsProvider.getConnectionSettings();
-        OctaneHttpClient octaneHttpClient = new GoogleHttpClient(connectionSettings.getBaseUrl());
-        String username = getCurrentUser().getValue("email").getValue().toString();
-        String password = UUID.randomUUID().toString();
-        try {
-            assert !octaneHttpClient.authenticate(new SimpleUserAuthentication(username, password, ClientType.HPE_MQM_UI.name()));
+        String baseUrl = connectionSettings.getBaseUrl();
+        //correct credentials
+        assert validateCredentials(getCurrentUser().getValue("email").getValue().toString(), "Welcome1", baseUrl);
+        //correct username and incorrect password
+        EntityModel newUser = createNewUser("Abe", "Defoe");
+        assert !validateCredentials(getUserById((Long.parseLong(newUser.getValue("id").getValue().toString()))).getValue("email").getValue().toString(), UUID.randomUUID().toString(), baseUrl);
+        //incorrect username and correct password
+        assert !validateCredentials(UUID.randomUUID().toString(), "Welcome1", baseUrl);
+        //incorrect username and incorrect password
+        assert !validateCredentials(UUID.randomUUID().toString(), UUID.randomUUID().toString(), baseUrl);
 
-        } catch (OctaneException e) {
-            String errorMessage = SdkUtil.getMessageFromOctaneException(e);
-            logger.error(errorMessage);
-        }
-    }
-
-    @Test
-    public void validateIncorrectUserCorrectPasswordCredentials() {
-        ConnectionSettings connectionSettings = connectionSettingsProvider.getConnectionSettings();
-        OctaneHttpClient octaneHttpClient = new GoogleHttpClient(connectionSettings.getBaseUrl());
-        String username = UUID.randomUUID().toString();
-        String password = "Welcome1"; //--default password
-        try {
-            assert !octaneHttpClient.authenticate(new SimpleUserAuthentication(username, password, ClientType.HPE_MQM_UI.name()));
-
-        } catch (OctaneException e) {
-            String errorMessage = SdkUtil.getMessageFromOctaneException(e);
-            logger.error(errorMessage);
-        }
-    }
-
-    @Test
-    public void validateIncorrectUserIncorrectCredentialsCredentials() {
-        ConnectionSettings connectionSettings = connectionSettingsProvider.getConnectionSettings();
-        OctaneHttpClient octaneHttpClient = new GoogleHttpClient(connectionSettings.getBaseUrl());
-        String dummyUser = UUID.randomUUID().toString();
-        String dummyPassword = UUID.randomUUID().toString();
-        try {
-            assert !octaneHttpClient.authenticate(new SimpleUserAuthentication(dummyUser, dummyPassword, ClientType.HPE_MQM_UI.name()));
-        } catch (OctaneException e) {
-            String errorMessage = SdkUtil.getMessageFromOctaneException(e);
-            logger.error(errorMessage);
-        }
     }
 
 
-    @Test
-    public void validateCorrectWorkspaceCorrectSharedSpace() {
-        TestService testService = new TestService();
-        ConnectionSettings connectionSettings = connectionSettingsProvider.getConnectionSettings();
+    private boolean validateWorkspaceAndSharedSpace(long workspaceId, long sharedSpaceId, ConnectionSettings connectionSettings) {
+
+        connectionSettings.setWorkspaceId(workspaceId);
+        connectionSettings.setSharedSpaceId(sharedSpaceId);
+
         try {
             testService.getOctane(connectionSettings).entityList(Entity.WORK_ITEM_ROOT.getApiEntityName()).get().execute();
-            assert true;
+            return true;
         } catch (OctaneException e) {
             String message = SdkUtil.getMessageFromOctaneException(e);
             logger.error(message);
-            assert false;
+            return false;
         }
     }
 
     @Test
-    public void validateCorrectWorkspaceIncorrectSharedSpace() {
-        TestService testService = new TestService();
+    public void testValidateEnvironment() {
         ConnectionSettings connectionSettings = connectionSettingsProvider.getConnectionSettings();
-        connectionSettings.setSharedSpaceId(5000l);//--wrong shared space id, doesn't exist
-        try {
-            testService.getOctane(connectionSettings).entityList(Entity.WORK_ITEM_ROOT.getApiEntityName()).get().execute();
-        } catch (OctaneException e) {
-            String message = SdkUtil.getMessageFromOctaneException(e);
-            logger.error(message);
-            assert message.equals("The sharedspace or the workspace is incorrect.");
-        }
+        long correctWorkspaceId = connectionSettings.getWorkspaceId();
+        long correctSharedSpaceId = connectionSettings.getSharedSpaceId();
+        //correct workspace id and sharedspace id
+        assert validateWorkspaceAndSharedSpace(correctWorkspaceId, correctSharedSpaceId, connectionSettings);
+        //correct workspace id and incorrect sharedspace id
+        assert !validateWorkspaceAndSharedSpace(correctWorkspaceId, 900l, connectionSettings);
+        //incorrect workspace id and correct sharedspace id
+        assert !validateWorkspaceAndSharedSpace(900l, correctSharedSpaceId, connectionSettings);
+        //incorrect workspace id and incorrect sharedspace id
+        assert !validateWorkspaceAndSharedSpace(900l, 901l, connectionSettings);
     }
 
-    @Test
-    public void validateIncorrectWorkspaceCorrectSharedSpace() {
-        TestService testService = new TestService();
-        ConnectionSettings connectionSettings = connectionSettingsProvider.getConnectionSettings();
-        connectionSettings.setWorkspaceId(5000l);//--wrong workspace id, doesn't exist
-        try {
-            testService.getOctane(connectionSettings).entityList(Entity.WORK_ITEM_ROOT.getApiEntityName()).get().execute();
-        } catch (OctaneException e) {
-            String message = SdkUtil.getMessageFromOctaneException(e);
-            logger.error(message);
-            assert message.equals("The sharedspace or the workspace is incorrect.");
-        }
-    }
 
-    @Test
-    public void validateIncorrectWorkspaceIncorrectSharedSpace() {
-        TestService testService = new TestService();
-        ConnectionSettings connectionSettings = connectionSettingsProvider.getConnectionSettings();
-        connectionSettings.setWorkspaceId(5000l);//--wrong workspace id, doesn't exist
-        connectionSettings.setSharedSpaceId(5001l);//--wrong sharedspace id, doesn't exist
-        try {
-            testService.getOctane(connectionSettings).entityList(Entity.WORK_ITEM_ROOT.getApiEntityName()).get().execute();
-        } catch (OctaneException e) {
-            String message = SdkUtil.getMessageFromOctaneException(e);
-            logger.error(message);
-            assert message.equals("The sharedspace or the workspace is incorrect.");
-        }
-    }
 }
-
-
