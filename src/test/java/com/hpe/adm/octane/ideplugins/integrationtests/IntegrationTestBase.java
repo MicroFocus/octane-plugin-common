@@ -32,7 +32,6 @@ import com.hpe.adm.octane.ideplugins.services.di.ServiceModule;
 import com.hpe.adm.octane.ideplugins.services.exception.ServiceException;
 import com.hpe.adm.octane.ideplugins.services.filtering.Entity;
 import com.hpe.adm.octane.ideplugins.services.mywork.MyWorkService;
-import com.hpe.adm.octane.ideplugins.services.mywork.MyWorkUtil;
 import com.hpe.adm.octane.ideplugins.services.util.ClientType;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -57,7 +56,7 @@ public abstract class IntegrationTestBase {
 
     private EntityGenerator entityGenerator;
 
-    private ConnectionSettingsProvider connectionSettingsProvider;
+    protected ConnectionSettingsProvider connectionSettingsProvider;
 
     private ServiceModule serviceModule;
 
@@ -79,14 +78,14 @@ public abstract class IntegrationTestBase {
             connectionSettingsProvider.setConnectionSettings(connectionSettings);
         } else {
             connectionSettingsProvider = PropertyUtil.readFormVmArgs() != null ? PropertyUtil.readFormVmArgs() : PropertyUtil.readFromPropFile();
-            ConnectionSettings cs = connectionSettingsProvider.getConnectionSettings();
+            ConnectionSettings connectionSettings = connectionSettingsProvider.getConnectionSettings();
             long defaultWorkspaceId = getDefaultWorkspaceId();
             if (defaultWorkspaceId > 0)
-                cs.setWorkspaceId(defaultWorkspaceId);
+                connectionSettings.setWorkspaceId(defaultWorkspaceId);
             else {
-                cs.setWorkspaceId(createWorkSpace());
+                connectionSettings.setWorkspaceId(createWorkSpace());
             }
-            connectionSettingsProvider.setConnectionSettings(cs);
+            connectionSettingsProvider.setConnectionSettings(connectionSettings);
         }
         if (connectionSettingsProvider == null) {
             throw new RuntimeException("Cannot retrieve connection settings from either vm args or prop file, cannot run tests");
