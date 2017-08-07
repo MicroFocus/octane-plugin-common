@@ -22,7 +22,7 @@ public class ConnectionSettingsUTCase extends IntegrationTestBase {
     private final Logger logger = LogManager.getLogger(IntegrationTestBase.class.getName().toString());
 
     @Test
-    public void validateGoodCredentials() {
+    public void validateCorrectCredentials() {
         ConnectionSettings connectionSettings = connectionSettingsProvider.getConnectionSettings();
         OctaneHttpClient octaneHttpClient = new GoogleHttpClient(connectionSettings.getBaseUrl());
         EntityModel entityModel = getCurrentUser();
@@ -35,7 +35,7 @@ public class ConnectionSettingsUTCase extends IntegrationTestBase {
     }
 
     @Test
-    public void validateGoodUserWrongPasswordCredentials() {
+    public void validateCorrectUserIncorrectPasswordCredentials() {
         ConnectionSettings connectionSettings = connectionSettingsProvider.getConnectionSettings();
         OctaneHttpClient octaneHttpClient = new GoogleHttpClient(connectionSettings.getBaseUrl());
         String username = getCurrentUser().getValue("email").getValue().toString();
@@ -50,7 +50,7 @@ public class ConnectionSettingsUTCase extends IntegrationTestBase {
     }
 
     @Test
-    public void validateWrongUserGoodPasswordCredentials() {
+    public void validateIncorrectUserCorrectPasswordCredentials() {
         ConnectionSettings connectionSettings = connectionSettingsProvider.getConnectionSettings();
         OctaneHttpClient octaneHttpClient = new GoogleHttpClient(connectionSettings.getBaseUrl());
         String username = UUID.randomUUID().toString();
@@ -65,7 +65,7 @@ public class ConnectionSettingsUTCase extends IntegrationTestBase {
     }
 
     @Test
-    public void validateWrongUserWrongCredentialsCredentials() {
+    public void validateIncorrectUserIncorrectCredentialsCredentials() {
         ConnectionSettings connectionSettings = connectionSettingsProvider.getConnectionSettings();
         OctaneHttpClient octaneHttpClient = new GoogleHttpClient(connectionSettings.getBaseUrl());
         String dummyUser = UUID.randomUUID().toString();
@@ -80,7 +80,7 @@ public class ConnectionSettingsUTCase extends IntegrationTestBase {
 
 
     @Test
-    public void validateGoodWorkspaceGoodSharedSpace() {
+    public void validateCorrectWorkspaceCorrectSharedSpace() {
         TestService testService = new TestService();
         ConnectionSettings connectionSettings = connectionSettingsProvider.getConnectionSettings();
         try {
@@ -94,7 +94,7 @@ public class ConnectionSettingsUTCase extends IntegrationTestBase {
     }
 
     @Test
-    public void validateGoodWorkspaceWrongSharedSpace() {
+    public void validateCorrectWorkspaceIncorrectSharedSpace() {
         TestService testService = new TestService();
         ConnectionSettings connectionSettings = connectionSettingsProvider.getConnectionSettings();
         connectionSettings.setSharedSpaceId(5000l);//--wrong shared space id, doesn't exist
@@ -108,7 +108,7 @@ public class ConnectionSettingsUTCase extends IntegrationTestBase {
     }
 
     @Test
-    public void validateWrongWorkspaceGoodSharedSpace() {
+    public void validateIncorrectWorkspaceCorrectSharedSpace() {
         TestService testService = new TestService();
         ConnectionSettings connectionSettings = connectionSettingsProvider.getConnectionSettings();
         connectionSettings.setWorkspaceId(5000l);//--wrong workspace id, doesn't exist
@@ -122,7 +122,7 @@ public class ConnectionSettingsUTCase extends IntegrationTestBase {
     }
 
     @Test
-    public void validateWrongWorkspaceWrongSharedSpace() {
+    public void validateIncorrectWorkspaceIncorrectSharedSpace() {
         TestService testService = new TestService();
         ConnectionSettings connectionSettings = connectionSettingsProvider.getConnectionSettings();
         connectionSettings.setWorkspaceId(5000l);//--wrong workspace id, doesn't exist

@@ -18,6 +18,7 @@ import com.google.inject.Inject;
 import com.google.inject.Injector;
 import com.hpe.adm.nga.sdk.Octane;
 import com.hpe.adm.nga.sdk.authentication.SimpleUserAuthentication;
+import com.hpe.adm.nga.sdk.exception.OctaneException;
 import com.hpe.adm.nga.sdk.model.*;
 import com.hpe.adm.nga.sdk.network.OctaneHttpClient;
 import com.hpe.adm.nga.sdk.network.OctaneHttpRequest;
@@ -64,7 +65,7 @@ public abstract class IntegrationTestBase {
 
 
     /**
-     * This function will set up a context needed for the tests, the context is derived from the annotations set the
+     * Sets up a context needed for the tests, the context is derived from the annotations set the
      * implementing class
      */
     @Before
@@ -112,12 +113,12 @@ public abstract class IntegrationTestBase {
 
 
     /**
-     * * This method will look for an annotation in the implementing subclass
+     * Looks for an annotation in the implementing subclass
      *
-     * @param annotations     - annotations of the implementing subclass
-     * @param annotationClass - annotation type to look for
-     * @param <A>             - generic annotation class
-     * @return the instance of that annotation or null in case it isn't found
+     * @param annotations     the annotations of the implementing subclass
+     * @param annotationClass the annotation type to look for
+     * @param <A>             the generic annotation class
+     * @return the instance of that annotation, null in case it isn't found
      */
     public <A extends Annotation> A getAnnotation(Annotation[] annotations, Class<A> annotationClass) {
         for (Annotation annotation : annotations) {
@@ -129,9 +130,9 @@ public abstract class IntegrationTestBase {
     }
 
     /**
-     * This method will create a new workspace
+     * Create a new workspace
      *
-     * @return workspace_id of the newly created workspace
+     * @return the workspace_id of the newly created workspace
      */
     public Long createWorkSpace() {
         String postUrl = connectionSettingsProvider.getConnectionSettings().getBaseUrl() + "/api/shared_spaces/" +
@@ -161,7 +162,7 @@ public abstract class IntegrationTestBase {
     }
 
     /**
-     * This method will return the first workspace
+     * Returns the first workspace
      *
      * @return the workspace_id of the first workspace obtained, -1 if no workspace is found
      */
@@ -187,10 +188,10 @@ public abstract class IntegrationTestBase {
     }
 
     /**
-     * This method will create a new entity
+     * Creates a new entity
      *
-     * @param entity - a new entity
-     * @return the created entityModel or null if it could not been created
+     * @param entity - the new entity
+     * @return the created entityModel, null if it could not been created
      */
     public EntityModel createEntity(Entity entity) {
         OctaneProvider octaneProvider = serviceModule.getOctane();
@@ -201,7 +202,7 @@ public abstract class IntegrationTestBase {
     }
 
     /**
-     * This method will delete an entity
+     * Deletes an entity
      *
      * @param entityModel - the entityModel to be deleted
      */
@@ -210,7 +211,7 @@ public abstract class IntegrationTestBase {
     }
 
     /**
-     * This method will create relationships between users and entities
+     * Creates relationships between users and entities
      *
      * @param user        - the user
      * @param entityModel - the new entity to be related to
@@ -220,7 +221,7 @@ public abstract class IntegrationTestBase {
     }
 
     /**
-     * This method creates a new user with default password: Welcome1
+     * Creates a new user with default password: Welcome1
      */
     public void createNewUser(String firstName, String lastName) {
         EntityModel userEntityModel = new EntityModel();
@@ -244,9 +245,9 @@ public abstract class IntegrationTestBase {
     }
 
     /**
-     * This method will return the current user
+     * Return the current user
      *
-     * @return the user entityModel if found, null otterwise
+     * @return the users entityModel if found, null otherwise
      */
     public EntityModel getCurrentUser() {
         OctaneProvider octaneProvider = serviceModule.getOctane();
@@ -262,7 +263,7 @@ public abstract class IntegrationTestBase {
     }
 
     /**
-     * This method will retrieve all the possible roles that can be assigned to a user
+     * Retrieves all the possible roles that can be assigned to a user
      *
      * @return - a list of enitityModels representing the possible roles
      */
@@ -273,26 +274,25 @@ public abstract class IntegrationTestBase {
     }
 
     /**
-     * This method will return all the users
+     * Returns all the workspace users
      *
-     * @return - a list of users
+     * @return - a list of entityModels representing the workspace users
      */
     public List<EntityModel> getUsers() {
         EntityService entityService = serviceModule.getInstance(EntityService.class);
-        Set<String> mySet = new HashSet<>();
-        mySet.add("roles");
+        Set<String> roles = new HashSet<>();
+        roles.add("roles");
 
         List<EntityModel> entities = new ArrayList<>(entityService.findEntities(
                 Entity.WORKSPACE_USER,
                 null,
-                mySet)
+                roles)
         );
-        System.out.println(entities);
         return entities;
     }
 
     /**
-     * This method will search for a user by its id
+     * Searches for a user by its id
      *
      * @param id - user id
      * @return null - if not found, userEntityModel if found
@@ -312,7 +312,7 @@ public abstract class IntegrationTestBase {
 
 
     /**
-     * This method will return the first release in the list of releases
+     * Returns the first release in the list of releases
      *
      * @return the entityModel of the release
      */
@@ -323,7 +323,7 @@ public abstract class IntegrationTestBase {
     }
 
     /**
-     * This method is going to create a Task
+     * Creates a Task
      *
      * @param userStory - user story to attach the task to
      * @param taskName  - the name of the task
@@ -340,7 +340,7 @@ public abstract class IntegrationTestBase {
     }
 
     /**
-     * This method will create a manual test run
+     * Creates a manual test run
      *
      * @param manualTest - the Manual Test to which the test run is planned
      * @param name       - the name of the run
@@ -361,7 +361,7 @@ public abstract class IntegrationTestBase {
     }
 
     /**
-     * This method will create a Test Suite
+     * Creates a Test Suite
      *
      * @param name the name of the test suite
      * @return the entityModel of the test suite, null if not created
@@ -378,7 +378,7 @@ public abstract class IntegrationTestBase {
     }
 
     /**
-     * this method will create a test suite run
+     * Creates a test suite run
      *
      * @param testSuite        the test suite which is used to create the test suite run
      * @param testSuiteRunName the name of the suite run
@@ -399,7 +399,7 @@ public abstract class IntegrationTestBase {
 
 
     /**
-     * This method creates an automated test
+     * Creates an automated test
      *
      * @param testName - the name of the new automated test
      * @return the newly created automated test entityModel
@@ -416,7 +416,7 @@ public abstract class IntegrationTestBase {
 
 
     /**
-     * This method will add an entity into the my work section
+     * Adds an entity into the my work section
      *
      * @param entityModel - the entity to be added
      */
@@ -425,13 +425,13 @@ public abstract class IntegrationTestBase {
 
         try {
             myWorkService.addToMyWork(entityModel);
-        } catch (Throwable e) {
+        } catch (OctaneException e) {
             e.printStackTrace();
         }
     }
 
     /**
-     * This method will set a user to be the owner of another entity
+     * Sets a user to be the owner of another entity
      *
      * @param backlogItem - the backlog item
      * @param owner       - the user
@@ -448,7 +448,7 @@ public abstract class IntegrationTestBase {
     }
 
     /**
-     * This method will retrieve the items in My Work
+     * Retrieves the items in My Work
      *
      * @return a list of entities representing the items in my work
      */
