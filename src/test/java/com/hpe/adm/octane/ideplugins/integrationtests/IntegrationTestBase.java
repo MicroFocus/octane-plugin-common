@@ -301,7 +301,6 @@ public abstract class IntegrationTestBase {
         EntityService entityService = serviceModule.getInstance(EntityService.class);
         try {
             EntityModel entity = entityService.findEntity(Entity.WORKSPACE_USER, id);
-            System.out.println(entity);
             return entity;
         } catch (ServiceException e) {
             e.printStackTrace();
