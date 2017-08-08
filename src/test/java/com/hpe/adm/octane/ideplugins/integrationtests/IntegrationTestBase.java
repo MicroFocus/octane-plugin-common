@@ -449,6 +449,23 @@ public abstract class IntegrationTestBase {
     }
 
     /**
+     * Sets the description of an entity
+     *
+     * @param backlogItem the backlog item
+     * @param description the description string
+     */
+    public void setDescription(EntityModel backlogItem, String description) {
+        EntityModel updatedEntityModel = new EntityModel();
+        updatedEntityModel.setValue(backlogItem.getValue("id"));
+        updatedEntityModel.setValue(backlogItem.getValue("type"));
+        updatedEntityModel.setValue(new StringFieldModel("description", description));
+        Entity entity = Entity.getEntityType(updatedEntityModel);
+        OctaneProvider octaneProvider = serviceModule.getOctane();
+        Octane octane = octaneProvider.getOctane();
+        octane.entityList(entity.getApiEntityName()).update().entities(Collections.singleton(updatedEntityModel)).execute();
+    }
+
+    /**
      * Retrieves the items in My Work
      *
      * @return a list of entities representing the items in my work
