@@ -57,12 +57,6 @@ public class SearchFunctionalityUTCase extends IntegrationTestBase {
         setDescription(entityModels);
 
         int descriptionCount = 0;
-        try{
-            wait(5000);
-        }catch(Exception e){
-            e.printStackTrace();
-        }
-
         for (EntityModel entityModel : entityModels) {
             //search by name
             EntityModel retrievedEntity = testSearch(entityModel.getValue("name").getValue().toString());
