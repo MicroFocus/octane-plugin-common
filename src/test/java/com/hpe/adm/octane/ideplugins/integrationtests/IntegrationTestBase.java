@@ -145,7 +145,6 @@ public abstract class IntegrationTestBase {
         JSONArray jsonArray = new JSONArray();
         jsonArray.put(credentials);
         dataSet.put("data", jsonArray);
-        System.out.println(dataSet.toString());
         OctaneHttpRequest postNewWorkspaceRequest = new OctaneHttpRequest.PostOctaneHttpRequest(postUrl, OctaneHttpRequest.JSON_CONTENT_TYPE, dataSet.toString());
         OctaneHttpClient octaneHttpClient = new GoogleHttpClient(urlDomain);
         octaneHttpClient.authenticate(new SimpleUserAuthentication(connectionSettingsProvider.getConnectionSettings().getUserName(), connectionSettingsProvider.getConnectionSettings().getPassword(), ClientType.HPE_MQM_UI.name()));

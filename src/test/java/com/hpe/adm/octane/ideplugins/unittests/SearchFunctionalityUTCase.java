@@ -52,10 +52,15 @@ public class SearchFunctionalityUTCase extends IntegrationTestBase {
 
     @Test
     public void testSearchEntities() {
+
         List<EntityModel> entityModels = createSearchableEntities();
 
         setDescription(entityModels);
-
+        try {
+            Thread.sleep(30000);//--wait until the elastic search is updated with the entities
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
         int descriptionCount = 0;
         for (EntityModel entityModel : entityModels) {
             //search by name
@@ -71,12 +76,12 @@ public class SearchFunctionalityUTCase extends IntegrationTestBase {
     }
 
     @Test
-    public void testSearchWithBadParameters(){
+    public void testSearchWithBadParameters() {
         int badId = 0;
         //bad id
-        assert testSearch(String.valueOf(badId))==null;
+        assert testSearch(String.valueOf(badId)) == null;
         //bad name or description
-        assert testSearch(UUID.randomUUID().toString())==null;
+        assert testSearch(UUID.randomUUID().toString()) == null;
     }
 
 }
