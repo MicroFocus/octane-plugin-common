@@ -13,6 +13,7 @@ import com.hpe.adm.octane.ideplugins.services.util.ClientType;
 import com.hpe.adm.octane.ideplugins.services.util.SdkUtil;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
+import org.junit.Before;
 import org.junit.Test;
 
 import java.util.UUID;
@@ -23,6 +24,18 @@ public class ConnectionSettingsUTCase extends IntegrationTestBase {
 
     private TestService testService = new TestService();
 
+    private ConnectionSettings connectionSettings;
+    private long correctWorkspaceId;
+    private long correctSharedSpaceId;
+    private String baseUrl;
+
+    @Before
+    public void setup() {
+        connectionSettings = connectionSettingsProvider.getConnectionSettings();
+        correctWorkspaceId = connectionSettings.getWorkspaceId();
+        correctSharedSpaceId = connectionSettings.getSharedSpaceId();
+        baseUrl = connectionSettings.getBaseUrl();
+    }
 
     private boolean validateCredentials(String username, String password, String baseUrl) {
 
@@ -37,27 +50,29 @@ public class ConnectionSettingsUTCase extends IntegrationTestBase {
     }
 
     @Test
-    public void testValidateCredentials() {
-        ConnectionSettings connectionSettings = connectionSettingsProvider.getConnectionSettings();
-        String baseUrl = connectionSettings.getBaseUrl();
-        //correct credentials
+    public void testCorrectCredentials() {
         assert validateCredentials(getCurrentUser().getValue("email").getValue().toString(), "Welcome1", baseUrl);
-        //correct username and incorrect password
-        EntityModel newUser = createNewUser("Abe", "Defoe");
-        assert !validateCredentials(getUserById((Long.parseLong(newUser.getValue("id").getValue().toString()))).getValue("email").getValue().toString(), UUID.randomUUID().toString(), baseUrl);
-        //incorrect username and correct password
-        assert !validateCredentials(UUID.randomUUID().toString(), "Welcome1", baseUrl);
-        //incorrect username and incorrect password
-        assert !validateCredentials(UUID.randomUUID().toString(), UUID.randomUUID().toString(), baseUrl);
-
     }
 
+    @Test
+    public void testCorrectUsernameAndIncorrectPassword() {
+        EntityModel newUser = createNewUser("Abby", "Defoe");
+        assert !validateCredentials(getUserById((Long.parseLong(newUser.getValue("id").getValue().toString()))).getValue("email").getValue().toString(), UUID.randomUUID().toString(), baseUrl);
+    }
+
+    @Test
+    public void testIncorrectUsernameAndCorrectPassword() {
+        assert !validateCredentials(UUID.randomUUID().toString(), "Welcome1", baseUrl);
+    }
+
+    @Test
+    public void testIncorrectUsernameAndIncorrectPassword() {
+        assert !validateCredentials(UUID.randomUUID().toString(), UUID.randomUUID().toString(), baseUrl);
+    }
 
     private boolean validateWorkspaceAndSharedSpace(long workspaceId, long sharedSpaceId, ConnectionSettings connectionSettings) {
-
         connectionSettings.setWorkspaceId(workspaceId);
         connectionSettings.setSharedSpaceId(sharedSpaceId);
-
         try {
             testService.getOctane(connectionSettings).entityList(Entity.WORK_ITEM_ROOT.getApiEntityName()).get().execute();
             return true;
@@ -69,19 +84,23 @@ public class ConnectionSettingsUTCase extends IntegrationTestBase {
     }
 
     @Test
-    public void testValidateEnvironment() {
-        ConnectionSettings connectionSettings = connectionSettingsProvider.getConnectionSettings();
-        long correctWorkspaceId = connectionSettings.getWorkspaceId();
-        long correctSharedSpaceId = connectionSettings.getSharedSpaceId();
-        //correct workspace id and sharedspace id
+    public void testCorrectWorkspaceAndSharedSpace() {
         assert validateWorkspaceAndSharedSpace(correctWorkspaceId, correctSharedSpaceId, connectionSettings);
-        //correct workspace id and incorrect sharedspace id
-        assert !validateWorkspaceAndSharedSpace(correctWorkspaceId, 900l, connectionSettings);
-        //incorrect workspace id and correct sharedspace id
-        assert !validateWorkspaceAndSharedSpace(900l, correctSharedSpaceId, connectionSettings);
-        //incorrect workspace id and incorrect sharedspace id
-        assert !validateWorkspaceAndSharedSpace(900l, 901l, connectionSettings);
     }
 
+    @Test
+    public void testCorrectWorkspaceAndIncorrectSharedSpace() {
+        assert !validateWorkspaceAndSharedSpace(correctWorkspaceId, 900l, connectionSettings);
+    }
+
+    @Test
+    public void testIncorrectWorkspaceAndCorrectSharedSpace() {
+        assert !validateWorkspaceAndSharedSpace(900l, correctSharedSpaceId, connectionSettings);
+    }
+
+    @Test
+    public void testIncorrectWorkspaceAndIncorrectSharedSpace() {
+        assert !validateWorkspaceAndSharedSpace(901l, 900l, connectionSettings);
+    }
 
 }
