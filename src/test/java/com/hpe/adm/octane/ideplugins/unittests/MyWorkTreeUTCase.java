@@ -81,10 +81,10 @@ public class MyWorkTreeUTCase extends IntegrationTestBase {
         assert myWorkEntities.size() == workItems.size();
 
         boolean expectedWorkItems = false;
-        int rounds = 0;
+        int count = 0;
         int itemCount = workItems.size();
         for (EntityModel entityModel : workItems) {
-            rounds++;
+            count++;
             ReferenceFieldModel subField = null;
             String entityType = entityModel.getValue("entity_type").getValue().toString();
             if (entityType.equals("work_item")) {
@@ -108,7 +108,7 @@ public class MyWorkTreeUTCase extends IntegrationTestBase {
             if (!expectedWorkItems) {
                 break;
             }
-            if (rounds == itemCount) {
+            if (count == itemCount) {
                 break;
             }
             expectedWorkItems = false;

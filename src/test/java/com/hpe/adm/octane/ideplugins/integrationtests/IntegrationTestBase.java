@@ -118,7 +118,7 @@ public abstract class IntegrationTestBase {
      * @param annotations     the annotations of the implementing subclass
      * @param annotationClass the annotation type to look for
      * @param <A>             the generic annotation class
-     * @return the instance of that annotation, null in case it isn't found
+     * @return the instance of that annotation, @null in case it isn't found
      */
     public <A extends Annotation> A getAnnotation(Annotation[] annotations, Class<A> annotationClass) {
         for (Annotation annotation : annotations) {
@@ -130,7 +130,7 @@ public abstract class IntegrationTestBase {
     }
 
     /**
-     * Create a new workspace
+     * Creates a new workspace
      *
      * @return the workspace_id of the newly created workspace
      */
@@ -145,7 +145,6 @@ public abstract class IntegrationTestBase {
         JSONArray jsonArray = new JSONArray();
         jsonArray.put(credentials);
         dataSet.put("data", jsonArray);
-        System.out.println(dataSet.toString());
         OctaneHttpRequest postNewWorkspaceRequest = new OctaneHttpRequest.PostOctaneHttpRequest(postUrl, OctaneHttpRequest.JSON_CONTENT_TYPE, dataSet.toString());
         OctaneHttpClient octaneHttpClient = new GoogleHttpClient(urlDomain);
         octaneHttpClient.authenticate(new SimpleUserAuthentication(connectionSettingsProvider.getConnectionSettings().getUserName(), connectionSettingsProvider.getConnectionSettings().getPassword(), ClientType.HPE_MQM_UI.name()));
@@ -191,7 +190,7 @@ public abstract class IntegrationTestBase {
      * Creates a new entity
      *
      * @param entity - the new entity
-     * @return the created entityModel, null if it could not been created
+     * @return the created entityModel, @null if it could not been created
      */
     public EntityModel createEntity(Entity entity) {
         OctaneProvider octaneProvider = serviceModule.getOctane();
@@ -202,7 +201,7 @@ public abstract class IntegrationTestBase {
     }
 
     /**
-     * Deletes an entity
+     * Removes an entity
      *
      * @param entityModel - the entityModel to be deleted
      */
@@ -223,7 +222,7 @@ public abstract class IntegrationTestBase {
     /**
      * Creates a new user with default password: Welcome1
      *
-     * @return the newly created user entityModel, null if it could not be created
+     * @return the newly created user entityModel, @null if it could not be created
      */
     public EntityModel createNewUser(String firstName, String lastName) {
         EntityModel userEntityModel = new EntityModel();
@@ -247,9 +246,9 @@ public abstract class IntegrationTestBase {
     }
 
     /**
-     * Return the current user
+     * Returns the current user
      *
-     * @return the users entityModel if found, null otherwise
+     * @return the users entityModel if found, @null otherwise
      */
     public EntityModel getCurrentUser() {
         OctaneProvider octaneProvider = serviceModule.getOctane();
@@ -297,7 +296,7 @@ public abstract class IntegrationTestBase {
      * Searches for a user by its id
      *
      * @param id - user id
-     * @return null - if not found, userEntityModel if found
+     * @return @null - if not found, userEntityModel if found
      */
     public EntityModel getUserById(long id) {
         EntityService entityService = serviceModule.getInstance(EntityService.class);
@@ -365,7 +364,7 @@ public abstract class IntegrationTestBase {
      * Creates a Test Suite
      *
      * @param name the name of the test suite
-     * @return the entityModel of the test suite, null if not created
+     * @return the entityModel of the test suite, @null if not created
      */
     public EntityModel createTestSuite(String name) {
         EntityModel testSuite = new EntityModel("type", "test");
@@ -442,6 +441,23 @@ public abstract class IntegrationTestBase {
         updatedEntityModel.setValue(backlogItem.getValue("id"));
         updatedEntityModel.setValue(backlogItem.getValue("type"));
         updatedEntityModel.setValue(new ReferenceFieldModel("owner", owner));
+        Entity entity = Entity.getEntityType(updatedEntityModel);
+        OctaneProvider octaneProvider = serviceModule.getOctane();
+        Octane octane = octaneProvider.getOctane();
+        octane.entityList(entity.getApiEntityName()).update().entities(Collections.singleton(updatedEntityModel)).execute();
+    }
+
+    /**
+     * Sets the description of an entity
+     *
+     * @param backlogItem the backlog item
+     * @param description the description string
+     */
+    public void setDescription(EntityModel backlogItem, String description) {
+        EntityModel updatedEntityModel = new EntityModel();
+        updatedEntityModel.setValue(backlogItem.getValue("id"));
+        updatedEntityModel.setValue(backlogItem.getValue("type"));
+        updatedEntityModel.setValue(new StringFieldModel("description", description));
         Entity entity = Entity.getEntityType(updatedEntityModel);
         OctaneProvider octaneProvider = serviceModule.getOctane();
         Octane octane = octaneProvider.getOctane();
