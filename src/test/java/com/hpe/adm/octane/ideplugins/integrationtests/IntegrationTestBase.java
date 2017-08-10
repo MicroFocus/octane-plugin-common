@@ -481,6 +481,10 @@ public abstract class IntegrationTestBase {
         return myWorkService.getMyWork().stream().collect(Collectors.toList());
     }
 
+    /**
+     * Retrieves the backlog items: tests and work items
+     * @return a list of the work items and lists
+     */
     public List<EntityModel> retrieveBacklog() {
         OctaneProvider octaneProvider = serviceModule.getOctane();
         Octane octane = octaneProvider.getOctane();
@@ -490,6 +494,9 @@ public abstract class IntegrationTestBase {
 
     }
 
+    /**
+     * Deletes the backlog items
+     */
     public void deleteBacklogItems() {
         List<EntityModel> workspaceEntities = retrieveBacklog();
         Query.QueryBuilder workItemsQuery = null;
@@ -500,7 +507,7 @@ public abstract class IntegrationTestBase {
                 if (workItemsQuery != null) {
                     workItemsQuery = workItemsQuery.or("id", QueryMethod.EqualTo, entityModel.getValue("id").getValue().toString());
                 } else {
-                  workItemsQuery = Query.statement("id", QueryMethod.EqualTo, entityModel.getValue("id").getValue().toString());
+                    workItemsQuery = Query.statement("id", QueryMethod.EqualTo, entityModel.getValue("id").getValue().toString());
                 }
             }
             if ("test".equals(entityType)) {
