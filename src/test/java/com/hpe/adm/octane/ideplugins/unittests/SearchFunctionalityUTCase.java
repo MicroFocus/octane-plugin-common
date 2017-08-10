@@ -57,7 +57,7 @@ public class SearchFunctionalityUTCase extends IntegrationTestBase {
 
         setDescription(entityModels);
         try {
-            Thread.sleep(30000);//--wait until the elastic search is updated with the entities
+            Thread.sleep(60000);//--wait until the elastic search is updated with the entities
         } catch (Exception e) {
             e.printStackTrace();
         }

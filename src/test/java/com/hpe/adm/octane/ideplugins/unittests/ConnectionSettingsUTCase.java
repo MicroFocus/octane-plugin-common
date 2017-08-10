@@ -56,7 +56,7 @@ public class ConnectionSettingsUTCase extends IntegrationTestBase {
 
     @Test
     public void testCorrectUsernameAndIncorrectPassword() {
-        EntityModel newUser = createNewUser("Abby", "Defoe");
+        EntityModel newUser = createNewUser("Anda", UUID.randomUUID().toString());
         assert !validateCredentials(getUserById((Long.parseLong(newUser.getValue("id").getValue().toString()))).getValue("email").getValue().toString(), UUID.randomUUID().toString(), baseUrl);
     }
 
