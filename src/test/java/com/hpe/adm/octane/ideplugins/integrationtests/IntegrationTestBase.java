@@ -484,7 +484,7 @@ public abstract class IntegrationTestBase {
     public List<EntityModel> retrieveBacklog() {
         OctaneProvider octaneProvider = serviceModule.getOctane();
         Octane octane = octaneProvider.getOctane();
-        List<EntityModel> workItems = octane.entityList("work_items").get().execute().stream().collect(Collectors.toList());
+        List<EntityModel> workItems = octane.entityList("work_items").get().query(Query.not("subtype",QueryMethod.EqualTo,"work_item_root").build()).execute().stream().collect(Collectors.toList());
         List<EntityModel> tests = octane.entityList("tests").get().execute().stream().collect(Collectors.toList());
         return Stream.concat(workItems.stream(), tests.stream()).collect(Collectors.toList());
 
@@ -496,8 +496,7 @@ public abstract class IntegrationTestBase {
         Query.QueryBuilder testItemsQuery = null;
         for (EntityModel entityModel : workspaceEntities) {
             String entityType = entityModel.getValue("type").getValue().toString();
-            if ("work_item".equals(entityType) && !"work_item_root".equals(entityModel.getValue("subtype").getValue().toString())) {
-
+            if ("work_item".equals(entityType) ) {
                 if (workItemsQuery != null) {
                     workItemsQuery = workItemsQuery.or("id", QueryMethod.EqualTo, entityModel.getValue("id").getValue().toString());
                 } else {
