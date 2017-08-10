@@ -24,6 +24,8 @@ import com.hpe.adm.nga.sdk.network.OctaneHttpClient;
 import com.hpe.adm.nga.sdk.network.OctaneHttpRequest;
 import com.hpe.adm.nga.sdk.network.OctaneHttpResponse;
 import com.hpe.adm.nga.sdk.network.google.GoogleHttpClient;
+import com.hpe.adm.nga.sdk.query.Query;
+import com.hpe.adm.nga.sdk.query.QueryMethod;
 import com.hpe.adm.octane.ideplugins.integrationtests.util.*;
 import com.hpe.adm.octane.ideplugins.services.EntityService;
 import com.hpe.adm.octane.ideplugins.services.connection.ConnectionSettings;
@@ -43,6 +45,7 @@ import org.junit.Before;
 import java.lang.annotation.Annotation;
 import java.util.*;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 import static org.junit.Assert.fail;
 
@@ -156,8 +159,11 @@ public abstract class IntegrationTestBase {
             fail(e.toString());
         }
         JSONObject responseJson = new JSONObject(response.getContent());
+        JSONArray workspaces = responseJson.getJSONArray("data");
+
         octaneHttpClient.signOut();
-        return responseJson.getLong("id");
+        JSONObject workspace = (JSONObject) workspaces.get(0);
+        return workspace.getLong("workspace_id");
     }
 
     /**
@@ -473,5 +479,57 @@ public abstract class IntegrationTestBase {
         MyWorkService myWorkService = serviceModule.getMyWorkService();
 
         return myWorkService.getMyWork().stream().collect(Collectors.toList());
+    }
+
+    public List<EntityModel> retrieveBacklog() {
+        OctaneProvider octaneProvider = serviceModule.getOctane();
+        Octane octane = octaneProvider.getOctane();
+        List<EntityModel> workItems = octane.entityList("work_items").get().execute().stream().collect(Collectors.toList());
+        List<EntityModel> tests = octane.entityList("tests").get().execute().stream().collect(Collectors.toList());
+        return Stream.concat(workItems.stream(), tests.stream()).collect(Collectors.toList());
+
+    }
+
+    public void deleteBacklogItems() {
+        List<EntityModel> workspaceEntities = retrieveBacklog();
+        Query.QueryBuilder workItemsQuery = null;
+        Query.QueryBuilder testItemsQuery = null;
+        for (EntityModel entityModel : workspaceEntities) {
+            String entityType = entityModel.getValue("type").getValue().toString();
+            if ("work_item".equals(entityType) && !"work_item_root".equals(entityModel.getValue("subtype").getValue().toString())) {
+
+                if (workItemsQuery != null) {
+                    workItemsQuery = workItemsQuery.or("id", QueryMethod.EqualTo, entityModel.getValue("id").getValue().toString());
+                } else {
+                  workItemsQuery = Query.statement("id", QueryMethod.EqualTo, entityModel.getValue("id").getValue().toString());
+                }
+            }
+            if ("test".equals(entityType)) {
+                if (testItemsQuery != null) {
+                    testItemsQuery = testItemsQuery.or("id", QueryMethod.EqualTo, entityModel.getValue("id").getValue().toString());
+                } else {
+                    testItemsQuery = Query.statement("id", QueryMethod.EqualTo, entityModel.getValue("id").getValue().toString());
+                }
+            }
+            if ("run".equals(entityType)) {
+                if (testItemsQuery != null) {
+                    testItemsQuery = testItemsQuery.or("id", QueryMethod.EqualTo, entityModel.getValue("id").getValue().toString());
+                } else {
+                    testItemsQuery = Query.statement("id", QueryMethod.EqualTo, entityModel.getValue("id").getValue().toString());
+                }
+            }
+        }
+        if (workspaceEntities.size() > 0) {
+            OctaneProvider octaneProvider = serviceModule.getOctane();
+
+            Octane.Builder octaneBuilder = new Octane.Builder(new SimpleUserAuthentication(connectionSettingsProvider.getConnectionSettings().getUserName(), connectionSettingsProvider.getConnectionSettings().getPassword(), ClientType.HPE_MQM_UI.name()));
+            octaneBuilder.sharedSpace(connectionSettingsProvider.getConnectionSettings().getSharedSpaceId());
+            octaneBuilder.workSpace(connectionSettingsProvider.getConnectionSettings().getWorkspaceId());
+            Octane octane = octaneBuilder.Server(connectionSettingsProvider.getConnectionSettings().getBaseUrl()).build();
+            if (testItemsQuery != null)
+                octane.entityList("tests").delete().query(testItemsQuery.build()).execute();
+            if (workItemsQuery != null)
+                octane.entityList("work_items").delete().query(workItemsQuery.build()).execute();
+        }
     }
 }

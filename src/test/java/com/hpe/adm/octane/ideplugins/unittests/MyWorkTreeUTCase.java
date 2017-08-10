@@ -70,6 +70,9 @@ public class MyWorkTreeUTCase extends IntegrationTestBase {
      */
     @Test
     public void setUpMyWorkTree() {
+
+        deleteBacklogItems();
+
         List<EntityModel> entitiesForMyWork = testAddEntities();
         List<EntityModel> entities = testAddEntities();
         List<EntityModel> entitiesWithOwners = addToMyWorkByOwnerField(testAddEntities());
