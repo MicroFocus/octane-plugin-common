@@ -345,6 +345,12 @@ public abstract class IntegrationTestBase {
         return octane.entityList(entity.getApiEntityName()).create().entities(Collections.singletonList(taskEntityModel)).execute().iterator().next();
     }
 
+    public List<EntityModel> getTasks(){
+        OctaneProvider octaneProvider = serviceModule.getOctane();
+        Octane octane = octaneProvider.getOctane();
+        return octane.entityList("tasks").get().execute().stream().collect(Collectors.toList());
+    }
+
     /**
      * Creates a manual test run
      *
