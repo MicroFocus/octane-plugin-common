@@ -12,6 +12,7 @@ import org.junit.Test;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.NoSuchElementException;
 import java.util.UUID;
 import java.util.stream.Collectors;
 
@@ -57,7 +58,7 @@ public class SearchFunctionalityUTCase extends IntegrationTestBase {
 
         setDescription(entityModels);
         try {
-            Thread.sleep(60000);//--wait until the elastic search is updated with the entities
+            Thread.sleep(40000);//--wait until the elastic search is updated with the entities
         } catch (Exception e) {
             e.printStackTrace();
         }
@@ -76,12 +77,25 @@ public class SearchFunctionalityUTCase extends IntegrationTestBase {
     }
 
     @Test
-    public void testSearchWithBadParameters() {
-        int badId = 0;
+    public void testSearchWithBadID() {
+        int badId = 19000;
         //bad id
-        assert testSearch(String.valueOf(badId)) == null;
+        try {
+            testSearch(String.valueOf(badId));
+            assert false;
+        } catch (NoSuchElementException e) {
+            assert true;
+        }
+    }
+     @Test
+    public void testSearchWithBadNameOrDescription(){
         //bad name or description
-        assert testSearch(UUID.randomUUID().toString()) == null;
+        try {
+            testSearch(String.valueOf(UUID.randomUUID().toString()));
+            assert false;
+        }catch(NoSuchElementException e){
+            assert true;
+        }
     }
 
 }
