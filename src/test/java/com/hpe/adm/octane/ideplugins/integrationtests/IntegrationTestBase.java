@@ -13,6 +13,7 @@
 
 package com.hpe.adm.octane.ideplugins.integrationtests;
 
+import com.google.gson.JsonObject;
 import com.google.inject.Guice;
 import com.google.inject.Inject;
 import com.google.inject.Injector;
@@ -43,6 +44,7 @@ import org.json.JSONObject;
 import org.junit.Before;
 
 import java.lang.annotation.Annotation;
+import java.time.LocalDateTime;
 import java.util.*;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
@@ -112,6 +114,8 @@ public abstract class IntegrationTestBase {
         }
         nativeStatus = new EntityModel("type", "list_node");
         nativeStatus.setValue(new StringFieldModel("id", "1094"));
+
+        createRelease();
     }
 
 
@@ -326,6 +330,40 @@ public abstract class IntegrationTestBase {
         OctaneProvider octaneProvider = serviceModule.getOctane();
         Octane octane = octaneProvider.getOctane();
         return octane.entityList("releases").get().execute().iterator().next();
+    }
+
+    private void createRelease(){
+        String postUrl = connectionSettingsProvider.getConnectionSettings().getBaseUrl() + "/api/shared_spaces/" +
+                connectionSettingsProvider.getConnectionSettings().getSharedSpaceId() + "/workspaces/" +
+                connectionSettingsProvider.getConnectionSettings().getWorkspaceId() + "/releases";
+        String urlDomain = connectionSettingsProvider.getConnectionSettings().getBaseUrl();
+        JSONObject dataSet = new JSONObject();
+        JSONObject releaseJson = new JSONObject();
+        releaseJson.put("name", "test_Release" + UUID.randomUUID().toString());
+        releaseJson.put("type", "release");
+        LocalDateTime localDateTime = LocalDateTime.of(2017,10,10,10,10);
+        LocalDateTime localDateTImeNow = LocalDateTime.now();
+        releaseJson.put("start_date",localDateTImeNow.toString()+"Z");
+        releaseJson.put("end_date",localDateTime.toString()+"Z");
+        JSONObject agileTypeJson = new JSONObject();
+        agileTypeJson.put("id","list_node.release_agile_type.scrum");
+        agileTypeJson.put("name","scrum");
+        agileTypeJson.put("type","list_node");
+        agileTypeJson.put("logical_name","list_node.release_agile_type.scrum");
+        releaseJson.put("agile_type",agileTypeJson);
+        JSONArray jsonArray = new JSONArray();
+        jsonArray.put(releaseJson);
+        dataSet.put("data", jsonArray);
+        OctaneHttpRequest postNewReleaseRequest = new OctaneHttpRequest.PostOctaneHttpRequest(postUrl, OctaneHttpRequest.JSON_CONTENT_TYPE, dataSet.toString());
+        OctaneHttpClient octaneHttpClient = new GoogleHttpClient(urlDomain);
+        octaneHttpClient.authenticate(new SimpleUserAuthentication(connectionSettingsProvider.getConnectionSettings().getUserName(), connectionSettingsProvider.getConnectionSettings().getPassword(), ClientType.HPE_MQM_UI.name()));
+        OctaneHttpResponse response = null;
+        try {
+            response = octaneHttpClient.execute(postNewReleaseRequest);
+        } catch (Exception e) {
+            logger.error("Error while trying to get the response when creating a new release!");
+            fail(e.toString());
+        }
     }
 
     /**
