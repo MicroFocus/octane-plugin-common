@@ -26,7 +26,6 @@ public class PropertyUtil {
     public enum PropertyKeys {
         URL("url"),
         SHARED_SPACE("sharedSpaceId"),
-        WORKSPACE("workspaceId"),
         USERNAME("username"),
         PASSWORD("password");
 
@@ -38,7 +37,6 @@ public class PropertyUtil {
 
     public static ConnectionSettingsProvider readFormVmArgs(){
         Properties props = System.getProperties();
-
         boolean allPropsPresent =
                 Stream.of(
                         PropertyKeys.URL,
