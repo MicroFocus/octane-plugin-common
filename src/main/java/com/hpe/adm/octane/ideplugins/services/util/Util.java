@@ -184,7 +184,7 @@ public class Util {
                 formLayout.setFormName(tempJsonObj.getString("name"));
                 formLayout.setEntity(Entity.getEntityType(tempJsonObj.getString("entity_type"), tempJsonObj.optString("entity_subtype")));
                 formLayout.setFormLayoutSections(getFormLayoutSections(tempJsonObj.getJSONObject("body").getJSONObject("layout").getJSONArray("sections")));
-                formLayout.setDefault(tempJsonObj.getJSONObject("body").getBoolean("isDefault"));
+                formLayout.setDefault(tempJsonObj.getInt("is_default"));
                 entitiesFormLayout.add(formLayout);
             }
         }

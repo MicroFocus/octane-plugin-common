@@ -18,11 +18,13 @@ import com.hpe.adm.octane.ideplugins.services.filtering.Entity;
 import java.util.List;
 
 public class FormLayout {
+    final private String NEW = "NEW";
+    final private String EDIT = "EDIT";
     private Long formId;
     private Entity entity;
     private String formName;
     private List<FormLayoutSection> formLayoutSections;
-    private boolean isDefault;
+    private String isDefault;
 
     public FormLayout() {
     }
@@ -65,11 +67,16 @@ public class FormLayout {
         this.formLayoutSections = formLayoutSections;
     }
 
-    public boolean isDefault() {
+    public String isDefault() {
         return isDefault;
     }
 
-    public void setDefault(boolean aDefault) {
-        isDefault = aDefault;
+    public void setDefault(int aDefault) {
+        if(aDefault == 1){
+            isDefault = NEW;
+        }
+        else if(aDefault == 2){
+            isDefault = EDIT;
+        }
     }
 }

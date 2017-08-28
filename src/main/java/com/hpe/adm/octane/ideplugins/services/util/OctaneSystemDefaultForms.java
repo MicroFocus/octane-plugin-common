@@ -118,7 +118,7 @@ public class OctaneSystemDefaultForms {
             "          ]\n" +
             "        },\n" +
             "        \"isDefaultForNew\": false,\n" +
-            "        \"isDefault\": true,\n" +
+            "        \"is_default\": 1,\n" +
             "        \"layoutKeyToOverride\": \"user.default.work_item.defect.0\"\n" +
             "      },\n" +
             "      \"last_modified\": \"2017-04-19T08:49:42Z\"\n" +
@@ -202,7 +202,7 @@ public class OctaneSystemDefaultForms {
             "            }\n" +
             "          ]\n" +
             "        },\n" +
-            "        \"isDefault\": true,\n" +
+            "        \"is_default\": 1,\n" +
             "        \"isDefaultForNew\": false,\n" +
             "        \"layoutKeyToOverride\": \"user.default.work_item.story.0\"\n" +
             "      },\n" +
@@ -283,7 +283,7 @@ public class OctaneSystemDefaultForms {
             "            }\n" +
             "          ]\n" +
             "        },\n" +
-            "        \"isDefault\": true,\n" +
+            "        \"is_default\": 1,\n" +
             "        \"isDefaultForNew\": false,\n" +
             "        \"layoutKeyToOverride\": \"user.default.work_item.quality_story.0\"\n" +
             "      },\n" +
@@ -352,7 +352,7 @@ public class OctaneSystemDefaultForms {
             "            }\n" +
             "          ]\n" +
             "        },\n" +
-            "        \"isDefault\": true,\n" +
+            "        \"is_default\": 1,\n" +
             "        \"isDefaultForNew\": false,\n" +
             "        \"layoutKeyToOverride\": \"user.default.test.gherkin_test.0\"\n" +
             "      },\n" +
@@ -405,7 +405,7 @@ public class OctaneSystemDefaultForms {
             "            }\n" +
             "          ]\n" +
             "        },\n" +
-            "        \"isDefault\": true,\n" +
+            "        \"is_default\": 1,\n" +
             "        \"isDefaultForNew\": true,\n" +
             "        \"layoutKeyToOverride\": \"user.default.test.test_automated.0\"\n" +
             "      },\n" +
@@ -474,7 +474,7 @@ public class OctaneSystemDefaultForms {
             "            }\n" +
             "          ]\n" +
             "        },\n" +
-            "        \"isDefault\": true,\n" +
+            "        \"is_default\": 1,\n" +
             "        \"isDefaultForNew\": false,\n" +
             "        \"layoutKeyToOverride\": \"user.default.test.test_suite.0\"\n" +
             "      },\n" +
@@ -551,7 +551,7 @@ public class OctaneSystemDefaultForms {
             "            }\n" +
             "          ]\n" +
             "        },\n" +
-            "        \"isDefault\": true,\n" +
+            "        \"is_default\": 1,\n" +
             "        \"isDefaultForNew\": true,\n" +
             "        \"layoutKeyToOverride\": \"user.default.run.run_manual.0\"\n" +
             "      },\n" +
@@ -628,7 +628,7 @@ public class OctaneSystemDefaultForms {
             "            }\n" +
             "          ]\n" +
             "        },\n" +
-            "        \"isDefault\": true,\n" +
+            "        \"is_default\": 1,\n" +
             "        \"isDefaultForNew\": true,\n" +
             "        \"layoutKeyToOverride\": \"user.default.run.run_suite.0\"\n" +
             "      },\n" +
@@ -749,7 +749,7 @@ public class OctaneSystemDefaultForms {
             "            }\n" +
             "          ]\n" +
             "        },\n" +
-            "        \"isDefault\": true,\n" +
+            "        \"is_default\": 1,\n" +
             "        \"isDefaultForNew\": false,\n" +
             "        \"layoutKeyToOverride\": \"user.default.run.run_automated.0\"\n" +
             "      },\n" +
@@ -820,7 +820,7 @@ public class OctaneSystemDefaultForms {
             "            }\n" +
             "          ]\n" +
             "        },\n" +
-            "        \"isDefault\": true,\n" +
+            "        \"is_default\": 1,\n" +
             "        \"isDefaultForNew\": false,\n" +
             "        \"layoutKeyToOverride\": \"user.default.task.0\"\n" +
             "      },\n" +
@@ -889,7 +889,7 @@ public class OctaneSystemDefaultForms {
             "            }\n" +
             "          ]\n" +
             "        },\n" +
-            "        \"isDefault\": true,\n" +
+            "        \"is_default\": 1,\n" +
             "        \"isDefaultForNew\": false,\n" +
             "        \"layoutKeyToOverride\": \"user.default.test.test_manual.0\"\n" +
             "      },\n" +
@@ -939,7 +939,7 @@ public class OctaneSystemDefaultForms {
             "				]\n" +
             "			},\n" +
             "			\"isDefaultForNew\": false,\n" +
-            "			\"isDefault\": true\n" +
+            "			\"is_default\": 1\n" +
             "		},\n" +
             "		\"last_modified\": \"2017-08-02T07:21:10Z\"\n" +
             "    },\n" +

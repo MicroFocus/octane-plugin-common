@@ -140,7 +140,11 @@ public class MetadataService {
 
         return formList
                 .stream()
-                .filter(FormLayout::isDefault)
+                .filter((form) -> {
+                    if (form.isDefault().equals("EDIT"))
+                        return true;
+                    else return false;
+                })
                 .collect(Collectors.toMap(FormLayout::getEntity, Function.identity()));
     }
 
@@ -149,7 +153,11 @@ public class MetadataService {
         List<FormLayout> formList = Util.parseJsonWithFormLayoutData(OctaneSystemDefaultForms.ALL);
         formsMap = formList
                 .stream()
-                .filter(FormLayout::isDefault)
+                .filter((form) -> {
+                    if (form.isDefault().equals("EDIT"))
+                        return true;
+                    else return false;
+                })
                 .collect(Collectors.toMap(FormLayout::getEntity, Function.identity()));
         return formsMap.get(entityType);
     }
