@@ -24,7 +24,7 @@ public class FormLayout {
     private Entity entity;
     private String formName;
     private List<FormLayoutSection> formLayoutSections;
-    private String isDefault;
+    private String defaultField;
 
     public FormLayout() {
     }
@@ -67,16 +67,16 @@ public class FormLayout {
         this.formLayoutSections = formLayoutSections;
     }
 
-    public String isDefault() {
-        return isDefault;
+    public String getDefaultField() {
+        return defaultField;
     }
 
     public void setDefault(int aDefault) {
         if(aDefault == 1){
-            isDefault = NEW;
+            defaultField = NEW;
         }
         else if(aDefault == 2){
-            isDefault = EDIT;
+            defaultField = EDIT;
         }
     }
 }
