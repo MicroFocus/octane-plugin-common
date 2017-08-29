@@ -140,11 +140,7 @@ public class MetadataService {
 
         return formList
                 .stream()
-                .filter((form) -> {
-                    if (form.getDefaultField().equals("EDIT"))
-                        return true;
-                    else return false;
-                })
+                .filter((form) -> {return form.getDefaultField().equals("EDIT") ? true : false;})
                 .collect(Collectors.toMap(FormLayout::getEntity, Function.identity()));
     }
 
