@@ -75,10 +75,8 @@ public class FormLayout {
         if(aDefault == 1){
             defaultField = NEW;
         }
-        else if(aDefault == 2){
+        else {
             defaultField = EDIT;
-        } else {
-            defaultField = new String();
         }
     }
 }
