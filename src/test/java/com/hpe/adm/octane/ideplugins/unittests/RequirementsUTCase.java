@@ -15,15 +15,7 @@ public class RequirementsUTCase extends IntegrationTestBase {
         EntityModel requirementFolder = createRequirementFolder("folder " + UUID.randomUUID());
         EntityModel requirement = createRequirement("requirement " + UUID.randomUUID().toString(),requirementFolder);
         EntityModel createdRequirement = findRequirementById(Long.parseLong(requirement.getValue("id").getValue().toString()));
-        List<EntityModel> requirements = getRequirements();
-
-        for (EntityModel entityModel : requirements) {
-            if (entityModel.getValue("name").getValue().equals(createdRequirement.getValue("name").getValue())) {
-                assert true;
-                return;
-            }
-        }
-        assert false;
+        assert (Long.parseLong(requirement.getValue("id").getValue().toString())==Long.parseLong(createdRequirement.getValue("id").getValue().toString()));
     }
 
     @Test

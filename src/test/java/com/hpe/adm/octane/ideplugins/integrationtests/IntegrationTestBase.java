@@ -116,8 +116,6 @@ public abstract class IntegrationTestBase {
         }
         nativeStatus = new EntityModel("type", "list_node");
         nativeStatus.setValue(new StringFieldModel("id", "1094"));
-
-        //createRelease();
     }
 
 
