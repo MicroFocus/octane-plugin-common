@@ -116,6 +116,8 @@ public abstract class IntegrationTestBase {
         }
         nativeStatus = new EntityModel("type", "list_node");
         nativeStatus.setValue(new StringFieldModel("id", "1094"));
+
+        createRelease();
     }
 
 
@@ -346,7 +348,7 @@ public abstract class IntegrationTestBase {
         releaseJson.put("start_date", localDateTImeNow.toString() + "Z");
         releaseJson.put("end_date", localDateTime.toString() + "Z");
         JSONObject agileTypeJson = new JSONObject();
-        agileTypeJson.put("id", "list_node.release_agile_type.scrum");
+        agileTypeJson.put("id", "1108");
         agileTypeJson.put("name", "scrum");
         agileTypeJson.put("type", "list_node");
         agileTypeJson.put("logical_name", "list_node.release_agile_type.scrum");
