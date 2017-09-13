@@ -36,7 +36,9 @@ import com.hpe.adm.octane.ideplugins.services.exception.ServiceException;
 import com.hpe.adm.octane.ideplugins.services.filtering.Entity;
 import com.hpe.adm.octane.ideplugins.services.mywork.MyWorkService;
 import com.hpe.adm.octane.ideplugins.services.nonentity.EntitySearchService;
+import com.hpe.adm.octane.ideplugins.services.nonentity.OctaneVersionService;
 import com.hpe.adm.octane.ideplugins.services.util.ClientType;
+import com.hpe.adm.octane.ideplugins.services.util.OctaneVersion;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.json.JSONArray;
@@ -59,6 +61,9 @@ public abstract class IntegrationTestBase {
 
     @Inject
     private EntitySearchService searchService;
+
+    @Inject
+    private OctaneVersionService versionService;
 
     private final Logger logger = LogManager.getLogger(IntegrationTestBase.class.getName().toString());
 
@@ -115,8 +120,10 @@ public abstract class IntegrationTestBase {
             }
         }
         nativeStatus = new EntityModel("type", "list_node");
-        nativeStatus.setValue(new StringFieldModel("id", "1094"));
-
+        if(testOctaneVersion())
+            nativeStatus.setValue(new StringFieldModel("id", "1094"));
+        else
+            nativeStatus.setValue(new StringFieldModel("id", "1091"));
         createRelease();
     }
 
@@ -334,6 +341,16 @@ public abstract class IntegrationTestBase {
         return octane.entityList("releases").get().execute().iterator().next();
     }
 
+    private boolean testOctaneVersion() {
+        OctaneVersion version = versionService.getOctaneVersion();
+
+        if (OctaneVersion.compare(version, OctaneVersion.Operation.HIGHER, OctaneVersion.EVERTON_P3)) {
+            return true;
+        } else {
+            return false;
+        }
+    }
+
     private void createRelease() {
         String postUrl = connectionSettingsProvider.getConnectionSettings().getBaseUrl() + "/api/shared_spaces/" +
                 connectionSettingsProvider.getConnectionSettings().getSharedSpaceId() + "/workspaces/" +
@@ -348,7 +365,11 @@ public abstract class IntegrationTestBase {
         releaseJson.put("start_date", localDateTImeNow.toString() + "Z");
         releaseJson.put("end_date", localDateTime.toString() + "Z");
         JSONObject agileTypeJson = new JSONObject();
-        agileTypeJson.put("id", "1108");
+        if (testOctaneVersion()) {
+            agileTypeJson.put("id", "list_node.release_agile_type.scrum");
+        } else {
+            agileTypeJson.put("id", "1108");
+        }
         agileTypeJson.put("name", "scrum");
         agileTypeJson.put("type", "list_node");
         agileTypeJson.put("logical_name", "list_node.release_agile_type.scrum");
