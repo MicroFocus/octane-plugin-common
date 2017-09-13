@@ -120,7 +120,7 @@ public abstract class IntegrationTestBase {
             }
         }
         nativeStatus = new EntityModel("type", "list_node");
-        if(testOctaneVersion())
+        if (testOctaneVersion())
             nativeStatus.setValue(new StringFieldModel("id", "1094"));
         else
             nativeStatus.setValue(new StringFieldModel("id", "1091"));
@@ -258,6 +258,9 @@ public abstract class IntegrationTestBase {
         fields.add(new StringFieldModel("email", firstName + "." + lastName + "@hpe.com"));
         fields.add(new StringFieldModel("password", "Welcome1"));
         fields.add(new MultiReferenceFieldModel("roles", Collections.singletonList(roles.get(0))));
+        if (!testOctaneVersion()) {
+            fields.add(new StringFieldModel("phone1", "0875432135"));
+        }
         userEntityModel.setValues(fields);
         OctaneProvider octaneProvider = serviceModule.getOctane();
         Octane octane = octaneProvider.getOctane();
@@ -341,7 +344,7 @@ public abstract class IntegrationTestBase {
         return octane.entityList("releases").get().execute().iterator().next();
     }
 
-    private boolean testOctaneVersion() {
+    public boolean testOctaneVersion() {
         OctaneVersion version = versionService.getOctaneVersion();
 
         if (OctaneVersion.compare(version, OctaneVersion.Operation.HIGHER, OctaneVersion.EVERTON_P3)) {
