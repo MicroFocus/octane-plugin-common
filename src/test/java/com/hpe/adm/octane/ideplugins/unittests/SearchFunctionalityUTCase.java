@@ -34,7 +34,7 @@ public class SearchFunctionalityUTCase extends IntegrationTestBase {
             entityModel.setValue(new StringFieldModel("description", String.valueOf(descriptionCount++)));
         }
     }
-    @Test
+
     public void testSearchEntities() {
         deleteBacklogItems();
         List<EntityModel> entityModels = createSearchableEntities();
