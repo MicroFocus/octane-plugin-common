@@ -20,7 +20,7 @@ public class RequirementsUTCase extends IntegrationTestBase {
         }
     }
 
-    @Test
+
     public void searchRequirementTest() {
         if (testOctaneVersion()) {
             EntityModel requirementFolder = createRequirementFolder("folder" + UUID.randomUUID());
