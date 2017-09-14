@@ -5,14 +5,13 @@ import com.hpe.adm.nga.sdk.model.EntityModel;
 import com.hpe.adm.octane.ideplugins.integrationtests.IntegrationTestBase;
 import org.junit.Test;
 
-import java.util.List;
 import java.util.UUID;
 
 public class RequirementsUTCase extends IntegrationTestBase {
 
     @Test
     public void createRequirementTest() {
-        if (testOctaneVersion()) {
+        if (isNewerOctane()) {
             EntityModel requirementFolder = createRequirementFolder("folder " + UUID.randomUUID());
             EntityModel requirement = createRequirement("requirement " + UUID.randomUUID().toString(), requirementFolder);
             EntityModel createdRequirement = findRequirementById(Long.parseLong(requirement.getValue("id").getValue().toString()));
@@ -22,7 +21,7 @@ public class RequirementsUTCase extends IntegrationTestBase {
 
 
     public void searchRequirementTest() {
-        if (testOctaneVersion()) {
+        if (isNewerOctane()) {
             EntityModel requirementFolder = createRequirementFolder("folder" + UUID.randomUUID());
             EntityModel entityModel = createRequirement("requirement " + UUID.randomUUID().toString(), requirementFolder);
             String descriptionText = UUID.randomUUID().toString();

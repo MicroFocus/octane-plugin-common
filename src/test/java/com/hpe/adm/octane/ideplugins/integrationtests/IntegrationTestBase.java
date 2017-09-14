@@ -120,7 +120,7 @@ public abstract class IntegrationTestBase {
             }
         }
         nativeStatus = new EntityModel("type", "list_node");
-        if (testOctaneVersion())
+        if (isNewerOctane())
             nativeStatus.setValue(new StringFieldModel("id", "1094"));
         else
             nativeStatus.setValue(new StringFieldModel("id", "1091"));
@@ -258,7 +258,7 @@ public abstract class IntegrationTestBase {
         fields.add(new StringFieldModel("email", firstName + "." + lastName + "@hpe.com"));
         fields.add(new StringFieldModel("password", "Welcome1"));
         fields.add(new MultiReferenceFieldModel("roles", Collections.singletonList(roles.get(0))));
-        if (!testOctaneVersion()) {
+        if (!isNewerOctane()) {
             fields.add(new StringFieldModel("phone1", "0875432135"));
         }
         userEntityModel.setValues(fields);
@@ -344,7 +344,7 @@ public abstract class IntegrationTestBase {
         return octane.entityList("releases").get().execute().iterator().next();
     }
 
-    public boolean testOctaneVersion() {
+    public boolean isNewerOctane() {
         OctaneVersion version = versionService.getOctaneVersion();
 
         if (OctaneVersion.compare(version, OctaneVersion.Operation.HIGHER, OctaneVersion.EVERTON_P3)) {
@@ -368,7 +368,7 @@ public abstract class IntegrationTestBase {
         releaseJson.put("start_date", localDateTImeNow.toString() + "Z");
         releaseJson.put("end_date", localDateTime.toString() + "Z");
         JSONObject agileTypeJson = new JSONObject();
-        if (testOctaneVersion()) {
+        if (isNewerOctane()) {
             agileTypeJson.put("id", "list_node.release_agile_type.scrum");
         } else {
             agileTypeJson.put("id", "1108");
