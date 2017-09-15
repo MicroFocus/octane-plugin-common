@@ -72,8 +72,8 @@ public class FormLayout {
         return defaultField;
     }
 
-    public void setDefault(int aDefault) {
-        if(aDefault == 1){
+    public void setDefault(int isDefault) {
+        if(isDefault == 1){
             defaultField = NEW;
         }
         else {
@@ -81,8 +81,8 @@ public class FormLayout {
         }
     }
 
-    public void setDefault(boolean aDefault){
-        if(aDefault){
+    public void setDefault(boolean isDefault){
+        if(isDefault){
             defaultField = EDIT;
         } else {
             defaultField = NEW;

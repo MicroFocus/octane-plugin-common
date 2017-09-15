@@ -171,7 +171,7 @@ public class Util {
         return createQueryForMultipleValues(queryParamName, (String[]) queryParamValues.toArray());
     }
 
-    public static List<FormLayout> parseJsonWithFormLayoutData(String responseJson,OctaneVersion version) {
+    public static List<FormLayout> parseJsonWithFormLayoutData(String responseJson, OctaneVersion version) {
         logger.debug("Parsing JSON response");
         List<FormLayout> entitiesFormLayout = new ArrayList<>();
         if (responseJson != null && !responseJson.isEmpty()) {
