@@ -1,4 +1,4 @@
-package com.hpe.adm.octane.ideplugins.unittests;
+package com.hpe.adm.octane.ideplugins.integrationtests.services;
 
 import com.hpe.adm.nga.sdk.authentication.SimpleUserAuthentication;
 import com.hpe.adm.nga.sdk.exception.OctaneException;
@@ -18,7 +18,7 @@ import org.junit.Test;
 
 import java.util.UUID;
 
-public class ConnectionSettingsUTCase extends IntegrationTestBase {
+public class ConnectionSettingsITCase extends IntegrationTestBase {
 
     private final Logger logger = LogManager.getLogger(IntegrationTestBase.class.getName().toString());
 

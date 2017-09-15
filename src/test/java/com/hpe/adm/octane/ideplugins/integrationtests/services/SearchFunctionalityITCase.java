@@ -1,4 +1,4 @@
-package com.hpe.adm.octane.ideplugins.unittests;
+package com.hpe.adm.octane.ideplugins.integrationtests.services;
 
 
 import com.google.inject.Inject;
@@ -8,6 +8,7 @@ import com.hpe.adm.nga.sdk.model.StringFieldModel;
 import com.hpe.adm.octane.ideplugins.integrationtests.IntegrationTestBase;
 import com.hpe.adm.octane.ideplugins.services.filtering.Entity;
 import com.hpe.adm.octane.ideplugins.services.nonentity.EntitySearchService;
+import org.junit.Ignore;
 import org.junit.Test;
 
 import java.util.ArrayList;
@@ -17,7 +18,7 @@ import java.util.UUID;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
-public class SearchFunctionalityUTCase extends IntegrationTestBase {
+public class SearchFunctionalityITCase extends IntegrationTestBase {
     @Inject
     private EntitySearchService searchService;
 
@@ -70,6 +71,7 @@ public class SearchFunctionalityUTCase extends IntegrationTestBase {
     }
 
     @Test
+    @Ignore
     public void testSearchEntities() {
 
         deleteBacklogItems();
