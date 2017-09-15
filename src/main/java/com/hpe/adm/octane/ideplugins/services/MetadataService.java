@@ -27,11 +27,9 @@ import com.hpe.adm.octane.ideplugins.services.connection.HttpClientProvider;
 import com.hpe.adm.octane.ideplugins.services.connection.OctaneProvider;
 import com.hpe.adm.octane.ideplugins.services.exception.ServiceRuntimeException;
 import com.hpe.adm.octane.ideplugins.services.filtering.Entity;
+import com.hpe.adm.octane.ideplugins.services.nonentity.OctaneVersionService;
 import com.hpe.adm.octane.ideplugins.services.ui.FormLayout;
-import com.hpe.adm.octane.ideplugins.services.util.ClientType;
-import com.hpe.adm.octane.ideplugins.services.util.OctaneSystemDefaultForms;
-import com.hpe.adm.octane.ideplugins.services.util.OctaneUrlBuilder;
-import com.hpe.adm.octane.ideplugins.services.util.Util;
+import com.hpe.adm.octane.ideplugins.services.util.*;
 import org.apache.http.client.utils.URIBuilder;
 import org.json.JSONArray;
 import org.json.JSONObject;
@@ -53,8 +51,11 @@ public class MetadataService {
     private OctaneProvider octaneProvider;
     @Inject
     private ConnectionSettingsProvider connectionSettingsProvider;
+    @Inject
+    private OctaneVersionService octaneVersionService;
     private Map<Entity, Collection<FieldMetadata>> cache;
     private Map<Entity, FormLayout> octaneFormsCache;
+    private OctaneVersion version;
 
     public Set<String> getFields(Entity entityType) {
         if (cache == null) {
@@ -140,7 +141,8 @@ public class MetadataService {
         response = httpClient.execute(request);
         List<FormLayout> formList = new ArrayList<>();
         if (response.isSuccessStatusCode()) {
-            formList = Util.parseJsonWithFormLayoutData(response.getContent());
+            version =  octaneVersionService.getOctaneVersion();
+            formList = Util.parseJsonWithFormLayoutData(response.getContent(),version);
         }
 
         return formList
@@ -151,7 +153,8 @@ public class MetadataService {
 
     private FormLayout getSystemDefinedFormsForEntity(Entity entityType) {
         Map<Entity, FormLayout> formsMap;
-        List<FormLayout> formList = Util.parseJsonWithFormLayoutData(OctaneSystemDefaultForms.ALL);
+        version =  octaneVersionService.getOctaneVersion();
+        List<FormLayout> formList = Util.parseJsonWithFormLayoutData(OctaneSystemDefaultForms.ALL,version);
         formsMap = formList
                 .stream()
                 .filter((form) -> { return form.getDefaultField().equals("EDIT") ? true : false;})

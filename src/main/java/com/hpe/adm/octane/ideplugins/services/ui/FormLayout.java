@@ -14,6 +14,7 @@
 package com.hpe.adm.octane.ideplugins.services.ui;
 
 import com.hpe.adm.octane.ideplugins.services.filtering.Entity;
+import com.hpe.adm.octane.ideplugins.services.util.OctaneVersion;
 
 import java.util.List;
 
@@ -79,4 +80,14 @@ public class FormLayout {
             defaultField = EDIT;
         }
     }
+
+    public void setDefault(boolean aDefault){
+        if(aDefault){
+            defaultField = EDIT;
+        } else {
+            defaultField = NEW;
+        }
+    }
+
+
 }
