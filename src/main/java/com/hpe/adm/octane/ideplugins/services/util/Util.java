@@ -13,14 +13,15 @@
 
 package com.hpe.adm.octane.ideplugins.services.util;
 
-import com.hpe.adm.nga.sdk.model.EntityModel;
-import com.hpe.adm.nga.sdk.model.FieldModel;
-import com.hpe.adm.nga.sdk.model.MultiReferenceFieldModel;
-import com.hpe.adm.nga.sdk.model.ReferenceFieldModel;
-import com.hpe.adm.octane.ideplugins.services.filtering.Entity;
-import com.hpe.adm.octane.ideplugins.services.ui.FormField;
-import com.hpe.adm.octane.ideplugins.services.ui.FormLayout;
-import com.hpe.adm.octane.ideplugins.services.ui.FormLayoutSection;
+import java.io.UnsupportedEncodingException;
+import java.time.ZoneId;
+import java.time.ZonedDateTime;
+import java.time.format.DateTimeFormatter;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.List;
+import java.util.StringJoiner;
+
 import org.apache.commons.lang.CharEncoding;
 import org.json.JSONArray;
 import org.json.JSONException;
@@ -30,13 +31,14 @@ import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Entities;
 
-import java.io.UnsupportedEncodingException;
-import java.time.ZoneId;
-import java.time.ZonedDateTime;
-import java.time.format.DateTimeFormatter;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.StringJoiner;
+import com.hpe.adm.nga.sdk.model.EntityModel;
+import com.hpe.adm.nga.sdk.model.FieldModel;
+import com.hpe.adm.nga.sdk.model.MultiReferenceFieldModel;
+import com.hpe.adm.nga.sdk.model.ReferenceFieldModel;
+import com.hpe.adm.octane.ideplugins.services.filtering.Entity;
+import com.hpe.adm.octane.ideplugins.services.ui.FormField;
+import com.hpe.adm.octane.ideplugins.services.ui.FormLayout;
+import com.hpe.adm.octane.ideplugins.services.ui.FormLayoutSection;
 
 public class Util {
     public static final String DATE_FORMAT = "MM/dd/yyyy HH:mm:ss";
@@ -44,7 +46,8 @@ public class Util {
     /**
      * This method is for displaying in the UI only
      *
-     * @param fieldModel from an {@link EntityModel}
+     * @param fieldModel
+     *            from an {@link EntityModel}
      * @return string value of the field
      */
     public static String getUiDataFromModel(FieldModel fieldModel) {
@@ -54,8 +57,11 @@ public class Util {
     /**
      * This method is for displaying in the UI only
      *
-     * @param fieldModel fieldModel from an {@link EntityModel}
-     * @param neededProperty can check {@link ReferenceFieldModel} and {@link MultiReferenceFieldModel} for property to use
+     * @param fieldModel
+     *            fieldModel from an {@link EntityModel}
+     * @param neededProperty
+     *            can check {@link ReferenceFieldModel} and
+     *            {@link MultiReferenceFieldModel} for property to use
      * @return string value of the field
      */
     public static String getUiDataFromModel(FieldModel fieldModel, String neededProperty) {
@@ -68,9 +74,9 @@ public class Util {
                     result = String.valueOf(tempFieldModel.getValue());
                 }
             } else if (fieldModel instanceof MultiReferenceFieldModel) {
-                result = getValueOfChildren((List<EntityModel>) fieldModel.getValue(), neededProperty);
+                result = getValueOfChildren((Collection<EntityModel>) fieldModel.getValue(), neededProperty);
             } else {
-                //In case of dates, we need to convert to local timezone
+                // In case of dates, we need to convert to local timezone
                 if (fieldModel.getValue() instanceof ZonedDateTime) {
                     ZonedDateTime serverdateTime = (ZonedDateTime) fieldModel.getValue();
                     ZonedDateTime localTime = serverdateTime.withZoneSameInstant(ZoneId.systemDefault());
@@ -81,10 +87,11 @@ public class Util {
             }
         }
 
-        //if the string happens to be valid json, strip it down to look like a normal string
+        // if the string happens to be valid json, strip it down to look like a
+        // normal string
         try {
             new JSONObject(result);
-            //in case it is json, make it pretty!
+            // in case it is json, make it pretty!
             result = result.replaceAll("\"", "");
             result = result.replaceAll("\\}", "");
             result = result.replaceAll("\\{", "");
@@ -119,7 +126,7 @@ public class Util {
         return getNonNullValue(commentModel, "owner_work_item", "owner_test", "owner_run");
     }
 
-    private static String getValueOfChildren(List<EntityModel> entityModelList, String child) {
+    private static String getValueOfChildren(Collection<EntityModel> entityModelList, String child) {
         StringJoiner result = new StringJoiner("; ");
         String tempFieldModelValue = " ";
         if (null != entityModelList) {
@@ -178,8 +185,9 @@ public class Util {
                 formLayout.setFormId(Long.valueOf(tempJsonObj.getString("id")));
                 formLayout.setFormName(tempJsonObj.getString("name"));
                 formLayout.setEntity(Entity.getEntityType(tempJsonObj.getString("entity_type"), tempJsonObj.optString("entity_subtype")));
-                formLayout.setFormLayoutSections(getFormLayoutSections(tempJsonObj.getJSONObject("body").getJSONObject("layout").getJSONArray("sections")));
-                if(OctaneVersion.compare(version, OctaneVersion.Operation.LOWER_EQ,OctaneVersion.FENER_P2)){
+                formLayout.setFormLayoutSections(
+                        getFormLayoutSections(tempJsonObj.getJSONObject("body").getJSONObject("layout").getJSONArray("sections")));
+                if (OctaneVersion.compare(version, OctaneVersion.Operation.LOWER_EQ, OctaneVersion.FENER_P2)) {
                     formLayout.setDefault(tempJsonObj.getInt("is_default"));
                 } else {
                     formLayout.setDefault(tempJsonObj.getJSONObject("body").getBoolean("isDefault"));
