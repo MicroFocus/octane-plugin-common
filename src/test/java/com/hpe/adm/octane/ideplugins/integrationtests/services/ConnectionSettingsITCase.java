@@ -11,16 +11,12 @@ import com.hpe.adm.octane.ideplugins.services.connection.ConnectionSettings;
 import com.hpe.adm.octane.ideplugins.services.filtering.Entity;
 import com.hpe.adm.octane.ideplugins.services.util.ClientType;
 import com.hpe.adm.octane.ideplugins.services.util.SdkUtil;
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
 import org.junit.Before;
 import org.junit.Test;
 
 import java.util.UUID;
 
 public class ConnectionSettingsITCase extends IntegrationTestBase {
-
-    private final Logger logger = LogManager.getLogger(IntegrationTestBase.class.getName().toString());
 
     private TestService testService = new TestService();
 
@@ -44,7 +40,6 @@ public class ConnectionSettingsITCase extends IntegrationTestBase {
             return octaneHttpClient.authenticate(new SimpleUserAuthentication(username, password, ClientType.HPE_MQM_UI.name()));
         } catch (OctaneException e) {
             String errorMessage = SdkUtil.getMessageFromOctaneException(e);
-            logger.error(errorMessage);
             return false;
         }
     }
@@ -78,7 +73,6 @@ public class ConnectionSettingsITCase extends IntegrationTestBase {
             return true;
         } catch (OctaneException e) {
             String message = SdkUtil.getMessageFromOctaneException(e);
-            logger.error(message);
             return false;
         }
     }

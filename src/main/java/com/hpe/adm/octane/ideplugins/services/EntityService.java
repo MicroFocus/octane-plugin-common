@@ -15,8 +15,8 @@ package com.hpe.adm.octane.ideplugins.services;
 
 import com.google.inject.Inject;
 import com.hpe.adm.nga.sdk.entities.EntityList;
-import com.hpe.adm.nga.sdk.entities.GetEntities;
-import com.hpe.adm.nga.sdk.entities.GetEntity;
+import com.hpe.adm.nga.sdk.entities.get.GetEntities;
+import com.hpe.adm.nga.sdk.entities.get.GetEntity;
 import com.hpe.adm.nga.sdk.exception.OctaneException;
 import com.hpe.adm.nga.sdk.extension.entities.ExtendedGetEntities;
 import com.hpe.adm.nga.sdk.model.EntityModel;
@@ -189,7 +189,7 @@ public class EntityService {
             GetEntity get =
                     octaneProvider.getOctane()
                             .entityList(entityType.getApiEntityName())
-                            .at(entityId.intValue())
+                            .at(entityId.toString())
                             .get();
 
             if (fields != null && fields.size() != 0) {
@@ -251,7 +251,7 @@ public class EntityService {
     }
 
     public void updateEntityPhase(EntityModel entityModel, ReferenceFieldModel nextPhase) {
-        int entityId = Integer.parseInt(getUiDataFromModel(entityModel.getValue("id")));
+        String entityId = getUiDataFromModel(entityModel.getValue("id"));
         Entity entityType = Entity.getEntityType(entityModel);
         EntityList entityList = octaneProvider.getOctane().entityList(entityType.getApiEntityName());
 

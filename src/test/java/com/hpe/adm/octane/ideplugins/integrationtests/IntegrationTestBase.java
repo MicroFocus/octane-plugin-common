@@ -37,8 +37,6 @@ import com.hpe.adm.octane.ideplugins.services.exception.ServiceException;
 import com.hpe.adm.octane.ideplugins.services.filtering.Entity;
 import com.hpe.adm.octane.ideplugins.services.mywork.MyWorkService;
 import com.hpe.adm.octane.ideplugins.services.util.ClientType;
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
 import org.json.JSONArray;
 import org.json.JSONObject;
 import org.junit.Before;
@@ -57,17 +55,10 @@ import static org.junit.Assert.fail;
 
 public abstract class IntegrationTestBase {
 
-
-    private final Logger logger = LogManager.getLogger(IntegrationTestBase.class.getName().toString());
-
     private EntityGenerator entityGenerator;
-
     protected ConnectionSettingsProvider connectionSettingsProvider;
-
     private ServiceModule serviceModule;
-
     private EntityModel nativeStatus;
-
 
     /**
      * Sets up a context needed for the tests, the context is derived from the annotations set the
@@ -159,7 +150,7 @@ public abstract class IntegrationTestBase {
         try {
             response = octaneHttpClient.execute(postNewWorkspaceRequest);
         } catch (Exception e) {
-            logger.error("Error while trying to get the response when creating a new workspace!");
+            //logger.error("Error while trying to get the response when creating a new workspace!");
             fail(e.toString());
         }
         JSONObject responseJson = new JSONObject(response.getContent());
@@ -186,7 +177,7 @@ public abstract class IntegrationTestBase {
         try {
             response = octaneHttpClient.execute(getAllWorkspacesRequest);
         } catch (Exception e) {
-            logger.debug("Exception while trying to get all the workspaces");
+            //logger.debug("Exception while trying to get all the workspaces");
             fail(e.toString());
         }
         JSONObject responseJson = new JSONObject(response.getContent());
@@ -239,7 +230,7 @@ public abstract class IntegrationTestBase {
         Set<FieldModel> fields = new HashSet<>();
         List<EntityModel> roles = getRoles();
         if (roles == null) {
-            logger.debug("failed to obtain the roles in the environment");
+            //logger.debug("failed to obtain the roles in the environment");
             return null;
         }
         fields.add(new StringFieldModel("full_name", firstName + lastName));
@@ -315,7 +306,7 @@ public abstract class IntegrationTestBase {
             return entity;
         } catch (ServiceException e) {
             e.printStackTrace();
-            logger.debug("There was an issue with retrieving the user with id " + id);
+            //logger.debug("There was an issue with retrieving the user with id " + id);
         }
         return null;
     }
@@ -361,7 +352,7 @@ public abstract class IntegrationTestBase {
         try {
             response = octaneHttpClient.execute(postNewReleaseRequest);
         } catch (Exception e) {
-            logger.error("Error while trying to get the response when creating a new release!");
+            //logger.error("Error while trying to get the response when creating a new release!");
             fail(e.toString());
         }
     }

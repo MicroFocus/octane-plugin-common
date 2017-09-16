@@ -1,6 +1,5 @@
 package com.hpe.adm.octane.ideplugins.integrationtests.services;
 
-
 import com.hpe.adm.nga.sdk.authentication.SimpleUserAuthentication;
 import com.hpe.adm.nga.sdk.model.EntityModel;
 import com.hpe.adm.nga.sdk.network.OctaneHttpClient;
@@ -11,8 +10,6 @@ import com.hpe.adm.octane.ideplugins.integrationtests.IntegrationTestBase;
 import com.hpe.adm.octane.ideplugins.services.connection.ConnectionSettings;
 import com.hpe.adm.octane.ideplugins.services.filtering.Entity;
 import com.hpe.adm.octane.ideplugins.services.util.ClientType;
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
 import org.json.JSONObject;
 import org.junit.Test;
 
@@ -21,8 +18,6 @@ import java.util.UUID;
 import static org.junit.Assert.fail;
 
 public class GherkinTestDownloadITCase extends IntegrationTestBase {
-    private final Logger logger = LogManager.getLogger(IntegrationTestBase.class.getName().toString());
-
 
     private EntityModel createGherkinTestWithScript(UUID uuid) {
         EntityModel gherkinTest = createEntity(Entity.GHERKIN_TEST);
@@ -47,7 +42,6 @@ public class GherkinTestDownloadITCase extends IntegrationTestBase {
         try {
             response = octaneHttpClient.execute(updateScriptRequest);
         } catch (Exception e) {
-            logger.error("Error while trying to update the script!");
             fail(e.toString());
         }
         octaneHttpClient.signOut();
@@ -71,7 +65,6 @@ public class GherkinTestDownloadITCase extends IntegrationTestBase {
         try {
             response = octaneHttpClient.execute(updateScriptRequest);
         } catch (Exception e) {
-            logger.error("Error while trying to update the script!");
             fail(e.toString());
         }
         octaneHttpClient.signOut();

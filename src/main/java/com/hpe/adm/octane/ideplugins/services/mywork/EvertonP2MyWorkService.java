@@ -221,7 +221,7 @@ class EvertonP2MyWorkService implements MyWorkService {
             return false;
         }
 
-        Integer id = Integer.valueOf(userItem.getValue("id").getValue().toString());
+        String id = userItem.getValue("id").getValue().toString();
         try {
             octaneProvider.getOctane().entityList(Entity.USER_ITEM.getApiEntityName()).at(id).delete().execute();
         } catch (Exception ex) {

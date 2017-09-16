@@ -19,7 +19,7 @@ import com.google.common.collect.HashBiMap;
 import com.google.common.collect.Lists;
 import com.google.inject.Inject;
 import com.hpe.adm.nga.sdk.Octane;
-import com.hpe.adm.nga.sdk.entities.GetEntities;
+import com.hpe.adm.nga.sdk.entities.get.GetEntities;
 import com.hpe.adm.nga.sdk.model.EntityModel;
 import com.hpe.adm.nga.sdk.model.FieldModel;
 import com.hpe.adm.nga.sdk.model.ReferenceFieldModel;
@@ -131,11 +131,10 @@ public class CommentService {
     }
 
     public EntityModel deleteComment(String commentId){
-        Integer commentIdInt = Integer.valueOf(commentId);
         Octane octane = octaneProvider.getOctane();
 
         return octane.entityList(Entity.COMMENT.getApiEntityName())
-                .at(commentIdInt)
+                .at(commentId)
                 .delete()
                 .execute();
     }

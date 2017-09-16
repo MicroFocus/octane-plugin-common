@@ -13,19 +13,15 @@
 
 package com.hpe.adm.octane.ideplugins.services.util;
 
-
 import com.hpe.adm.nga.sdk.model.EntityModel;
 import com.hpe.adm.nga.sdk.model.FieldModel;
 import com.hpe.adm.nga.sdk.model.MultiReferenceFieldModel;
 import com.hpe.adm.nga.sdk.model.ReferenceFieldModel;
 import com.hpe.adm.octane.ideplugins.services.filtering.Entity;
-import com.hpe.adm.octane.ideplugins.services.nonentity.OctaneVersionService;
 import com.hpe.adm.octane.ideplugins.services.ui.FormField;
 import com.hpe.adm.octane.ideplugins.services.ui.FormLayout;
 import com.hpe.adm.octane.ideplugins.services.ui.FormLayoutSection;
 import org.apache.commons.lang.CharEncoding;
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -44,7 +40,6 @@ import java.util.StringJoiner;
 
 public class Util {
     public static final String DATE_FORMAT = "MM/dd/yyyy HH:mm:ss";
-    private static final Logger logger = LogManager.getLogger(Util.class.getName());
 
     /**
      * This method is for displaying in the UI only
@@ -172,7 +167,6 @@ public class Util {
     }
 
     public static List<FormLayout> parseJsonWithFormLayoutData(String responseJson, OctaneVersion version) {
-        logger.debug("Parsing JSON response");
         List<FormLayout> entitiesFormLayout = new ArrayList<>();
         if (responseJson != null && !responseJson.isEmpty()) {
             JSONTokener tokener = new JSONTokener(responseJson);
@@ -193,7 +187,6 @@ public class Util {
                 entitiesFormLayout.add(formLayout);
             }
         }
-        logger.debug("Parsing is DONE, and the result has: " + entitiesFormLayout.size() + " elements");
         return entitiesFormLayout;
     }
 

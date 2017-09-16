@@ -79,7 +79,7 @@ public class EntityGenerator {
             throw new RuntimeException("Failed to create entity of type: " + entity);
         }
 
-        int newEntityId = Integer.valueOf(createdEntities.iterator().next().getValue("id").getValue().toString());
+        String newEntityId = createdEntities.iterator().next().getValue("id").getValue().toString();
 
         //Refresh entity fields, some might have been set by the server
         newEntity = octaneProvider
@@ -96,7 +96,7 @@ public class EntityGenerator {
         octaneProvider
                 .getOctane()
                 .entityList(Entity.getEntityType(entityModel).getApiEntityName())
-                .at(Integer.valueOf(entityModel.getValue("id").getValue().toString()))
+                .at(entityModel.getValue("id").getValue().toString())
                 .delete()
                 .execute();
 

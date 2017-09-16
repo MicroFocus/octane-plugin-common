@@ -180,7 +180,7 @@ class DynamoMyWorkService implements MyWorkService{
             }
 
             Octane octane = octaneProvider.getOctane();
-            Integer id = Integer.valueOf(entityModel.getValue("id").getValue().toString());
+            String id = entityModel.getValue("id").getValue().toString();
             octane.entityList(Entity.getEntityType(entityModel).getApiEntityName())
                     .at(id)
                     .update()
@@ -203,7 +203,7 @@ class DynamoMyWorkService implements MyWorkService{
             Octane octane = octaneProvider.getOctane();
 
             try {
-                Integer id = Integer.valueOf(entityModel.getValue("id").getValue().toString());
+                String id = entityModel.getValue("id").getValue().toString();
                 octane.entityList(Entity.getEntityType(entityModel).getApiEntityName())
                         .at(id)
                         .update()
