@@ -45,17 +45,22 @@ import static com.hpe.adm.octane.ideplugins.services.util.Util.createQueryForMul
 
 public class MetadataService {
 
+    private final Runnable clearUdfCache = new Runnable() {
+        @Override
+        public void run() {
+            udfCache = null;
+        }
+    };
+
     @Inject
     protected HttpClientProvider httpClientProvider;
     @Inject
     private OctaneProvider octaneProvider;
     @Inject
     private ConnectionSettingsProvider connectionSettingsProvider;
-    @Inject
-    private OctaneVersionService octaneVersionService;
     private Map<Entity, Collection<FieldMetadata>> cache;
     private Map<Entity, FormLayout> octaneFormsCache;
-    private OctaneVersion version;
+    private JSONObject udfCache;
 
     public Set<String> getFields(Entity entityType) {
         if (cache == null) {
@@ -141,8 +146,7 @@ public class MetadataService {
         response = httpClient.execute(request);
         List<FormLayout> formList = new ArrayList<>();
         if (response.isSuccessStatusCode()) {
-            version =  octaneVersionService.getOctaneVersion();
-            formList = Util.parseJsonWithFormLayoutData(response.getContent(), version);
+            formList = Util.parseJsonWithFormLayoutData(response.getContent());
         }
 
         return formList
@@ -153,8 +157,7 @@ public class MetadataService {
 
     private FormLayout getSystemDefinedFormsForEntity(Entity entityType) {
         Map<Entity, FormLayout> formsMap;
-        version =  octaneVersionService.getOctaneVersion();
-        List<FormLayout> formList = Util.parseJsonWithFormLayoutData(OctaneSystemDefaultForms.ALL, version);
+        List<FormLayout> formList = Util.parseJsonWithFormLayoutData(OctaneSystemDefaultForms.ALL);
         formsMap = formList
                 .stream()
                 .filter((form) -> form.getDefaultField().equals("EDIT"))
@@ -163,21 +166,28 @@ public class MetadataService {
     }
 
     public String getUdfLabel(String udf){
-        String getUrl = connectionSettingsProvider.getConnectionSettings().getBaseUrl() + "/api/shared_spaces/" +
-                connectionSettingsProvider.getConnectionSettings().getSharedSpaceId() + "/workspaces/"+
-                connectionSettingsProvider.getConnectionSettings().getWorkspaceId() +"/metadata_fields";
-        String urlDomain = connectionSettingsProvider.getConnectionSettings().getBaseUrl();
-        OctaneHttpRequest getAllWorkspacesRequest = new OctaneHttpRequest.GetOctaneHttpRequest(getUrl);
-        OctaneHttpClient octaneHttpClient = new GoogleHttpClient(urlDomain);
-        octaneHttpClient.authenticate(new SimpleUserAuthentication(connectionSettingsProvider.getConnectionSettings().getUserName(), connectionSettingsProvider.getConnectionSettings().getPassword(), ClientType.HPE_MQM_UI.name()));
-        OctaneHttpResponse response = null;
-        try {
-            response = octaneHttpClient.execute(getAllWorkspacesRequest);
-        } catch (Exception e) {
-            e.printStackTrace();
+        if (null == udfCache) {
+            if(!connectionSettingsProvider.hasChangeHandler(clearUdfCache)){
+                connectionSettingsProvider.addChangeHandler(clearUdfCache);
+            }
+
+            String getUrl = connectionSettingsProvider.getConnectionSettings().getBaseUrl() + "/api/shared_spaces/" +
+                    connectionSettingsProvider.getConnectionSettings().getSharedSpaceId() + "/workspaces/" +
+                    connectionSettingsProvider.getConnectionSettings().getWorkspaceId() + "/metadata_fields";
+            String urlDomain = connectionSettingsProvider.getConnectionSettings().getBaseUrl();
+            OctaneHttpRequest getAllWorkspacesRequest = new OctaneHttpRequest.GetOctaneHttpRequest(getUrl);
+            OctaneHttpClient octaneHttpClient = new GoogleHttpClient(urlDomain);
+            octaneHttpClient.authenticate(new SimpleUserAuthentication(connectionSettingsProvider.getConnectionSettings().getUserName(), connectionSettingsProvider.getConnectionSettings().getPassword(), ClientType.HPE_MQM_UI.name()));
+            OctaneHttpResponse response = null;
+            try {
+                response = octaneHttpClient.execute(getAllWorkspacesRequest);
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
+            udfCache = new JSONObject(response.getContent());
         }
-        JSONObject responseJson = new JSONObject(response.getContent());
-        JSONArray fields = responseJson.getJSONArray("data");
+
+        JSONArray fields = udfCache.getJSONArray("data");
         for( Object field: fields){
             if(field instanceof JSONObject){
                 if(((JSONObject) field).getString("name").equals(udf)){

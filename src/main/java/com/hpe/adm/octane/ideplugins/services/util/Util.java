@@ -171,7 +171,7 @@ public class Util {
         return createQueryForMultipleValues(queryParamName, (String[]) queryParamValues.toArray());
     }
 
-    public static List<FormLayout> parseJsonWithFormLayoutData(String responseJson, OctaneVersion version) {
+    public static List<FormLayout> parseJsonWithFormLayoutData(String responseJson) {
         logger.debug("Parsing JSON response");
         List<FormLayout> entitiesFormLayout = new ArrayList<>();
         if (responseJson != null && !responseJson.isEmpty()) {
@@ -185,10 +185,10 @@ public class Util {
                 formLayout.setFormName(tempJsonObj.getString("name"));
                 formLayout.setEntity(Entity.getEntityType(tempJsonObj.getString("entity_type"), tempJsonObj.optString("entity_subtype")));
                 formLayout.setFormLayoutSections(getFormLayoutSections(tempJsonObj.getJSONObject("body").getJSONObject("layout").getJSONArray("sections")));
-                if(OctaneVersion.compare(version, OctaneVersion.Operation.LOWER_EQ,OctaneVersion.FENER_P2)){
-                    formLayout.setDefault(tempJsonObj.getJSONObject("body").getBoolean("isDefault"));
+                if(tempJsonObj.has("is_default")){
+                	  formLayout.setDefault(tempJsonObj.getInt("is_default"));
                 } else {
-                    formLayout.setDefault(tempJsonObj.getInt("is_default"));
+                    formLayout.setDefault(tempJsonObj.getJSONObject("body").getBoolean("isDefault"));
                 }
                 entitiesFormLayout.add(formLayout);
             }
