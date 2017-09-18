@@ -142,22 +142,22 @@ public class MetadataService {
         List<FormLayout> formList = new ArrayList<>();
         if (response.isSuccessStatusCode()) {
             version =  octaneVersionService.getOctaneVersion();
-            formList = Util.parseJsonWithFormLayoutData(response.getContent(),version);
+            formList = Util.parseJsonWithFormLayoutData(response.getContent(), version);
         }
 
         return formList
                 .stream()
-                .filter((form) -> {return form.getDefaultField().equals("EDIT") ? true : false;})
+                .filter((form) -> form.getDefaultField().equals("EDIT"))
                 .collect(Collectors.toMap(FormLayout::getEntity, Function.identity()));
     }
 
     private FormLayout getSystemDefinedFormsForEntity(Entity entityType) {
         Map<Entity, FormLayout> formsMap;
         version =  octaneVersionService.getOctaneVersion();
-        List<FormLayout> formList = Util.parseJsonWithFormLayoutData(OctaneSystemDefaultForms.ALL,version);
+        List<FormLayout> formList = Util.parseJsonWithFormLayoutData(OctaneSystemDefaultForms.ALL, version);
         formsMap = formList
                 .stream()
-                .filter((form) -> { return form.getDefaultField().equals("EDIT") ? true : false;})
+                .filter((form) -> form.getDefaultField().equals("EDIT"))
                 .collect(Collectors.toMap(FormLayout::getEntity, Function.identity()));
         return formsMap.get(entityType);
     }

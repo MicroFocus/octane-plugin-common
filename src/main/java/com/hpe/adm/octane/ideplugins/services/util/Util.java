@@ -186,9 +186,9 @@ public class Util {
                 formLayout.setEntity(Entity.getEntityType(tempJsonObj.getString("entity_type"), tempJsonObj.optString("entity_subtype")));
                 formLayout.setFormLayoutSections(getFormLayoutSections(tempJsonObj.getJSONObject("body").getJSONObject("layout").getJSONArray("sections")));
                 if(OctaneVersion.compare(version, OctaneVersion.Operation.LOWER_EQ,OctaneVersion.FENER_P2)){
-                    formLayout.setDefault(tempJsonObj.getInt("is_default"));
-                } else {
                     formLayout.setDefault(tempJsonObj.getJSONObject("body").getBoolean("isDefault"));
+                } else {
+                    formLayout.setDefault(tempJsonObj.getInt("is_default"));
                 }
                 entitiesFormLayout.add(formLayout);
             }

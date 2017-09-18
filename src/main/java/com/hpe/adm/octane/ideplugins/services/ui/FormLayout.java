@@ -19,8 +19,10 @@ import com.hpe.adm.octane.ideplugins.services.util.OctaneVersion;
 import java.util.List;
 
 public class FormLayout {
+
     final private String NEW = "NEW";
     final private String EDIT = "EDIT";
+
     private Long formId;
     private Entity entity;
     private String formName;
@@ -73,10 +75,10 @@ public class FormLayout {
     }
 
     public void setDefault(int isDefault) {
-        if(isDefault == 1){
+        if(isDefault <= 1){
             defaultField = NEW;
         }
-        else {
+        else if (isDefault >= 2) {
             defaultField = EDIT;
         }
     }
