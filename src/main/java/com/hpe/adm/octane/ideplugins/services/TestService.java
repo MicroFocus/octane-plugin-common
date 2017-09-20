@@ -13,7 +13,8 @@
 
 package com.hpe.adm.octane.ideplugins.services;
 
-
+import com.google.api.client.http.*;
+import com.google.api.client.http.javanet.NetHttpTransport;
 import com.hpe.adm.nga.sdk.Octane;
 import com.hpe.adm.nga.sdk.authentication.SimpleUserAuthentication;
 import com.hpe.adm.nga.sdk.exception.OctaneException;
@@ -25,8 +26,7 @@ import com.hpe.adm.octane.ideplugins.services.exception.ServiceException;
 import com.hpe.adm.octane.ideplugins.services.filtering.Entity;
 import com.hpe.adm.octane.ideplugins.services.util.SdkUtil;
 
-import java.net.HttpURLConnection;
-import java.net.URL;
+import java.io.IOException;
 
 /**
  * Does not rely on the Octane from the DI,
@@ -47,14 +47,14 @@ public class TestService {
 
     private void testHttpConnection(ConnectionSettings connectionSettings) throws ServiceException {
         try {
-            HttpURLConnection connection = (HttpURLConnection) new URL(connectionSettings.getBaseUrl()).openConnection();
-            connection.setRequestMethod("HEAD");
-            int responseCode = connection.getResponseCode();
-            if (responseCode != 200) {
-                // Not OK.
+            HttpTransport HTTP_TRANSPORT = new NetHttpTransport();
+            HttpRequest httpRequest = HTTP_TRANSPORT.createRequestFactory().buildGetRequest(new GenericUrl(connectionSettings.getBaseUrl() + "/admin/server/version"));
+            int statusCode = httpRequest.execute().getStatusCode();
+            if (httpRequest.execute().getStatusCode() >= 300) {
+                throw new ServiceException("HTTP connection to url: " + connectionSettings.getBaseUrl() + " failed: http response code: + " + statusCode);
             }
-        } catch (Exception ex){
-            throw new ServiceException("HTTP connection to url: " + connectionSettings.getBaseUrl() + " failed.");
+        } catch (Exception e) {
+            throw new ServiceException("HTTP connection to url: " + connectionSettings.getBaseUrl() + " failed: " + e.getMessage());
         }
     }
 

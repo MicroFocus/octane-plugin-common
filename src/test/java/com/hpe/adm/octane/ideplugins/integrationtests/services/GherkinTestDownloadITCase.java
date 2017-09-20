@@ -1,4 +1,4 @@
-package com.hpe.adm.octane.ideplugins.unittests;
+package com.hpe.adm.octane.ideplugins.integrationtests.services;
 
 
 import com.hpe.adm.nga.sdk.authentication.SimpleUserAuthentication;
@@ -20,7 +20,7 @@ import java.util.UUID;
 
 import static org.junit.Assert.fail;
 
-public class GherkinTestDownloadUTCase extends IntegrationTestBase {
+public class GherkinTestDownloadITCase extends IntegrationTestBase {
     private final Logger logger = LogManager.getLogger(IntegrationTestBase.class.getName().toString());
 
 

@@ -1,4 +1,4 @@
-package com.hpe.adm.octane.ideplugins.unittests;
+package com.hpe.adm.octane.ideplugins.integrationtests.services;
 
 import com.hpe.adm.nga.sdk.model.EntityModel;
 import com.hpe.adm.nga.sdk.model.ReferenceFieldModel;
@@ -15,7 +15,7 @@ import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 @WorkSpace(clean = false)
-public class MyWorkTreeUTCase extends IntegrationTestBase {
+public class MyWorkTreeITCase extends IntegrationTestBase {
 
 
     private List<EntityModel> testAddEntities() {

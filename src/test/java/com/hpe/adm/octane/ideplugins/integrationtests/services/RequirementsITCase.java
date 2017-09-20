@@ -1,13 +1,14 @@
-package com.hpe.adm.octane.ideplugins.unittests;
+package com.hpe.adm.octane.ideplugins.integrationtests.services;
 
 
 import com.hpe.adm.nga.sdk.model.EntityModel;
 import com.hpe.adm.octane.ideplugins.integrationtests.IntegrationTestBase;
+import org.junit.Ignore;
 import org.junit.Test;
 
 import java.util.UUID;
 
-public class RequirementsUTCase extends IntegrationTestBase {
+public class RequirementsITCase extends IntegrationTestBase {
 
     @Test
     public void createRequirementTest() {
@@ -19,7 +20,8 @@ public class RequirementsUTCase extends IntegrationTestBase {
         }
     }
 
-
+    @Test
+    @Ignore
     public void searchRequirementTest() {
         if (isNewerOctane()) {
             EntityModel requirementFolder = createRequirementFolder("folder" + UUID.randomUUID());
