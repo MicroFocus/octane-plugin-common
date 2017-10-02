@@ -34,9 +34,9 @@ public class RequirementsITCase extends IntegrationTestBase {
             } catch (Exception e) {
                 e.printStackTrace();
             }
-            assert compareEntities(createdRequirement, testSearch("name", createdRequirement.getValue("name").getValue().toString()));
-            assert compareEntities(createdRequirement, testSearch("id", createdRequirement.getValue("id").getValue().toString()));
-            assert compareEntities(createdRequirement, testSearch("description", descriptionText));
+            assert compareEntities(createdRequirement, search("name", createdRequirement.getValue("name").getValue().toString()));
+            assert compareEntities(createdRequirement, search("id", createdRequirement.getValue("id").getValue().toString()));
+            assert compareEntities(createdRequirement, search("description", descriptionText));
         }
     }
 }

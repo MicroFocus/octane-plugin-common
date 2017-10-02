@@ -54,13 +54,13 @@ public class SearchFunctionalityITCase extends IntegrationTestBase {
         EntityModel retrievedEntity = null;
         for (EntityModel entityModel : entityModels) {
             //search by name
-            retrievedEntity = testSearch("name", entityModel.getValue("name").getValue().toString());
+            retrievedEntity = search("name", entityModel.getValue("name").getValue().toString());
             assert compareEntities(entityModel, retrievedEntity);
             //search by id
-            retrievedEntity = testSearch("id", entityModel.getValue("id").getValue().toString());
+            retrievedEntity = search("id", entityModel.getValue("id").getValue().toString());
             assert compareEntities(entityModel, retrievedEntity);
             //search by description
-            retrievedEntity = testSearch("description", entityModel.getValue("description").getValue().toString());
+            retrievedEntity = search("description", entityModel.getValue("description").getValue().toString());
             assert compareEntities(entityModel, retrievedEntity);
             retrievedEntity = null;
         }
@@ -68,21 +68,21 @@ public class SearchFunctionalityITCase extends IntegrationTestBase {
 
     public void testSearchWithBadID() {
         int badId = 19000;
-        if (testSearch("id", String.valueOf(badId)) == null)
+        if (search("id", String.valueOf(badId)) == null)
             assert true;
         else
             assert false;
     }
 
     public void testSearchWithBadName() {
-        if (testSearch("name", String.valueOf(UUID.randomUUID().toString())) == null)
+        if (search("name", String.valueOf(UUID.randomUUID().toString())) == null)
             assert true;
         else
             assert false;
     }
 
     public void testSearchWithBadDescription() {
-        if (testSearch("description", String.valueOf(UUID.randomUUID().toString())) == null)
+        if (search("description", String.valueOf(UUID.randomUUID().toString())) == null)
             assert true;
         else
             assert false;

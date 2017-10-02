@@ -644,7 +644,7 @@ public abstract class IntegrationTestBase {
         }
     }
 
-    public EntityModel testSearch(String searchField, String query) {
+    public EntityModel search(String searchField, String query) {
         List<EntityModel> entityModels = searchService.searchGlobal(query, 1000, Entity.WORK_ITEM, Entity.MANUAL_TEST, Entity.GHERKIN_TEST, Entity.TASK, Entity.REQUIREMENT).stream().collect(Collectors.toList());
 
         for (EntityModel entityModel : entityModels) {

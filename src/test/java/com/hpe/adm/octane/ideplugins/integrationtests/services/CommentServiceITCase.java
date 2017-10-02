@@ -73,16 +73,4 @@ public class CommentServiceITCase {
         }
     }
 
-    @Test
-    public void fork() throws UnsupportedEncodingException {
-        ServiceModule serviceModule =
-                new ServiceModule(
-                        new BasicConnectionSettingProvider(
-                                new ConnectionSettings("https://mqalb002qngx.saas.hpe.com", 37001L, 5005L, "cocian@hpe.com", "Dragon123")
-                        ));
-
-
-        serviceModule.getInstance(MetadataService.class).getFormLayoutForAllEntityTypes();
-    }
-
 }
