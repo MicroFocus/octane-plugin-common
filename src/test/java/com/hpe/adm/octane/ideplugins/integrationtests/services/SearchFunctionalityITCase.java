@@ -41,7 +41,6 @@ public class SearchFunctionalityITCase extends IntegrationTestBase {
 
 
     @Test
-    @Ignore
     public void testSearchEntities() {
         deleteBacklogItems();
         List<EntityModel> entityModels = createSearchableEntities();
@@ -66,6 +65,7 @@ public class SearchFunctionalityITCase extends IntegrationTestBase {
         }
     }
 
+    @Test
     public void testSearchWithBadID() {
         int badId = 19000;
         if (search("id", String.valueOf(badId)) == null)
@@ -74,6 +74,7 @@ public class SearchFunctionalityITCase extends IntegrationTestBase {
             assert false;
     }
 
+    @Test
     public void testSearchWithBadName() {
         if (search("name", String.valueOf(UUID.randomUUID().toString())) == null)
             assert true;
@@ -81,6 +82,7 @@ public class SearchFunctionalityITCase extends IntegrationTestBase {
             assert false;
     }
 
+    @Test
     public void testSearchWithBadDescription() {
         if (search("description", String.valueOf(UUID.randomUUID().toString())) == null)
             assert true;

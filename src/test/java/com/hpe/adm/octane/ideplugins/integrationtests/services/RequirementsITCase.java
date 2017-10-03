@@ -21,7 +21,6 @@ public class RequirementsITCase extends IntegrationTestBase {
     }
 
     @Test
-    @Ignore
     public void searchRequirementTest() {
         if (isNewerOctane()) {
             EntityModel requirementFolder = createRequirementFolder("folder" + UUID.randomUUID());
