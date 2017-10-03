@@ -19,20 +19,14 @@ import com.hpe.adm.nga.sdk.model.EntityModel;
 import com.hpe.adm.octane.ideplugins.integrationtests.IntegrationTestBase;
 import com.hpe.adm.octane.ideplugins.services.CommentService;
 import com.hpe.adm.octane.ideplugins.services.EntityService;
-import com.hpe.adm.octane.ideplugins.services.MetadataService;
-import com.hpe.adm.octane.ideplugins.services.connection.BasicConnectionSettingProvider;
-import com.hpe.adm.octane.ideplugins.services.connection.ConnectionSettings;
-import com.hpe.adm.octane.ideplugins.services.di.ServiceModule;
 import com.hpe.adm.octane.ideplugins.services.filtering.Entity;
 import org.junit.Assert;
 import org.junit.Test;
 
-import javax.xml.ws.ServiceMode;
-import java.io.UnsupportedEncodingException;
 import java.util.Collection;
 import java.util.UUID;
 
-public class CommentServiceITCase {
+public class CommentServiceITCase extends IntegrationTestBase {
 
     @Inject
     private CommentService commentService;
