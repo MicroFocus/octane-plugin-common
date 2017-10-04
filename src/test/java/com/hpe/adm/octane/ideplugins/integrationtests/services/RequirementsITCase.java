@@ -29,7 +29,7 @@ public class RequirementsITCase extends IntegrationTestBase {
             setDescription(entityModel, descriptionText);
             EntityModel createdRequirement = findRequirementById(Long.parseLong(entityModel.getValue("id").getValue().toString()));
             try {
-                Thread.sleep(30000);//--wait until the elastic search is updated with the entities
+                Thread.sleep(40000);//--wait until the elastic search is updated with the entities
             } catch (Exception e) {
                 e.printStackTrace();
             }
