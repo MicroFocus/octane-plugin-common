@@ -35,13 +35,13 @@ public class CommentServiceITCase extends IntegrationTestBase {
     private EntityService entityService;
 
     @Test
-    public void testCommentService(){
+    public void testCommentService() {
         Collection<EntityModel> userStories = entityService.findEntities(Entity.USER_STORY);
-        if(userStories.size()>0){
+        if (userStories.size() > 0) {
             EntityModel userStory = userStories.iterator().next();
 
             //Add a random comment
-            String commentText =  "Test comment" + UUID.randomUUID().toString();
+            String commentText = "Test comment" + UUID.randomUUID().toString();
             commentService.postComment(userStory, commentText);
 
             //Check if there
@@ -50,7 +50,7 @@ public class CommentServiceITCase extends IntegrationTestBase {
             //Check if comment was posted
             EntityModel lastComment = comments.iterator().next();
             String lastCommentText = lastComment.getValue("text").getValue().toString();
-            Assert.assertTrue(lastCommentText!=null && lastCommentText.contains(commentText));
+            Assert.assertTrue(lastCommentText != null && lastCommentText.contains(commentText));
 
             commentService.deleteComment(lastComment.getValue("id").getValue().toString());
 

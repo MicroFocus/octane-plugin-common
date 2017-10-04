@@ -75,6 +75,7 @@ public class FormLayout {
     }
 
     public void setDefault(int isDefault) {
+
         if(isDefault <= 1){
             defaultField = NEW;
         }
