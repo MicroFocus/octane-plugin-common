@@ -363,10 +363,9 @@ public abstract class IntegrationTestBase {
         JSONObject releaseJson = new JSONObject();
         releaseJson.put("name", "test_Release" + UUID.randomUUID().toString());
         releaseJson.put("type", "release");
-        LocalDateTime localDateTime = LocalDateTime.of(2017, 10, 10, 10, 10);
         LocalDateTime localDateTImeNow = LocalDateTime.now();
         releaseJson.put("start_date", localDateTImeNow.toString() + "Z");
-        releaseJson.put("end_date", localDateTime.toString() + "Z");
+        releaseJson.put("end_date", localDateTImeNow.toString() + "Z");
         JSONObject agileTypeJson = new JSONObject();
         if (isNewerOctane()) {
             agileTypeJson.put("id", "list_node.release_agile_type.scrum");
