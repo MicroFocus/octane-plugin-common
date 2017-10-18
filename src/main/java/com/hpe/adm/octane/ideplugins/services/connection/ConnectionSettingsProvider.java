@@ -29,4 +29,6 @@ public interface ConnectionSettingsProvider {
 
 
     void addChangeHandler(Runnable observer);
+
+    boolean hasChangeHandler(Runnable observer);
 }

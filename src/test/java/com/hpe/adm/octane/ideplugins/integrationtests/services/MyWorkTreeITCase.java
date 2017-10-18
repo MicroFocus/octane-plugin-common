@@ -14,7 +14,7 @@ import java.util.UUID;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
-@WorkSpace(clean = false)
+
 public class MyWorkTreeITCase extends IntegrationTestBase {
 
 

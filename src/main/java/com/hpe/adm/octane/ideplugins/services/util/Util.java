@@ -13,6 +13,15 @@
 
 package com.hpe.adm.octane.ideplugins.services.util;
 
+import com.hpe.adm.nga.sdk.model.EntityModel;
+import com.hpe.adm.nga.sdk.model.FieldModel;
+import com.hpe.adm.nga.sdk.model.MultiReferenceFieldModel;
+import com.hpe.adm.nga.sdk.model.ReferenceFieldModel;
+import com.hpe.adm.octane.ideplugins.services.filtering.Entity;
+import com.hpe.adm.octane.ideplugins.services.nonentity.OctaneVersionService;
+import com.hpe.adm.octane.ideplugins.services.ui.FormField;
+import com.hpe.adm.octane.ideplugins.services.ui.FormLayout;
+import com.hpe.adm.octane.ideplugins.services.ui.FormLayoutSection;
 import java.io.UnsupportedEncodingException;
 import java.time.ZoneId;
 import java.time.ZonedDateTime;
@@ -185,10 +194,9 @@ public class Util {
                 formLayout.setFormId(Long.valueOf(tempJsonObj.getString("id")));
                 formLayout.setFormName(tempJsonObj.getString("name"));
                 formLayout.setEntity(Entity.getEntityType(tempJsonObj.getString("entity_type"), tempJsonObj.optString("entity_subtype")));
-                formLayout.setFormLayoutSections(
-                        getFormLayoutSections(tempJsonObj.getJSONObject("body").getJSONObject("layout").getJSONArray("sections")));
-                if (OctaneVersion.compare(version, OctaneVersion.Operation.LOWER_EQ, OctaneVersion.FENER_P2)) {
-                    formLayout.setDefault(tempJsonObj.getInt("is_default"));
+                formLayout.setFormLayoutSections(getFormLayoutSections(tempJsonObj.getJSONObject("body").getJSONObject("layout").getJSONArray("sections")));
+                if(tempJsonObj.has("is_default")){
+                	  formLayout.setDefault(tempJsonObj.getInt("is_default"));
                 } else {
                     formLayout.setDefault(tempJsonObj.getJSONObject("body").getBoolean("isDefault"));
                 }

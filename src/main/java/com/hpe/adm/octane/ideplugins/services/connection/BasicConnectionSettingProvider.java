@@ -34,6 +34,11 @@ public class BasicConnectionSettingProvider implements ConnectionSettingsProvide
         changeHandlers.add(changeHandler);
     }
 
+    @Override
+    public boolean hasChangeHandler(Runnable observer) {
+        return changeHandlers.contains(observer);
+    }
+
     private void callChangeHandlers() {
         changeHandlers.forEach(handler -> handler.run());
     }
