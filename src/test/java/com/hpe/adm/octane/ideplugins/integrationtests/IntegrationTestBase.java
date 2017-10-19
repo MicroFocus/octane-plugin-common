@@ -38,6 +38,7 @@ import com.hpe.adm.octane.ideplugins.services.mywork.MyWorkService;
 import com.hpe.adm.octane.ideplugins.services.nonentity.EntitySearchService;
 import com.hpe.adm.octane.ideplugins.services.nonentity.OctaneVersionService;
 import com.hpe.adm.octane.ideplugins.services.util.ClientType;
+import com.hpe.adm.octane.ideplugins.services.util.OctaneVersion;
 import org.json.JSONArray;
 import org.json.JSONObject;
 import org.junit.Before;
@@ -53,7 +54,6 @@ import static org.junit.Assert.fail;
 /**
  * Enables the use of the {@link Inject} annotation
  */
-
 public abstract class IntegrationTestBase {
 
     @Inject
@@ -266,10 +266,10 @@ public abstract class IntegrationTestBase {
     public EntityModel getCurrentUser() {
         OctaneProvider octaneProvider = serviceModule.getOctane();
         Octane octane = octaneProvider.getOctane();
-        List<EntityModel> users = octane.entityList("workspace_users").get().execute().stream().collect(Collectors.toList());
+        List<EntityModel> users = new ArrayList<>(octane.entityList("workspace_users").get().execute());
 
         for (EntityModel user : users) {
-            if (user.getValue("email").getValue().toString().equals(connectionSettingsProvider.getConnectionSettings().getUserName().toString())) {
+            if (user.getValue("email").getValue().toString().equals(connectionSettingsProvider.getConnectionSettings().getUserName())) {
                 return user;
             }
         }
@@ -284,7 +284,7 @@ public abstract class IntegrationTestBase {
     public List<EntityModel> getRoles() {
         OctaneProvider octaneProvider = serviceModule.getOctane();
         Octane octane = octaneProvider.getOctane();
-        return octane.entityList("user_roles").get().execute().stream().collect(Collectors.toList());
+        return new ArrayList<>(octane.entityList("user_roles").get().execute());
     }
 
     /**
@@ -375,7 +375,7 @@ public abstract class IntegrationTestBase {
         octaneHttpClient.authenticate(new SimpleUserAuthentication(connectionSettingsProvider.getConnectionSettings().getUserName(), connectionSettingsProvider.getConnectionSettings().getPassword(), ClientType.HPE_MQM_UI.name()));
         OctaneHttpResponse response = null;
         try {
-            response = octaneHttpClient.execute(postNewReleaseRequest);
+            octaneHttpClient.execute(postNewReleaseRequest);
         } catch (Exception e) {
             //logger.error("Error while trying to get the response when creating a new release!");
             fail(e.toString());
@@ -572,7 +572,7 @@ public abstract class IntegrationTestBase {
     public List<EntityModel> getMyWorkItems() {
         MyWorkService myWorkService = serviceModule.getMyWorkService();
 
-        return myWorkService.getMyWork().stream().collect(Collectors.toList());
+        return new ArrayList<>(myWorkService.getMyWork());
     }
 
     /**
@@ -621,7 +621,6 @@ public abstract class IntegrationTestBase {
             }
         }
         if (workspaceEntities.size() > 0) {
-            OctaneProvider octaneProvider = serviceModule.getOctane();
 
             Octane.Builder octaneBuilder = new Octane.Builder(new SimpleUserAuthentication(connectionSettingsProvider.getConnectionSettings().getUserName(), connectionSettingsProvider.getConnectionSettings().getPassword(), ClientType.HPE_MQM_UI.name()));
             octaneBuilder.sharedSpace(connectionSettingsProvider.getConnectionSettings().getSharedSpaceId());
@@ -646,7 +645,7 @@ public abstract class IntegrationTestBase {
     }
 
     private String removeTags(String s) {
-        String result = null;
+        String result;
         if (s.contains("<em>")) {
             result = s.replaceAll("<em>", "");
             result = result.replaceAll("</em>", "");

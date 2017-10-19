@@ -182,7 +182,7 @@ public class Util {
         return createQueryForMultipleValues(queryParamName, (String[]) queryParamValues.toArray());
     }
 
-    public static List<FormLayout> parseJsonWithFormLayoutData(String responseJson, OctaneVersion version) {
+    public static List<FormLayout> parseJsonWithFormLayoutData(String responseJson) {
         List<FormLayout> entitiesFormLayout = new ArrayList<>();
         if (responseJson != null && !responseJson.isEmpty()) {
             JSONTokener tokener = new JSONTokener(responseJson);
