@@ -15,21 +15,20 @@ package com.hpe.adm.octane.ideplugins.services;
 
 import com.google.inject.Inject;
 import com.hpe.adm.nga.sdk.Octane;
-import com.hpe.adm.nga.sdk.authentication.SimpleUserAuthentication;
 import com.hpe.adm.nga.sdk.metadata.FieldMetadata;
 import com.hpe.adm.nga.sdk.network.OctaneHttpClient;
 import com.hpe.adm.nga.sdk.network.OctaneHttpRequest;
 import com.hpe.adm.nga.sdk.network.OctaneHttpResponse;
-import com.hpe.adm.nga.sdk.network.google.GoogleHttpClient;
 import com.hpe.adm.octane.ideplugins.services.connection.ConnectionSettings;
 import com.hpe.adm.octane.ideplugins.services.connection.ConnectionSettingsProvider;
 import com.hpe.adm.octane.ideplugins.services.connection.HttpClientProvider;
 import com.hpe.adm.octane.ideplugins.services.connection.OctaneProvider;
 import com.hpe.adm.octane.ideplugins.services.exception.ServiceRuntimeException;
 import com.hpe.adm.octane.ideplugins.services.filtering.Entity;
-import com.hpe.adm.octane.ideplugins.services.nonentity.OctaneVersionService;
 import com.hpe.adm.octane.ideplugins.services.ui.FormLayout;
-import com.hpe.adm.octane.ideplugins.services.util.*;
+import com.hpe.adm.octane.ideplugins.services.util.OctaneSystemDefaultForms;
+import com.hpe.adm.octane.ideplugins.services.util.OctaneUrlBuilder;
+import com.hpe.adm.octane.ideplugins.services.util.Util;
 import org.apache.http.client.utils.URIBuilder;
 import org.json.JSONArray;
 import org.json.JSONObject;
@@ -58,6 +57,8 @@ public class MetadataService {
     private OctaneProvider octaneProvider;
     @Inject
     private ConnectionSettingsProvider connectionSettingsProvider;
+
+
     private Map<Entity, Collection<FieldMetadata>> cache;
     private Map<Entity, FormLayout> octaneFormsCache;
     private JSONObject udfCache;
@@ -172,18 +173,12 @@ public class MetadataService {
             }
 
             String getUrl = connectionSettingsProvider.getConnectionSettings().getBaseUrl() + "/api/shared_spaces/" +
-                    connectionSettingsProvider.getConnectionSettings().getSharedSpaceId() + "/workspaces/" +
-                    connectionSettingsProvider.getConnectionSettings().getWorkspaceId() + "/metadata_fields";
-            String urlDomain = connectionSettingsProvider.getConnectionSettings().getBaseUrl();
-            OctaneHttpRequest getAllWorkspacesRequest = new OctaneHttpRequest.GetOctaneHttpRequest(getUrl);
-            OctaneHttpClient octaneHttpClient = new GoogleHttpClient(urlDomain);
-            octaneHttpClient.authenticate(new SimpleUserAuthentication(connectionSettingsProvider.getConnectionSettings().getUserName(), connectionSettingsProvider.getConnectionSettings().getPassword(), ClientType.HPE_MQM_UI.name()));
-            OctaneHttpResponse response = null;
-            try {
-                response = octaneHttpClient.execute(getAllWorkspacesRequest);
-            } catch (Exception e) {
-                e.printStackTrace();
-            }
+                            connectionSettingsProvider.getConnectionSettings().getSharedSpaceId() + "/workspaces/" +
+                            connectionSettingsProvider.getConnectionSettings().getWorkspaceId() + "/metadata_fields";
+
+            OctaneHttpClient octaneHttpClient = httpClientProvider.geOctaneHttpClient();
+            OctaneHttpRequest request = new OctaneHttpRequest.GetOctaneHttpRequest(getUrl);
+            OctaneHttpResponse response = octaneHttpClient.execute(request);
             udfCache = new JSONObject(response.getContent());
         }
 
