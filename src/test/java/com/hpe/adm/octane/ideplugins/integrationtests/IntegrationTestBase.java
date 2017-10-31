@@ -73,34 +73,36 @@ public abstract class IntegrationTestBase {
      */
     @Before
     public void setUp() {
+
+        connectionSettingsProvider = PropertyUtil.readFormVmArgs() != null ? PropertyUtil.readFormVmArgs() : PropertyUtil.readFromPropFile();
+        if (connectionSettingsProvider == null) {
+            throw new RuntimeException("Cannot retrieve connection settings from either vm args or prop file, cannot run tests");
+        }
+
         Annotation[] annotations = this.getClass().getDeclaredAnnotations();
+
         WorkSpace workSpaceAnnotation = getAnnotation(annotations, WorkSpace.class);
+
         if (workSpaceAnnotation != null && workSpaceAnnotation.clean()) {
-            connectionSettingsProvider = PropertyUtil.readFormVmArgs() != null ? PropertyUtil.readFormVmArgs() : PropertyUtil.readFromPropFile();
             ConnectionSettings connectionSettings = connectionSettingsProvider.getConnectionSettings();
             connectionSettings.setWorkspaceId(createWorkSpace());
             connectionSettingsProvider.setConnectionSettings(connectionSettings);
         } else {
-            connectionSettingsProvider = PropertyUtil.readFormVmArgs() != null ? PropertyUtil.readFormVmArgs() : PropertyUtil.readFromPropFile();
+
             ConnectionSettings connectionSettings = connectionSettingsProvider.getConnectionSettings();
-            long defaultWorkspaceId = getDefaultWorkspaceId();
-            if (defaultWorkspaceId > 0)
-                connectionSettings.setWorkspaceId(defaultWorkspaceId);
-            else {
-                connectionSettings.setWorkspaceId(createWorkSpace());
-            }
+            connectionSettings.setWorkspaceId(getDefaultWorkspaceId());
             connectionSettingsProvider.setConnectionSettings(connectionSettings);
         }
-        if (connectionSettingsProvider == null) {
-            throw new RuntimeException("Cannot retrieve connection settings from either vm args or prop file, cannot run tests");
-        }
+
         serviceModule = new ServiceModule(connectionSettingsProvider);
         User userAnnotation = getAnnotation(annotations, User.class);
         if (userAnnotation != null && userAnnotation.create()) {
             createNewUser(userAnnotation.firstName(), userAnnotation.lastName());
         }
+
         Injector injector = Guice.createInjector(serviceModule);
         injector.injectMembers(this);
+
         entityGenerator = new EntityGenerator(injector.getInstance(OctaneProvider.class));
         Entities entities = getAnnotation(annotations, Entities.class);
         if (entities != null) {
@@ -110,11 +112,13 @@ public abstract class IntegrationTestBase {
                 createEntity(newEntity);
             }
         }
+
         nativeStatus = new EntityModel("type", "list_node");
         if (isNewerOctane())
             nativeStatus.setValue(new StringFieldModel("id", "1094"));
         else
             nativeStatus.setValue(new StringFieldModel("id", "1091"));
+
         createRelease();
     }
 
@@ -235,9 +239,11 @@ public abstract class IntegrationTestBase {
      * @return the newly created user entityModel, @null if it could not be created
      */
     public EntityModel createNewUser(String firstName, String lastName) {
+
         EntityModel userEntityModel = new EntityModel();
         Set<FieldModel> fields = new HashSet<>();
         List<EntityModel> roles = getRoles();
+
         if (roles == null) {
             //logger.debug("failed to obtain the roles in the environment");
             return null;
@@ -249,9 +255,11 @@ public abstract class IntegrationTestBase {
         fields.add(new StringFieldModel("email", firstName + "." + lastName + "@hpe.com"));
         fields.add(new StringFieldModel("password", "Welcome1"));
         fields.add(new MultiReferenceFieldModel("roles", Collections.singletonList(roles.get(0))));
+
         if (!isNewerOctane()) {
             fields.add(new StringFieldModel("phone1", "0875432135"));
         }
+
         userEntityModel.setValues(fields);
         OctaneProvider octaneProvider = serviceModule.getOctane();
         Octane octane = octaneProvider.getOctane();
