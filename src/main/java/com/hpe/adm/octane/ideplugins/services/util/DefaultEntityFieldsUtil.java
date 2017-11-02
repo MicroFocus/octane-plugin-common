@@ -36,8 +36,6 @@ public class DefaultEntityFieldsUtil {
     public static final long CURRENT_ENTITY_FIELDS_JSON_VERSION = 1;
 
     public static Map<Entity, Set<String>> getDefaultFields() {
-        //TODO
-        //USE entityFieldsFromJson method below
         ClassLoader classLoader = Thread.currentThread().getContextClassLoader();
         InputStream input = classLoader.getResourceAsStream("defaultFields.json");
         JSONTokener tokener = new JSONTokener(input);
@@ -54,8 +52,7 @@ public class DefaultEntityFieldsUtil {
      * @return map containing {@link Entity} to field {@link Set}
      */
     public static Map<Entity, Set<String>> entityFieldsFromJson(JSONObject jsonObject) {
-        //TODO
-        //USE CURRENT_ENTITY_FIELDS_JSON_VERSION when parsing
+
         if (CURRENT_ENTITY_FIELDS_JSON_VERSION == 1) {
             Map<Entity, Set<String>> fieldsMap = new HashMap<>();
 
@@ -83,8 +80,7 @@ public class DefaultEntityFieldsUtil {
      * @return
      */
     public static JSONObject entityFieldsToJson(Map<Entity, Set<String>> map) {
-        //TODO
-        //USE CURRENT_ENTITY_FIELDS_JSON_VERSION when creating
+
         if (CURRENT_ENTITY_FIELDS_JSON_VERSION == 1) {
             JSONObject jsonObject = new JSONObject();
             jsonObject.put("version",1);
