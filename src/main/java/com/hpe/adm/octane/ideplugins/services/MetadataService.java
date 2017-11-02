@@ -44,6 +44,11 @@ import static com.hpe.adm.octane.ideplugins.services.util.Util.createQueryForMul
 
 public class MetadataService {
 
+    /**
+     * Used for versioning entity fields json
+     */
+    public static final long CURRENT_ENTITY_FIELDS_JSON_VERSION = 1;
+
     private final Runnable clearUdfCache = new Runnable() {
         @Override
         public void run() {
@@ -193,14 +198,33 @@ public class MetadataService {
         return udf;
     }
 
-
     public static Map<Entity, Set<String>> getDefaultFields(){
         //TODO
+        //USE entityFieldsFromJson method below
         return null;
     }
 
+    /**
+     * Util method for converting an entity fields json to a java object
+     * Reads based on version tag in json object, current is CURRENT_ENTITY_FIELDS_JSON_VERSION
+     * @param jsonObject json containing fields for entities
+     * @return map containing {@link Entity} to field {@link Set}
+     */
+    public static Map<Entity, Set<String>> entityFieldsFromJson(JSONObject jsonObject){
+        //TODO
+        //USE CURRENT_ENTITY_FIELDS_JSON_VERSION when parsing
+        return null;
+    }
+
+    /**
+     * Util method for converting a map containing {@link Entity} to field {@link Set} to JSON
+     * Adds a version tag to the json object, current is CURRENT_ENTITY_FIELDS_JSON_VERSION
+     * @param map
+     * @return
+     */
     public static JSONObject entityFieldsToJson(Map<Entity, Set<String>> map){
         //TODO
+        //USE CURRENT_ENTITY_FIELDS_JSON_VERSION when creating
         return null;
     }
 
