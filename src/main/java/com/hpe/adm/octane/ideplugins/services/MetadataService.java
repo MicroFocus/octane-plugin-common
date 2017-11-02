@@ -192,4 +192,16 @@ public class MetadataService {
         }
         return udf;
     }
+
+
+    public static Map<Entity, Set<String>> getDefaultFields(){
+        //TODO
+        return null;
+    }
+
+    public static JSONObject entityFieldsToJson(Map<Entity, Set<String>> map){
+        //TODO
+        return null;
+    }
+
 }
