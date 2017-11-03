@@ -13,16 +13,23 @@
 
 package com.hpe.adm.octane.ideplugins.services.util;
 
-import com.hpe.adm.octane.ideplugins.services.filtering.Entity;
-import org.json.JSONArray;
-import org.json.JSONObject;
-import org.json.JSONTokener;
-
+import java.io.IOException;
 import java.io.InputStream;
-import java.util.HashMap;
+import java.io.InputStreamReader;
+import java.util.ArrayList;
+import java.util.LinkedHashMap;
+import java.util.LinkedHashSet;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
-import java.util.TreeSet;
+
+import org.json.JSONArray;
+import org.json.JSONObject;
+
+import com.google.api.client.util.Charsets;
+import com.google.common.io.CharStreams;
+import com.hpe.adm.octane.ideplugins.services.exception.ServiceRuntimeException;
+import com.hpe.adm.octane.ideplugins.services.filtering.Entity;
 
 /**
  * Used by plugins to determine what fields to display in the detail view
@@ -35,72 +42,85 @@ public class DefaultEntityFieldsUtil {
      */
     public static final long CURRENT_ENTITY_FIELDS_JSON_VERSION = 1;
 
-    public static Map<Entity, Set<String>> getDefaultFields() {
-        ClassLoader classLoader = Thread.currentThread().getContextClassLoader();
-        InputStream input = classLoader.getResourceAsStream("defaultFields.json");
-        JSONTokener tokener = new JSONTokener(input);
-        JSONObject data = new JSONObject(tokener);
+    public static final String DEFAULT_FIELDS_FILE_NAME = "defaultFields.json";
 
-        return entityFieldsFromJson(data);
+    public static Map<Entity, Set<String>> getDefaultFields() {
+        try {
+            ClassLoader classLoader = Thread.currentThread().getContextClassLoader();
+            InputStream input = classLoader.getResourceAsStream(DEFAULT_FIELDS_FILE_NAME);
+            String jsonString = CharStreams.toString(new InputStreamReader(input, Charsets.UTF_8));
+            return entityFieldsFromJson(jsonString);
+        } catch (IOException e) {
+            throw new ServiceRuntimeException("Failed to parse " + DEFAULT_FIELDS_FILE_NAME + " file ", e);
+        }
     }
 
     /**
-     * Util method for converting an entity fields json to a java object
-     * Reads based on version tag in json object, current is CURRENT_ENTITY_FIELDS_JSON_VERSION
+     * Util method for converting an entity fields json to a java object Reads
+     * based on version tag in json object, current is
+     * CURRENT_ENTITY_FIELDS_JSON_VERSION
      *
-     * @param jsonObject json containing fields for entities
+     * @param jsonString
+     *            json containing fields for entities
      * @return map containing {@link Entity} to field {@link Set}
      */
-    public static Map<Entity, Set<String>> entityFieldsFromJson(JSONObject jsonObject) {
+    public static Map<Entity, Set<String>> entityFieldsFromJson(String jsonString) {
+        JSONObject jsonObject = new JSONObject(jsonString);
+        Long jsonVersion = jsonObject.getLong("version");
 
-        if (CURRENT_ENTITY_FIELDS_JSON_VERSION == 1) {
-            Map<Entity, Set<String>> fieldsMap = new HashMap<>();
+        if (CURRENT_ENTITY_FIELDS_JSON_VERSION == jsonVersion) {
+            Map<Entity, Set<String>> fieldsMap = new LinkedHashMap<>();
 
-            JSONArray entityArray = (JSONArray) jsonObject.get("data");
-            for (Object obj : entityArray) {
-                JSONObject entity = (JSONObject) obj;
-                JSONArray fields = (JSONArray) entity.get("fields");
-                Set<String> fieldsSet = new TreeSet<>();
-                for (Object obj1 : fields) {
-                    String field = (String) obj1;
-                    fieldsSet.add(field);
-                }
-                fieldsMap.put(Entity.valueOf(entity.get("type").toString()), fieldsSet);
+            JSONArray entityArray = jsonObject.getJSONArray("data");
+
+            for (int i = 0; i < entityArray.length(); i++) {
+
+                Set<String> fieldsSet = new LinkedHashSet<>();
+
+                JSONObject entity = entityArray.getJSONObject(i);
+                JSONArray fields = entity.getJSONArray("fields");
+
+                fields.forEach(field -> {
+                    fieldsSet.add(((JSONObject) field).getString("name"));
+                });
+
+                fieldsMap.put(Entity.valueOf(entity.getString("type")), fieldsSet);
             }
+
             return fieldsMap;
+        } else {
+            throw new ServiceRuntimeException("Fields json version usupported, cannot parse");
         }
-        return null;
     }
 
     /**
-     * Util method for converting a map containing {@link Entity} to field {@link Set} to JSON
-     * Adds a version tag to the json object, current is CURRENT_ENTITY_FIELDS_JSON_VERSION
+     * Util method for converting a map containing {@link Entity} to field
+     * {@link Set} to JSON Adds a version tag to the json object, current is
+     * CURRENT_ENTITY_FIELDS_JSON_VERSION
      *
      * @param map
      * @return
      */
-    public static JSONObject entityFieldsToJson(Map<Entity, Set<String>> map) {
+    public static String entityFieldsToJson(Map<Entity, Set<String>> map) {
 
-        if (CURRENT_ENTITY_FIELDS_JSON_VERSION == 1) {
-            JSONObject jsonObject = new JSONObject();
-            jsonObject.put("version",1);
-            JSONArray jsonArray = new JSONArray();
+        JSONObject jsonObjectRoot = new JSONObject();
+        jsonObjectRoot.put("version", CURRENT_ENTITY_FIELDS_JSON_VERSION);
+        JSONArray jsonArrayEntities = new JSONArray();
 
-            for(Entity entity : map.keySet()){
-                JSONObject jsonObject1 = new JSONObject();
-                jsonObject1.put("type",entity);
-                JSONArray fieldsArray = new JSONArray();
-                for(String field: map.get(entity)){
-                    fieldsArray.put(field);
-                }
-                jsonObject1.put("fields",fieldsArray);
-                jsonArray.put(jsonObject1);
-            }
-            jsonObject.put("data",jsonArray);
+        for (Entity entity : map.keySet()) {
 
-            return jsonObject;
+            JSONObject jsonObjectFields = new JSONObject();
+            jsonObjectFields.put("type", entity);
+
+            List<JSONObject> fieldsArray = new ArrayList<>();
+            map.get(entity).forEach(fieldname -> fieldsArray.add(new JSONObject("{\"name\":\"" + fieldname + "\"}")));
+            jsonObjectFields.put("fields", fieldsArray);
+
+            jsonArrayEntities.put(jsonObjectFields);
         }
-        return null;
+
+        jsonObjectRoot.put("data", jsonArrayEntities);
+        return jsonObjectRoot.toString();
     }
 
 }
