@@ -13,23 +13,18 @@
 
 package com.hpe.adm.octane.ideplugins.services.util;
 
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.InputStreamReader;
-import java.util.ArrayList;
-import java.util.LinkedHashMap;
-import java.util.LinkedHashSet;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
-
-import org.json.JSONArray;
-import org.json.JSONObject;
-
 import com.google.api.client.util.Charsets;
 import com.google.common.io.CharStreams;
 import com.hpe.adm.octane.ideplugins.services.exception.ServiceRuntimeException;
 import com.hpe.adm.octane.ideplugins.services.filtering.Entity;
+import org.apache.velocity.runtime.resource.loader.ClasspathResourceLoader;
+import org.json.JSONArray;
+import org.json.JSONObject;
+
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.InputStreamReader;
+import java.util.*;
 
 /**
  * Used by plugins to determine what fields to display in the detail view
@@ -46,8 +41,8 @@ public class DefaultEntityFieldsUtil {
 
     public static Map<Entity, Set<String>> getDefaultFields() {
         try {
-            ClassLoader classLoader = Thread.currentThread().getContextClassLoader();
-            InputStream input = classLoader.getResourceAsStream(DEFAULT_FIELDS_FILE_NAME);
+            ClasspathResourceLoader cprl = new ClasspathResourceLoader();
+            InputStream input = cprl.getResourceStream(DEFAULT_FIELDS_FILE_NAME);
             String jsonString = CharStreams.toString(new InputStreamReader(input, Charsets.UTF_8));
             return entityFieldsFromJson(jsonString);
         } catch (IOException e) {
@@ -60,8 +55,7 @@ public class DefaultEntityFieldsUtil {
      * based on version tag in json object, current is
      * CURRENT_ENTITY_FIELDS_JSON_VERSION
      *
-     * @param jsonString
-     *            json containing fields for entities
+     * @param jsonString json containing fields for entities
      * @return map containing {@link Entity} to field {@link Set}
      */
     public static Map<Entity, Set<String>> entityFieldsFromJson(String jsonString) {
