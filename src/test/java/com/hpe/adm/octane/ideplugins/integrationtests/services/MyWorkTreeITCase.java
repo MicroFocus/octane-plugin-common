@@ -3,8 +3,6 @@ package com.hpe.adm.octane.ideplugins.integrationtests.services;
 import com.hpe.adm.nga.sdk.model.EntityModel;
 import com.hpe.adm.nga.sdk.model.ReferenceFieldModel;
 import com.hpe.adm.octane.ideplugins.integrationtests.IntegrationTestBase;
-import com.hpe.adm.octane.ideplugins.integrationtests.util.Entities;
-import com.hpe.adm.octane.ideplugins.integrationtests.util.WorkSpace;
 import com.hpe.adm.octane.ideplugins.services.filtering.Entity;
 import org.junit.Test;
 
@@ -69,7 +67,7 @@ public class MyWorkTreeITCase extends IntegrationTestBase {
      * getMyWork()
      */
     @Test
-    public void setUpMyWorkTree() {
+    public void testSetUpMyWorkTree() {
 
         deleteBacklogItems();
 
