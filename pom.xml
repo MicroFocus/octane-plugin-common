@@ -84,6 +84,8 @@
         <maven-source-plugin.version>2.2.1</maven-source-plugin.version>
         <maven-surefire.version>2.19.1</maven-surefire.version>
         <maven-javadoc-plugin.version>2.10.4</maven-javadoc-plugin.version>
+
+        <logback.version>1.2.3</logback.version>
     </properties>
 
     <dependencies>
@@ -112,10 +114,19 @@
             <artifactId>velocity</artifactId>
             <version>1.7</version>
         </dependency>
+
         <dependency>
             <groupId>junit</groupId>
             <artifactId>junit</artifactId>
             <version>4.11</version>
+            <scope>test</scope>
+        </dependency>
+
+        <!-- Logging for tests-->
+        <dependency>
+            <groupId>ch.qos.logback</groupId>
+            <artifactId>logback-classic</artifactId>
+            <version>${logback.version}</version>
             <scope>test</scope>
         </dependency>
     </dependencies>
