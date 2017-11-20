@@ -1,0 +1,147 @@
+{ 
+	"version": 1,
+	"data": [
+		{ 
+			"type": "DEFECT",
+			"fields": [
+				{ "name":"parent" },
+				{ "name":"last_modified" },
+				{ "name":"severity" },
+				{ "name":"detected_in_release" },
+				{ "name":"creation_time" },
+				{ "name":"priority" },
+				{ "name":"closed_on" },
+				{ "name":"story_points" },
+				{ "name":"product_areas" },
+				{ "name":"sprint" },
+				{ "name":"release" },
+				{ "name":"blocked" },
+				{ "name":"defect_type" },
+				{ "name":"taxonomies" },
+				{ "name":"team" },
+				{ "name":"blocked_reason" }
+			]
+		 },
+		{ 
+			"type": "USER_STORY",
+			"fields": [
+				{ "name":"creation_time" },
+				{ "name":"last_modified" },
+				{ "name":"story_points" },
+				{ "name":"item_origin" },
+				{ "name":"last_runs" },
+				{ "name":"parent" },
+				{ "name":"product_areas" },
+				{ "name":"release" },
+				{ "name":"sprint" },
+				{ "name":"team" },
+				{ "name":"blocked" },
+				{ "name":"blocked_reason" }
+			]  
+		 },   
+		{   
+			"type": "QUALITY_STORY",
+			"fields": [
+				{ "name":"creation_time" },
+				{ "name":"last_modified" },
+				{ "name":"story_points" },
+				{ "name":"item_origin" },
+				{ "name":"parent" },
+				{ "name":"product_areas" },
+				{ "name":"release" },
+				{ "name":"sprint" },
+				{ "name":"team" },
+				{ "name":"quality_story_type" },
+				{ "name":"blocked" },
+				{ "name":"blocked_reason" }
+			]
+		 },
+		{ 
+			"type": "MANUAL_TEST",
+			"fields": [
+				{ "name":"test_type" },
+				{ "name":"testing_tool_type" },
+				{ "name":"estimated_duration" },
+				{ "name":"created" },
+				{ "name":"last_modified" },
+				{ "name":"covered_content" },
+				{ "name":"product_areas" },
+				{ "name":"automation_status" }
+			]
+		 },
+		{ 
+			"type": "GHERKIN_TEST",
+			"fields": [
+				{ "name":"test_type" },
+				{ "name":"testing_tool_type" },
+				{ "name":"estimated_duration" },
+				{ "name":"created" },
+				{ "name":"last_modified" },
+				{ "name":"covered_content" },
+				{ "name":"product_areas" },
+				{ "name":"automation_status" }
+			]
+		 },
+		{ 
+			"type": "AUTOMATED_TEST",
+			"fields": [
+				{ "name":"framework" },
+				{ "name":"testing_tool_type" },
+				{ "name":"test_level" },
+				{ "name":"test_type" },
+				{ "name":"scm_repository" },
+				{ "name":"product_areas" },
+				{ "name":"covered_content" },
+				{ "name":"executable" }
+			]
+		 },
+		{ 
+			"type": "TEST_SUITE",
+			"fields": [
+				{ "name":"test_type" },
+				{ "name":"testing_tool_type" },
+				{ "name":"estimated_duration" },
+				{ "name":"created" },
+				{ "name":"last_modified" },
+				{ "name":"covered_content" },
+				{ "name":"product_areas" },
+				{ "name":"automation_status" }
+			]
+		 },
+		{ 
+			"type": "MANUAL_TEST_RUN",
+			"fields": [
+				{ "name":"test_name" },
+				{ "name":"native_status" },
+				{ "name":"started" },
+				{ "name":"duration" },
+				{ "name":"content" },
+				{ "name":"release" },
+				{ "name":"last_modified" },
+				{ "name":"draft_run" }
+			]
+		 },
+		{ 
+			"type": "TASK",
+			"fields": [
+				{ "name":"story" },
+				{ "name":"creation_time" },
+				{ "name":"last_modified" },
+				{ "name":"item_type" },
+				{ "name":"estimated_hours" },
+				{ "name":"invested_hours" },
+				{ "name":"remaining_hours" }
+			]
+		 },
+		{ 
+			"type": "REQUIREMENT",
+			"fields": [
+				{ "name":"release" },
+				{ "name":"creation_time" },
+				{ "name":"last_modified" }
+			]
+		 }
+	]
+ }
+
+
