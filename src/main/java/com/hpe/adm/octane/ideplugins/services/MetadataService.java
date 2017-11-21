@@ -13,6 +13,24 @@
 
 package com.hpe.adm.octane.ideplugins.services;
 
+import static com.hpe.adm.octane.ideplugins.services.util.Util.createQueryForMultipleValues;
+
+import java.io.UnsupportedEncodingException;
+import java.net.URISyntaxException;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collection;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.function.Function;
+import java.util.stream.Collectors;
+
+import org.apache.http.client.utils.URIBuilder;
+import org.json.JSONArray;
+import org.json.JSONObject;
+
 import com.google.inject.Inject;
 import com.hpe.adm.nga.sdk.Octane;
 import com.hpe.adm.nga.sdk.metadata.FieldMetadata;
@@ -29,18 +47,6 @@ import com.hpe.adm.octane.ideplugins.services.ui.FormLayout;
 import com.hpe.adm.octane.ideplugins.services.util.OctaneSystemDefaultForms;
 import com.hpe.adm.octane.ideplugins.services.util.OctaneUrlBuilder;
 import com.hpe.adm.octane.ideplugins.services.util.Util;
-import org.apache.http.client.utils.URIBuilder;
-import org.json.JSONArray;
-import org.json.JSONObject;
-
-import java.io.UnsupportedEncodingException;
-import java.net.URISyntaxException;
-import java.util.*;
-import java.util.concurrent.ConcurrentHashMap;
-import java.util.function.Function;
-import java.util.stream.Collectors;
-
-import static com.hpe.adm.octane.ideplugins.services.util.Util.createQueryForMultipleValues;
 
 public class MetadataService {
 
