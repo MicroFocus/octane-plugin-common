@@ -121,6 +121,19 @@
 				{ "name":"draft_run" }
 			]
 		 },
+		 { 
+			"type": "TEST_SUITE_RUN",
+			"fields": [
+				{ "name":"test_name" },
+				{ "name":"native_status" },
+				{ "name":"started" },
+				{ "name":"steps_num" },
+				{ "name":"release" },
+				{ "name":"draft_run" },
+				{ "name":"last_modified" },
+				{ "name":"default_taxonomies" }
+			]
+		 },
 		{ 
 			"type": "TASK",
 			"fields": [
