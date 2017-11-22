@@ -168,15 +168,15 @@ public class MetadataService {
         return formsMap.get(entityType);
     }
 
-    public String getUdfLabel(String udf){
+    public String getUdfLabel(String udf) {
         if (null == udfCache) {
-            if(!connectionSettingsProvider.hasChangeHandler(clearUdfCache)){
+            if (!connectionSettingsProvider.hasChangeHandler(clearUdfCache)) {
                 connectionSettingsProvider.addChangeHandler(clearUdfCache);
             }
 
             String getUrl = connectionSettingsProvider.getConnectionSettings().getBaseUrl() + "/api/shared_spaces/" +
-                            connectionSettingsProvider.getConnectionSettings().getSharedSpaceId() + "/workspaces/" +
-                            connectionSettingsProvider.getConnectionSettings().getWorkspaceId() + "/metadata_fields";
+                    connectionSettingsProvider.getConnectionSettings().getSharedSpaceId() + "/workspaces/" +
+                    connectionSettingsProvider.getConnectionSettings().getWorkspaceId() + "/metadata_fields";
 
             OctaneHttpClient octaneHttpClient = httpClientProvider.geOctaneHttpClient();
             OctaneHttpRequest request = new OctaneHttpRequest.GetOctaneHttpRequest(getUrl);
@@ -185,9 +185,9 @@ public class MetadataService {
         }
 
         JSONArray fields = udfCache.getJSONArray("data");
-        for( Object field: fields){
-            if(field instanceof JSONObject){
-                if(((JSONObject) field).getString("name").equals(udf)){
+        for (Object field : fields) {
+            if (field instanceof JSONObject) {
+                if (((JSONObject) field).getString("name").equals(udf)) {
                     return ((JSONObject) field).getString("label");
                 }
             }
