@@ -13,24 +13,6 @@
 
 package com.hpe.adm.octane.ideplugins.services;
 
-import static com.hpe.adm.octane.ideplugins.services.util.Util.createQueryForMultipleValues;
-
-import java.io.UnsupportedEncodingException;
-import java.net.URISyntaxException;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collection;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
-import java.util.concurrent.ConcurrentHashMap;
-import java.util.function.Function;
-import java.util.stream.Collectors;
-
-import org.apache.http.client.utils.URIBuilder;
-import org.json.JSONArray;
-import org.json.JSONObject;
-
 import com.google.inject.Inject;
 import com.hpe.adm.nga.sdk.Octane;
 import com.hpe.adm.nga.sdk.metadata.FieldMetadata;
@@ -47,6 +29,18 @@ import com.hpe.adm.octane.ideplugins.services.ui.FormLayout;
 import com.hpe.adm.octane.ideplugins.services.util.OctaneSystemDefaultForms;
 import com.hpe.adm.octane.ideplugins.services.util.OctaneUrlBuilder;
 import com.hpe.adm.octane.ideplugins.services.util.Util;
+import org.apache.http.client.utils.URIBuilder;
+import org.json.JSONArray;
+import org.json.JSONObject;
+
+import java.io.UnsupportedEncodingException;
+import java.net.URISyntaxException;
+import java.util.*;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.function.Function;
+import java.util.stream.Collectors;
+
+import static com.hpe.adm.octane.ideplugins.services.util.Util.createQueryForMultipleValues;
 
 public class MetadataService {
 
@@ -69,7 +63,7 @@ public class MetadataService {
     private Map<Entity, FormLayout> octaneFormsCache;
     private JSONObject udfCache;
 
-    public Set<String> getFields(Entity entityType) {
+    public Collection<FieldMetadata> getFields(Entity entityType) {
         if (cache == null) {
             cache = new ConcurrentHashMap<>();
             init();
@@ -82,14 +76,16 @@ public class MetadataService {
         } else {
             fields = cache.get(entityType);
         }
-        return fields.stream().map(FieldMetadata::getName).collect(Collectors.toSet());
+        return fields;
     }
 
     public boolean hasFields(Entity entityType, String... fieldNames) {
-        Set<String> responseFieldNames = getFields(entityType);
+        Collection<FieldMetadata> responseFields = getFields(entityType);
+
+        Set<String> fields = responseFields.stream().map(FieldMetadata::getName).collect(Collectors.toSet());
 
         return Arrays.stream(fieldNames)
-                .allMatch(responseFieldNames::contains);
+                .allMatch(fields::contains);
     }
 
     public void eagerInit(Entity... entities) {
@@ -172,15 +168,15 @@ public class MetadataService {
         return formsMap.get(entityType);
     }
 
-    public String getUdfLabel(String udf){
+    public String getUdfLabel(String udf) {
         if (null == udfCache) {
-            if(!connectionSettingsProvider.hasChangeHandler(clearUdfCache)){
+            if (!connectionSettingsProvider.hasChangeHandler(clearUdfCache)) {
                 connectionSettingsProvider.addChangeHandler(clearUdfCache);
             }
 
             String getUrl = connectionSettingsProvider.getConnectionSettings().getBaseUrl() + "/api/shared_spaces/" +
-                            connectionSettingsProvider.getConnectionSettings().getSharedSpaceId() + "/workspaces/" +
-                            connectionSettingsProvider.getConnectionSettings().getWorkspaceId() + "/metadata_fields";
+                    connectionSettingsProvider.getConnectionSettings().getSharedSpaceId() + "/workspaces/" +
+                    connectionSettingsProvider.getConnectionSettings().getWorkspaceId() + "/metadata_fields";
 
             OctaneHttpClient octaneHttpClient = httpClientProvider.geOctaneHttpClient();
             OctaneHttpRequest request = new OctaneHttpRequest.GetOctaneHttpRequest(getUrl);
@@ -189,9 +185,9 @@ public class MetadataService {
         }
 
         JSONArray fields = udfCache.getJSONArray("data");
-        for( Object field: fields){
-            if(field instanceof JSONObject){
-                if(((JSONObject) field).getString("name").equals(udf)){
+        for (Object field : fields) {
+            if (field instanceof JSONObject) {
+                if (((JSONObject) field).getString("name").equals(udf)) {
                     return ((JSONObject) field).getString("label");
                 }
             }
