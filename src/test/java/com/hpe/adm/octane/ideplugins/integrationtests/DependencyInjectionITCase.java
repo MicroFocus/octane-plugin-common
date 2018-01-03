@@ -20,9 +20,6 @@ import org.junit.Test;
 
 import static org.junit.Assert.assertNotNull;
 
-/**
- * This is just an example for now
- */
 public class DependencyInjectionITCase extends IntegrationTestBase {
 
     @Inject
@@ -32,7 +29,7 @@ public class DependencyInjectionITCase extends IntegrationTestBase {
     private TestService testService;
 
     @Test
-    public void test(){
+    public void testInjection(){
         //Test DI
         assertNotNull(connectionSettingsProvider);
         assertNotNull(testService);

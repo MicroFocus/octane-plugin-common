@@ -16,6 +16,7 @@ package com.hpe.adm.octane.ideplugins.services.mywork;
 import com.google.common.collect.BiMap;
 import com.google.common.collect.HashBiMap;
 import com.google.inject.Inject;
+import com.hpe.adm.nga.sdk.metadata.FieldMetadata;
 import com.hpe.adm.nga.sdk.model.*;
 import com.hpe.adm.nga.sdk.query.Query;
 import com.hpe.adm.nga.sdk.query.QueryMethod;
@@ -66,7 +67,9 @@ class EvertonP2MyWorkService implements MyWorkService {
 
         Query.QueryBuilder qUser = createUserQuery("user", userService.getCurrentUserId());
 
-        Collection<EntityModel> userItems = entityService.findEntities(Entity.USER_ITEM, qUser, metadataService.getFields(Entity.USER_ITEM), createExpandFieldsMap(fieldListMap));
+        Set<String> fields = metadataService.getFields(Entity.USER_ITEM).stream().map(FieldMetadata::getName).collect(Collectors.toSet());
+
+        Collection<EntityModel> userItems = entityService.findEntities(Entity.USER_ITEM, qUser, fields, createExpandFieldsMap(fieldListMap));
         userItems = sortUserItems(userItems);
         result.addAll(userItems);
 
@@ -77,10 +80,11 @@ class EvertonP2MyWorkService implements MyWorkService {
 
     private Collection<EntityModel> getCommentsAsUserItems(){
         // Also get comments
+        Set<String> fields = metadataService.getFields(Entity.COMMENT).stream().map(FieldMetadata::getName).collect(Collectors.toSet());
         Collection<EntityModel> comments = entityService.findEntities(
                 COMMENT,
                 createUserQuery("mention_user", userService.getCurrentUserId()),
-                metadataService.getFields(Entity.COMMENT));
+                fields);
 
         return MyWorkUtil.wrapCollectionIntoUserItem(comments, -1);
     }
