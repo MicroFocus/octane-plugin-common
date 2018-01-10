@@ -19,7 +19,7 @@
 
     <groupId>com.hpe.adm.octane.ideplugins</groupId>
     <artifactId>octane-plugin-common</artifactId>
-    <version>1.5.1-SNAPSHOT</version>
+    <version>1.5.2-SNAPSHOT</version>
     <packaging>jar</packaging>
 
     <name>HPE ALM Octane IDE Plugins Common</name>
@@ -68,6 +68,11 @@
         <developer>
             <name>Tudor Dulau</name>
             <email>dulau@hpe.com</email>
+            <organization>HPE</organization>
+        </developer>
+        <developer>
+            <name>Kadar Tibor</name>
+            <email>kadar-tibor.manasse@hpe.com</email>
             <organization>HPE</organization>
         </developer>
     </developers>

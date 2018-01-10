@@ -34,6 +34,7 @@ import com.hpe.adm.nga.sdk.extension.entities.ExtendedGetEntities;
 import com.hpe.adm.nga.sdk.model.EntityModel;
 import com.hpe.adm.nga.sdk.model.FieldModel;
 import com.hpe.adm.nga.sdk.model.ReferenceFieldModel;
+import com.hpe.adm.nga.sdk.model.StringFieldModel;
 import com.hpe.adm.nga.sdk.query.Query;
 import com.hpe.adm.nga.sdk.query.QueryMethod;
 import com.hpe.adm.octane.ideplugins.services.connection.ConnectionSettingsProvider;
@@ -263,6 +264,18 @@ public class EntityService {
 
         Set<FieldModel> fields = new HashSet<>();
         fields.add(updatePhaseModel);
+        EntityModel updatedEntity = new EntityModel(fields);
+
+        entityList.at(entityId).update().entity(updatedEntity).execute();
+    }
+
+    public void updateEntityField(EntityModel entityModel, StringFieldModel stringField){
+        String entityId = getUiDataFromModel(entityModel.getValue("id"));
+        Entity entityType = Entity.getEntityType(entityModel);
+        EntityList entityList = octaneProvider.getOctane().entityList(entityType.getApiEntityName());
+
+        Set<FieldModel> fields = new HashSet<>();
+        fields.add(stringField);
         EntityModel updatedEntity = new EntityModel(fields);
 
         entityList.at(entityId).update().entity(updatedEntity).execute();
