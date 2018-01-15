@@ -269,16 +269,11 @@ public class EntityService {
         entityList.at(entityId).update().entity(updatedEntity).execute();
     }
 
-    public void updateEntityField(EntityModel entityModel, StringFieldModel stringField){
+    public void updateEntity(EntityModel entityModel){
         String entityId = getUiDataFromModel(entityModel.getValue("id"));
         Entity entityType = Entity.getEntityType(entityModel);
         EntityList entityList = octaneProvider.getOctane().entityList(entityType.getApiEntityName());
-
-        Set<FieldModel> fields = new HashSet<>();
-        fields.add(stringField);
-        EntityModel updatedEntity = new EntityModel(fields);
-
-        entityList.at(entityId).update().entity(updatedEntity).execute();
+        entityList.at(entityId).update().entity(entityModel).execute();
     }
 
     public void openInBrowser(EntityModel entityModel) {
