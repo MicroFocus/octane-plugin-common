@@ -25,10 +25,10 @@
     <name>HPE ALM Octane IDE Plugins Common</name>
     <description>
         Service layer for ALM Octane IDE Plugins, used by:
-        https://github.com/HPSoftware/octane-intellij-plugin
-        https://github.com/HPSoftware/octane-eclipse-plugin
+        https://github.com/MicroFocus/octane-intellij-plugin
+        https://github.com/MicroFocus/octane-eclipse-plugin
     </description>
-    <url>https://github.com/HPSoftware/octane-plugin-common</url>
+    <url>https://github.com/MicroFocus/octane-plugin-common</url>
 
     <licenses>
         <license>
@@ -39,9 +39,9 @@
     </licenses>
 
     <scm>
-        <url>https://github.com/HPSoftware/octane-plugin-common</url>
-        <connection>scm:git:https://github.com/HPSoftware/octane-plugin-common</connection>
-        <developerConnection>scm:git:git@github.com:HPSoftware/octane-plugin-common.git</developerConnection>
+        <url>https://github.com/MicroFocus/octane-plugin-common</url>
+        <connection>scm:git:https://github.com/MicroFocus/octane-plugin-common</connection>
+        <developerConnection>scm:git:git@github.com:MicroFocus/octane-plugin-common.git</developerConnection>
     </scm>
 
     <organization>
