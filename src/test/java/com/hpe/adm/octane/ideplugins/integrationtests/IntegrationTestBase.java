@@ -322,7 +322,7 @@ public abstract class IntegrationTestBase {
     protected EntityModel getUserById(long id) {
         EntityService entityService = serviceModule.getInstance(EntityService.class);
         try {
-            return  entityService.findEntity(Entity.WORKSPACE_USER, id);
+            return entityService.findEntity(Entity.WORKSPACE_USER, id);
         } catch (ServiceException e) {
             e.printStackTrace();
             //logger.debug("There was an issue with retrieving the user with id " + id);
@@ -408,7 +408,7 @@ public abstract class IntegrationTestBase {
     }
 
 
-    public EntityModel createRequirement(String requirementName, EntityModel parent) {
+    protected EntityModel createRequirement(String requirementName, EntityModel parent) {
         EntityModel phase = new EntityModel("type", "phase");
         phase.setValue(new StringFieldModel("id", "phase.requirement_document.draft"));
         phase.setValue(new StringFieldModel("name", "Draft"));
@@ -424,7 +424,7 @@ public abstract class IntegrationTestBase {
         return octane.entityList(entity.getApiEntityName()).create().entities(Collections.singletonList(requirement)).execute().iterator().next();
     }
 
-    public EntityModel createRequirementFolder(String folderName) {
+    protected EntityModel createRequirementFolder(String folderName) {
         EntityModel requirement = new EntityModel("type", "requirement");
         requirement.setValue(new StringFieldModel("name", folderName));
         requirement.setValue(new StringFieldModel("subtype", "requirement_folder"));
@@ -435,10 +435,10 @@ public abstract class IntegrationTestBase {
         return octane.entityList(entity.getApiEntityName()).create().entities(Collections.singletonList(requirement)).execute().iterator().next();
     }
 
-    public List<EntityModel> getTasks() {
+    protected List<EntityModel> getTasks() {
         OctaneProvider octaneProvider = serviceModule.getOctane();
         Octane octane = octaneProvider.getOctane();
-        return octane.entityList("tasks").get().execute().stream().collect(Collectors.toList());
+        return new ArrayList<>(octane.entityList("tasks").get().execute());
     }
 
     /**
@@ -448,7 +448,7 @@ public abstract class IntegrationTestBase {
      * @param name       - the name of the run
      * @return the entityModel of the run
      */
-    public EntityModel createManualRun(EntityModel manualTest, String name) {
+    protected EntityModel createManualRun(EntityModel manualTest, String name) {
 
         EntityModel manualRun = new EntityModel("type", "run");
         manualRun.setValue(new StringFieldModel("name", "a1"));
@@ -468,7 +468,7 @@ public abstract class IntegrationTestBase {
      * @param name the name of the test suite
      * @return the entityModel of the test suite, @null if not created
      */
-    public EntityModel createTestSuite(String name) {
+    protected EntityModel createTestSuite(String name) {
         EntityModel testSuite = new EntityModel("type", "test");
         testSuite.setValue(new StringFieldModel("name", name));
         testSuite.setValue(new StringFieldModel("subtype", "test_suite"));
@@ -486,7 +486,7 @@ public abstract class IntegrationTestBase {
      * @param testSuiteRunName the name of the suite run
      * @return the created entityModel of the suite run
      */
-    public EntityModel createTestSuiteRun(EntityModel testSuite, String testSuiteRunName) {
+    protected EntityModel createTestSuiteRun(EntityModel testSuite, String testSuiteRunName) {
         EntityModel testSuiteRun = new EntityModel("type", "run");
         testSuiteRun.setValue(new StringFieldModel("name", testSuiteRunName));
         testSuiteRun.setValue(new StringFieldModel("subtype", "run_suite"));
@@ -506,7 +506,7 @@ public abstract class IntegrationTestBase {
      * @param testName - the name of the new automated test
      * @return the newly created automated test entityModel
      */
-    public EntityModel createAutomatedTest(String testName) {
+    protected EntityModel createAutomatedTest(String testName) {
         EntityModel automatedTest = new EntityModel("type", "test");
         automatedTest.setValue(new StringFieldModel("subtype", "test_automated"));
         automatedTest.setValue(new StringFieldModel("name", testName));
@@ -522,7 +522,7 @@ public abstract class IntegrationTestBase {
      *
      * @param entityModel - the entity to be added
      */
-    public void addToMyWork(EntityModel entityModel) {
+    protected void addToMyWork(EntityModel entityModel) {
         MyWorkService myWorkService = serviceModule.getInstance(MyWorkService.class);
 
         try {
@@ -538,7 +538,7 @@ public abstract class IntegrationTestBase {
      * @param backlogItem - the backlog item
      * @param owner       - the user
      */
-    public void setOwner(EntityModel backlogItem, EntityModel owner) {
+    protected void setOwner(EntityModel backlogItem, EntityModel owner) {
         EntityModel updatedEntityModel = new EntityModel();
         updatedEntityModel.setValue(backlogItem.getValue("id"));
         updatedEntityModel.setValue(backlogItem.getValue("type"));
@@ -555,7 +555,7 @@ public abstract class IntegrationTestBase {
      * @param backlogItem the backlog item
      * @param description the description string
      */
-    public void setDescription(EntityModel backlogItem, String description) {
+    protected void setDescription(EntityModel backlogItem, String description) {
         EntityModel updatedEntityModel = new EntityModel();
         updatedEntityModel.setValue(backlogItem.getValue("id"));
         updatedEntityModel.setValue(backlogItem.getValue("type"));
@@ -571,7 +571,7 @@ public abstract class IntegrationTestBase {
      *
      * @return a list of entities representing the items in my work
      */
-    public List<EntityModel> getMyWorkItems() {
+    protected List<EntityModel> getMyWorkItems() {
         MyWorkService myWorkService = serviceModule.getMyWorkService();
 
         return new ArrayList<>(myWorkService.getMyWork());
@@ -582,11 +582,11 @@ public abstract class IntegrationTestBase {
      *
      * @return a list of the work items and lists
      */
-    public List<EntityModel> retrieveBacklog() {
+    private List<EntityModel> retrieveBacklog() {
         OctaneProvider octaneProvider = serviceModule.getOctane();
         Octane octane = octaneProvider.getOctane();
         List<EntityModel> workItems = octane.entityList("work_items").get().query(Query.not("subtype", QueryMethod.EqualTo, "work_item_root").build()).execute().stream().collect(Collectors.toList());
-        List<EntityModel> tests = octane.entityList("tests").get().execute().stream().collect(Collectors.toList());
+        List<EntityModel> tests = new ArrayList<>(octane.entityList("tests").get().execute());
         return Stream.concat(workItems.stream(), tests.stream()).collect(Collectors.toList());
 
     }
@@ -594,7 +594,7 @@ public abstract class IntegrationTestBase {
     /**
      * Deletes the backlog items
      */
-    public void deleteBacklogItems() {
+    protected void deleteBacklogItems() {
         List<EntityModel> workspaceEntities = retrieveBacklog();
         Query.QueryBuilder workItemsQuery = null;
         Query.QueryBuilder testItemsQuery = null;
@@ -635,7 +635,7 @@ public abstract class IntegrationTestBase {
         }
     }
 
-    public EntityModel search(String searchField, String query) {
+    protected EntityModel search(String searchField, String query) {
         List<EntityModel> entityModels = searchService.searchGlobal(query, 1000, Entity.WORK_ITEM, Entity.MANUAL_TEST, Entity.GHERKIN_TEST, Entity.TASK, Entity.REQUIREMENT).stream().collect(Collectors.toList());
 
         for (EntityModel entityModel : entityModels) {
@@ -656,14 +656,11 @@ public abstract class IntegrationTestBase {
         return s;
     }
 
-    public boolean compareEntities(EntityModel entity1, EntityModel entity2) {
-        if (entity1.getValue("id").getValue().toString().equals(entity2.getValue("id").getValue().toString())) {
-            return true;
-        }
-        return false;
+    protected boolean compareEntities(EntityModel entity1, EntityModel entity2) {
+        return (entity1.getValue("id").getValue().toString().equals(entity2.getValue("id").getValue().toString()));
     }
 
-    public EntityModel findRequirementById(long id) {
+    protected EntityModel findRequirementById(long id) {
         List<EntityModel> requirements = getRequirements();
         for (EntityModel entityModel : requirements) {
             if (Long.parseLong(entityModel.getValue("id").getValue().toString()) == id) {
@@ -673,7 +670,7 @@ public abstract class IntegrationTestBase {
         return null;
     }
 
-    public EntityModel getRequirementsRoot() {
+    private EntityModel getRequirementsRoot() {
         List<EntityModel> requirements = getRequirements();
         for (EntityModel entityModel : requirements) {
             if ("requirement_root".equals(entityModel.getValue("subtype").getValue().toString())) {
