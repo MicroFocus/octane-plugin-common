@@ -42,7 +42,6 @@ import com.hpe.adm.octane.ideplugins.services.util.OctaneVersion;
 import org.json.JSONArray;
 import org.json.JSONObject;
 import org.junit.Before;
-
 import java.lang.annotation.Annotation;
 import java.time.LocalDateTime;
 import java.util.*;
@@ -244,8 +243,7 @@ public abstract class IntegrationTestBase {
         Set<FieldModel> fields = new HashSet<>();
         List<EntityModel> roles = getRoles();
 
-        if (roles == null) {
-            //logger.debug("failed to obtain the roles in the environment");
+        if (roles.size() == 0) {
             return null;
         }
         fields.add(new StringFieldModel("full_name", firstName + lastName));
@@ -585,7 +583,7 @@ public abstract class IntegrationTestBase {
     private List<EntityModel> retrieveBacklog() {
         OctaneProvider octaneProvider = serviceModule.getOctane();
         Octane octane = octaneProvider.getOctane();
-        List<EntityModel> workItems = octane.entityList("work_items").get().query(Query.not("subtype", QueryMethod.EqualTo, "work_item_root").build()).execute().stream().collect(Collectors.toList());
+        List<EntityModel> workItems = new ArrayList<>(octane.entityList("work_items").get().query(Query.not("subtype", QueryMethod.EqualTo, "work_item_root").build()).execute());
         List<EntityModel> tests = new ArrayList<>(octane.entityList("tests").get().execute());
         return Stream.concat(workItems.stream(), tests.stream()).collect(Collectors.toList());
 
