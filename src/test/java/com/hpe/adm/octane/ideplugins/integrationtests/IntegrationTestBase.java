@@ -131,7 +131,7 @@ public abstract class IntegrationTestBase {
      * @param <A>             the generic annotation class
      * @return the instance of that annotation, @null in case it isn't found
      */
-    public <A extends Annotation> A getAnnotation(Annotation[] annotations, Class<A> annotationClass) {
+    private <A extends Annotation> A getAnnotation(Annotation[] annotations, Class<A> annotationClass) {
         for (Annotation annotation : annotations) {
             if (annotation.annotationType().equals(annotationClass)) {
                 return (A) annotation;
@@ -145,7 +145,7 @@ public abstract class IntegrationTestBase {
      *
      * @return the workspace_id of the newly created workspace
      */
-    public Long createWorkSpace() {
+    private Long createWorkSpace() {
         String postUrl = connectionSettingsProvider.getConnectionSettings().getBaseUrl() + "/api/shared_spaces/" +
                 connectionSettingsProvider.getConnectionSettings().getSharedSpaceId() + "/workspaces";
         String urlDomain = connectionSettingsProvider.getConnectionSettings().getBaseUrl();
@@ -179,7 +179,7 @@ public abstract class IntegrationTestBase {
      *
      * @return the workspace_id of the first workspace obtained, -1 if no workspace is found
      */
-    public long getDefaultWorkspaceId() {
+    private long getDefaultWorkspaceId() {
         String getUrl = connectionSettingsProvider.getConnectionSettings().getBaseUrl() + "/api/shared_spaces/" +
                 connectionSettingsProvider.getConnectionSettings().getSharedSpaceId() + "/workspaces";
         String urlDomain = connectionSettingsProvider.getConnectionSettings().getBaseUrl();
@@ -206,7 +206,7 @@ public abstract class IntegrationTestBase {
      * @param entity - the new entity
      * @return the created entityModel, @null if it could not been created
      */
-    public EntityModel createEntity(Entity entity) {
+    protected EntityModel createEntity(Entity entity) {
         OctaneProvider octaneProvider = serviceModule.getOctane();
         EntityModel entityModel = entityGenerator.createEntityModel(entity);
         Octane octane = octaneProvider.getOctane();
@@ -238,7 +238,7 @@ public abstract class IntegrationTestBase {
      *
      * @return the newly created user entityModel, @null if it could not be created
      */
-    public EntityModel createNewUser(String firstName, String lastName) {
+    protected EntityModel createNewUser(String firstName, String lastName) {
 
         EntityModel userEntityModel = new EntityModel();
         Set<FieldModel> fields = new HashSet<>();
@@ -271,7 +271,7 @@ public abstract class IntegrationTestBase {
      *
      * @return the users entityModel if found, @null otherwise
      */
-    public EntityModel getCurrentUser() {
+    protected EntityModel getCurrentUser() {
         OctaneProvider octaneProvider = serviceModule.getOctane();
         Octane octane = octaneProvider.getOctane();
         List<EntityModel> users = new ArrayList<>(octane.entityList("workspace_users").get().execute());
@@ -289,7 +289,7 @@ public abstract class IntegrationTestBase {
      *
      * @return - a list of enitityModels representing the possible roles
      */
-    public List<EntityModel> getRoles() {
+    private List<EntityModel> getRoles() {
         OctaneProvider octaneProvider = serviceModule.getOctane();
         Octane octane = octaneProvider.getOctane();
         return new ArrayList<>(octane.entityList("user_roles").get().execute());
@@ -305,12 +305,12 @@ public abstract class IntegrationTestBase {
         Set<String> roles = new HashSet<>();
         roles.add("roles");
 
-        List<EntityModel> entities = new ArrayList<>(entityService.findEntities(
+        return new ArrayList<>(entityService.findEntities(
                 Entity.WORKSPACE_USER,
                 null,
                 roles)
         );
-        return entities;
+
     }
 
     /**
@@ -319,11 +319,10 @@ public abstract class IntegrationTestBase {
      * @param id - user id
      * @return @null - if not found, userEntityModel if found
      */
-    public EntityModel getUserById(long id) {
+    protected EntityModel getUserById(long id) {
         EntityService entityService = serviceModule.getInstance(EntityService.class);
         try {
-            EntityModel entity = entityService.findEntity(Entity.WORKSPACE_USER, id);
-            return entity;
+            return  entityService.findEntity(Entity.WORKSPACE_USER, id);
         } catch (ServiceException e) {
             e.printStackTrace();
             //logger.debug("There was an issue with retrieving the user with id " + id);
@@ -337,20 +336,16 @@ public abstract class IntegrationTestBase {
      *
      * @return the entityModel of the release
      */
-    public EntityModel getRelease() {
+    private EntityModel getRelease() {
         OctaneProvider octaneProvider = serviceModule.getOctane();
         Octane octane = octaneProvider.getOctane();
         return octane.entityList("releases").get().execute().iterator().next();
     }
 
-    public boolean isNewerOctane() {
+    protected boolean isNewerOctane() {
         OctaneVersion version = versionService.getOctaneVersion();
 
-        if (OctaneVersion.compare(version, OctaneVersion.Operation.HIGHER, OctaneVersion.EVERTON_P3)) {
-            return true;
-        } else {
-            return false;
-        }
+        return (OctaneVersion.compare(version, OctaneVersion.Operation.HIGHER, OctaneVersion.EVERTON_P3));
     }
 
     private void createRelease() {
@@ -381,7 +376,6 @@ public abstract class IntegrationTestBase {
         OctaneHttpRequest postNewReleaseRequest = new OctaneHttpRequest.PostOctaneHttpRequest(postUrl, OctaneHttpRequest.JSON_CONTENT_TYPE, dataSet.toString());
         OctaneHttpClient octaneHttpClient = new GoogleHttpClient(urlDomain);
         octaneHttpClient.authenticate(new SimpleUserAuthentication(connectionSettingsProvider.getConnectionSettings().getUserName(), connectionSettingsProvider.getConnectionSettings().getPassword(), ClientType.HPE_MQM_UI.name()));
-        OctaneHttpResponse response = null;
         try {
             octaneHttpClient.execute(postNewReleaseRequest);
         } catch (Exception e) {
@@ -397,7 +391,7 @@ public abstract class IntegrationTestBase {
      * @param taskName  - the name of the task
      * @return the built entityModel
      */
-    public EntityModel createTask(EntityModel userStory, String taskName) {
+    protected EntityModel createTask(EntityModel userStory, String taskName) {
         EntityModel taskEntityModel = new EntityModel("type", "task");
         taskEntityModel.setValue(new StringFieldModel("name", taskName));
         taskEntityModel.setValue(new ReferenceFieldModel("story", userStory));
@@ -407,10 +401,10 @@ public abstract class IntegrationTestBase {
         return octane.entityList(entity.getApiEntityName()).create().entities(Collections.singletonList(taskEntityModel)).execute().iterator().next();
     }
 
-    public List<EntityModel> getRequirements() {
+    private List<EntityModel> getRequirements() {
         OctaneProvider octaneProvider = serviceModule.getOctane();
         Octane octane = octaneProvider.getOctane();
-        return octane.entityList("requirements").get().execute().stream().collect(Collectors.toList());
+        return new ArrayList<>(octane.entityList("requirements").get().execute());
     }
 
 
