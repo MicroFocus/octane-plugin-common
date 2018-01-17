@@ -26,6 +26,7 @@ import com.hpe.adm.nga.sdk.network.OctaneHttpResponse;
 import com.hpe.adm.nga.sdk.network.google.GoogleHttpClient;
 import com.hpe.adm.nga.sdk.query.Query;
 import com.hpe.adm.nga.sdk.query.QueryMethod;
+import com.hpe.adm.octane.ideplugins.Constants;
 import com.hpe.adm.octane.ideplugins.integrationtests.util.*;
 import com.hpe.adm.octane.ideplugins.services.EntityService;
 import com.hpe.adm.octane.ideplugins.services.connection.ConnectionSettings;
@@ -39,12 +40,15 @@ import com.hpe.adm.octane.ideplugins.services.nonentity.EntitySearchService;
 import com.hpe.adm.octane.ideplugins.services.nonentity.OctaneVersionService;
 import com.hpe.adm.octane.ideplugins.services.util.ClientType;
 import com.hpe.adm.octane.ideplugins.services.util.OctaneVersion;
+import com.sun.jndi.cosnaming.CNCtx;
+import com.sun.xml.internal.bind.v2.runtime.reflect.opt.Const;
 import org.json.JSONArray;
 import org.json.JSONObject;
 import org.junit.Before;
 import java.lang.annotation.Annotation;
 import java.time.LocalDateTime;
 import java.util.*;
+import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
@@ -75,7 +79,7 @@ public abstract class IntegrationTestBase {
 
         connectionSettingsProvider = PropertyUtil.readFormVmArgs() != null ? PropertyUtil.readFormVmArgs() : PropertyUtil.readFromPropFile();
         if (connectionSettingsProvider == null) {
-            throw new RuntimeException("Cannot retrieve connection settings from either vm args or prop file, cannot run tests");
+            throw new RuntimeException(Constants.Errors.CONNECTION_SETTINGS_RETRIEVE_ERROR);
         }
 
         Annotation[] annotations = this.getClass().getDeclaredAnnotations();
@@ -112,11 +116,11 @@ public abstract class IntegrationTestBase {
             }
         }
 
-        nativeStatus = new EntityModel("type", "list_node");
+        nativeStatus = new EntityModel(Constants.TYPE, Constants.NativeStatus.NATIVE_STATUS_TYPE_VALUE);
         if (isNewerOctane())
-            nativeStatus.setValue(new StringFieldModel("id", "1094"));
+            nativeStatus.setValue(new StringFieldModel(Constants.ID, Constants.NativeStatus.NATIVE_STATUS_NEW_ID));
         else
-            nativeStatus.setValue(new StringFieldModel("id", "1091"));
+            nativeStatus.setValue(new StringFieldModel(Constants.ID, Constants.NativeStatus.NATIVE_STATUS_OLD_ID));
 
         createRelease();
     }
@@ -145,16 +149,16 @@ public abstract class IntegrationTestBase {
      * @return the workspace_id of the newly created workspace
      */
     private Long createWorkSpace() {
-        String postUrl = connectionSettingsProvider.getConnectionSettings().getBaseUrl() + "/api/shared_spaces/" +
-                connectionSettingsProvider.getConnectionSettings().getSharedSpaceId() + "/workspaces";
+        String postUrl = connectionSettingsProvider.getConnectionSettings().getBaseUrl() + Constants.SHARED_SPACE +
+                connectionSettingsProvider.getConnectionSettings().getSharedSpaceId() + Constants.WORKSPACE;
         String urlDomain = connectionSettingsProvider.getConnectionSettings().getBaseUrl();
         JSONObject dataSet = new JSONObject();
         JSONObject credentials = new JSONObject();
-        credentials.put("name", "test_workspace1");
-        credentials.put("description", "Created from intellij");
+        credentials.put(Constants.NAME, Constants.Workspace.NAME_VALUE);
+        credentials.put(Constants.DESCRIPTION, Constants.Workspace.DESCRIPTION);
         JSONArray jsonArray = new JSONArray();
         jsonArray.put(credentials);
-        dataSet.put("data", jsonArray);
+        dataSet.put(Constants.DATA, jsonArray);
         OctaneHttpRequest postNewWorkspaceRequest = new OctaneHttpRequest.PostOctaneHttpRequest(postUrl, OctaneHttpRequest.JSON_CONTENT_TYPE, dataSet.toString());
         OctaneHttpClient octaneHttpClient = new GoogleHttpClient(urlDomain);
         octaneHttpClient.authenticate(new SimpleUserAuthentication(connectionSettingsProvider.getConnectionSettings().getUserName(), connectionSettingsProvider.getConnectionSettings().getPassword(), ClientType.HPE_MQM_UI.name()));
@@ -166,11 +170,11 @@ public abstract class IntegrationTestBase {
             fail(e.toString());
         }
         JSONObject responseJson = new JSONObject(response.getContent());
-        JSONArray workspaces = responseJson.getJSONArray("data");
+        JSONArray workspaces = responseJson.getJSONArray(Constants.DATA);
 
         octaneHttpClient.signOut();
         JSONObject workspace = (JSONObject) workspaces.get(0);
-        return workspace.getLong("workspace_id");
+        return workspace.getLong(Constants.Workspace.WORKSPACE_ID);
     }
 
     /**
@@ -179,8 +183,8 @@ public abstract class IntegrationTestBase {
      * @return the workspace_id of the first workspace obtained, -1 if no workspace is found
      */
     private long getDefaultWorkspaceId() {
-        String getUrl = connectionSettingsProvider.getConnectionSettings().getBaseUrl() + "/api/shared_spaces/" +
-                connectionSettingsProvider.getConnectionSettings().getSharedSpaceId() + "/workspaces";
+        String getUrl = connectionSettingsProvider.getConnectionSettings().getBaseUrl() + Constants.SHARED_SPACE +
+                connectionSettingsProvider.getConnectionSettings().getSharedSpaceId() + Constants.WORKSPACE;
         String urlDomain = connectionSettingsProvider.getConnectionSettings().getBaseUrl();
         OctaneHttpRequest getAllWorkspacesRequest = new OctaneHttpRequest.GetOctaneHttpRequest(getUrl);
         OctaneHttpClient octaneHttpClient = new GoogleHttpClient(urlDomain);
@@ -193,10 +197,10 @@ public abstract class IntegrationTestBase {
             fail(e.toString());
         }
         JSONObject responseJson = new JSONObject(response.getContent());
-        JSONArray workspaces = responseJson.getJSONArray("data");
+        JSONArray workspaces = responseJson.getJSONArray(Constants.DATA);
         if (workspaces.length() == 0)
             return -1;
-        return ((JSONObject) workspaces.get(0)).getLong("id");
+        return ((JSONObject) workspaces.get(0)).getLong(Constants.ID);
     }
 
     /**
@@ -246,22 +250,22 @@ public abstract class IntegrationTestBase {
         if (roles.size() == 0) {
             return null;
         }
-        fields.add(new StringFieldModel("full_name", firstName + lastName));
-        fields.add(new StringFieldModel("last_name", lastName));
-        fields.add(new StringFieldModel("type", "workspace_user"));
-        fields.add(new StringFieldModel("first_name", firstName));
-        fields.add(new StringFieldModel("email", firstName + "." + lastName + "@hpe.com"));
-        fields.add(new StringFieldModel("password", "Welcome1"));
-        fields.add(new MultiReferenceFieldModel("roles", Collections.singletonList(roles.get(0))));
+        fields.add(new StringFieldModel(Constants.User.FULL_NAME, firstName + lastName));
+        fields.add(new StringFieldModel(Constants.User.LAST_NAME, lastName));
+        fields.add(new StringFieldModel(Constants.TYPE, Constants.User.USER_TYPE));
+        fields.add(new StringFieldModel(Constants.User.FIRST_NAME, firstName));
+        fields.add(new StringFieldModel(Constants.User.EMAIL, firstName + "." + lastName + Constants.User.EMAIL_DOMAIN));
+        fields.add(new StringFieldModel(Constants.User.PASSWORD, Constants.User.PASSWORD_VALUE));
+        fields.add(new MultiReferenceFieldModel(Constants.ROLES, Collections.singletonList(roles.get(0))));
 
         if (!isNewerOctane()) {
-            fields.add(new StringFieldModel("phone1", "0875432135"));
+            fields.add(new StringFieldModel(Constants.User.PHONE, Constants.User.PHONE_NR));
         }
 
         userEntityModel.setValues(fields);
         OctaneProvider octaneProvider = serviceModule.getOctane();
         Octane octane = octaneProvider.getOctane();
-        return octane.entityList("workspace_users").create().entities(Collections.singletonList(userEntityModel)).execute().iterator().next();
+        return octane.entityList(Constants.User.USER_TYPE).create().entities(Collections.singletonList(userEntityModel)).execute().iterator().next();
     }
 
     /**
@@ -272,10 +276,10 @@ public abstract class IntegrationTestBase {
     protected EntityModel getCurrentUser() {
         OctaneProvider octaneProvider = serviceModule.getOctane();
         Octane octane = octaneProvider.getOctane();
-        List<EntityModel> users = new ArrayList<>(octane.entityList("workspace_users").get().execute());
+        List<EntityModel> users = new ArrayList<>(octane.entityList(Constants.WORKSPACE_ENITY_NAME).get().execute());
 
         for (EntityModel user : users) {
-            if (user.getValue("email").getValue().toString().equals(connectionSettingsProvider.getConnectionSettings().getUserName())) {
+            if (user.getValue(Constants.User.EMAIL).getValue().toString().equals(connectionSettingsProvider.getConnectionSettings().getUserName())) {
                 return user;
             }
         }
@@ -290,7 +294,7 @@ public abstract class IntegrationTestBase {
     private List<EntityModel> getRoles() {
         OctaneProvider octaneProvider = serviceModule.getOctane();
         Octane octane = octaneProvider.getOctane();
-        return new ArrayList<>(octane.entityList("user_roles").get().execute());
+        return new ArrayList<>(octane.entityList(Constants.User.USER_ROLES).get().execute());
     }
 
     /**
@@ -301,7 +305,7 @@ public abstract class IntegrationTestBase {
     public List<EntityModel> getUsers() {
         EntityService entityService = serviceModule.getInstance(EntityService.class);
         Set<String> roles = new HashSet<>();
-        roles.add("roles");
+        roles.add(Constants.ROLES);
 
         return new ArrayList<>(entityService.findEntities(
                 Entity.WORKSPACE_USER,
@@ -337,7 +341,7 @@ public abstract class IntegrationTestBase {
     private EntityModel getRelease() {
         OctaneProvider octaneProvider = serviceModule.getOctane();
         Octane octane = octaneProvider.getOctane();
-        return octane.entityList("releases").get().execute().iterator().next();
+        return octane.entityList(Constants.Release.TYPE).get().execute().iterator().next();
     }
 
     protected boolean isNewerOctane() {
@@ -347,30 +351,30 @@ public abstract class IntegrationTestBase {
     }
 
     private void createRelease() {
-        String postUrl = connectionSettingsProvider.getConnectionSettings().getBaseUrl() + "/api/shared_spaces/" +
-                connectionSettingsProvider.getConnectionSettings().getSharedSpaceId() + "/workspaces/" +
-                connectionSettingsProvider.getConnectionSettings().getWorkspaceId() + "/releases";
+        String postUrl = connectionSettingsProvider.getConnectionSettings().getBaseUrl() + Constants.SHARED_SPACE +
+                connectionSettingsProvider.getConnectionSettings().getSharedSpaceId() + Constants.WORKSPACE + "/" +
+                connectionSettingsProvider.getConnectionSettings().getWorkspaceId() + Constants.RELEASES;
         String urlDomain = connectionSettingsProvider.getConnectionSettings().getBaseUrl();
         JSONObject dataSet = new JSONObject();
         JSONObject releaseJson = new JSONObject();
-        releaseJson.put("name", "test_Release" + UUID.randomUUID().toString());
-        releaseJson.put("type", "release");
+        releaseJson.put(Constants.NAME, Constants.Release.NAME + UUID.randomUUID().toString());
+        releaseJson.put(Constants.TYPE, Constants.Release.TYPE);
         LocalDateTime localDateTImeNow = LocalDateTime.now();
-        releaseJson.put("start_date", localDateTImeNow.toString() + "Z");
-        releaseJson.put("end_date", localDateTImeNow.toString() + "Z");
+        releaseJson.put(Constants.Release.START_DATE, localDateTImeNow.toString() + "Z");
+        releaseJson.put(Constants.Release.END_DATE, localDateTImeNow.toString() + "Z");
         JSONObject agileTypeJson = new JSONObject();
         if (isNewerOctane()) {
-            agileTypeJson.put("id", "list_node.release_agile_type.scrum");
+            agileTypeJson.put(Constants.ID, Constants.AgileType.NEW_ID);
         } else {
-            agileTypeJson.put("id", "1108");
+            agileTypeJson.put(Constants.ID, Constants.AgileType.OLD_ID);
         }
-        agileTypeJson.put("name", "scrum");
-        agileTypeJson.put("type", "list_node");
-        agileTypeJson.put("logical_name", "list_node.release_agile_type.scrum");
-        releaseJson.put("agile_type", agileTypeJson);
+        agileTypeJson.put(Constants.NAME, Constants.AgileType.NAME);
+        agileTypeJson.put(Constants.TYPE, Constants.AgileType.TYPE);
+        agileTypeJson.put(Constants.LOGICAL_NAME, Constants.AgileType.NEW_ID);
+        releaseJson.put(Constants.AgileType.AGILE_TYPE, agileTypeJson);
         JSONArray jsonArray = new JSONArray();
         jsonArray.put(releaseJson);
-        dataSet.put("data", jsonArray);
+        dataSet.put(Constants.DATA, jsonArray);
         OctaneHttpRequest postNewReleaseRequest = new OctaneHttpRequest.PostOctaneHttpRequest(postUrl, OctaneHttpRequest.JSON_CONTENT_TYPE, dataSet.toString());
         OctaneHttpClient octaneHttpClient = new GoogleHttpClient(urlDomain);
         octaneHttpClient.authenticate(new SimpleUserAuthentication(connectionSettingsProvider.getConnectionSettings().getUserName(), connectionSettingsProvider.getConnectionSettings().getPassword(), ClientType.HPE_MQM_UI.name()));
@@ -390,9 +394,9 @@ public abstract class IntegrationTestBase {
      * @return the built entityModel
      */
     protected EntityModel createTask(EntityModel userStory, String taskName) {
-        EntityModel taskEntityModel = new EntityModel("type", "task");
-        taskEntityModel.setValue(new StringFieldModel("name", taskName));
-        taskEntityModel.setValue(new ReferenceFieldModel("story", userStory));
+        EntityModel taskEntityModel = new EntityModel(Constants.TYPE, Constants.TASK);
+        taskEntityModel.setValue(new StringFieldModel(Constants.NAME, taskName));
+        taskEntityModel.setValue(new ReferenceFieldModel(Constants.STORY, userStory));
         Entity entity = Entity.getEntityType(taskEntityModel);
         OctaneProvider octaneProvider = serviceModule.getOctane();
         Octane octane = octaneProvider.getOctane();
@@ -402,20 +406,20 @@ public abstract class IntegrationTestBase {
     private List<EntityModel> getRequirements() {
         OctaneProvider octaneProvider = serviceModule.getOctane();
         Octane octane = octaneProvider.getOctane();
-        return new ArrayList<>(octane.entityList("requirements").get().execute());
+        return new ArrayList<>(octane.entityList(Constants.REQUIREMENTS).get().execute());
     }
 
 
     protected EntityModel createRequirement(String requirementName, EntityModel parent) {
-        EntityModel phase = new EntityModel("type", "phase");
-        phase.setValue(new StringFieldModel("id", "phase.requirement_document.draft"));
-        phase.setValue(new StringFieldModel("name", "Draft"));
-        phase.setValue(new StringFieldModel("logical_name", "phase.requirement_document.draft"));
-        EntityModel requirement = new EntityModel("type", "requirement");
-        requirement.setValue(new StringFieldModel("name", requirementName));
-        requirement.setValue(new StringFieldModel("subtype", "requirement_document"));
-        requirement.setValue(new ReferenceFieldModel("parent", parent));
-        requirement.setValue(new ReferenceFieldModel("phase", phase));
+        EntityModel phase = new EntityModel(Constants.TYPE, Constants.PHASE);
+        phase.setValue(new StringFieldModel(Constants.ID, Constants.Requirement.ID));
+        phase.setValue(new StringFieldModel(Constants.NAME, Constants.Requirement.NAME));
+        phase.setValue(new StringFieldModel(Constants.LOGICAL_NAME, Constants.Requirement.LOGICAL_NAME));
+        EntityModel requirement = new EntityModel(Constants.TYPE, Constants.Requirement.TYPE);
+        requirement.setValue(new StringFieldModel(Constants.NAME, requirementName));
+        requirement.setValue(new StringFieldModel(Constants.SUBTYPE, Constants.Requirement.DOCUMENT));
+        requirement.setValue(new ReferenceFieldModel(Constants.PARENT, parent));
+        requirement.setValue(new ReferenceFieldModel(Constants.PARENT, phase));
         Entity entity = Entity.getEntityType(requirement);
         OctaneProvider octaneProvider = serviceModule.getOctane();
         Octane octane = octaneProvider.getOctane();
@@ -423,10 +427,10 @@ public abstract class IntegrationTestBase {
     }
 
     protected EntityModel createRequirementFolder(String folderName) {
-        EntityModel requirement = new EntityModel("type", "requirement");
-        requirement.setValue(new StringFieldModel("name", folderName));
-        requirement.setValue(new StringFieldModel("subtype", "requirement_folder"));
-        requirement.setValue(new ReferenceFieldModel("parent", getRequirementsRoot()));
+        EntityModel requirement = new EntityModel(Constants.TYPE, Constants.Requirement.TYPE);
+        requirement.setValue(new StringFieldModel(Constants.NAME, folderName));
+        requirement.setValue(new StringFieldModel(Constants.SUBTYPE, Constants.Requirement.FOLDER));
+        requirement.setValue(new ReferenceFieldModel(Constants.PARENT, getRequirementsRoot()));
         Entity entity = Entity.getEntityType(requirement);
         OctaneProvider octaneProvider = serviceModule.getOctane();
         Octane octane = octaneProvider.getOctane();
@@ -436,9 +440,8 @@ public abstract class IntegrationTestBase {
     protected List<EntityModel> getTasks() {
         OctaneProvider octaneProvider = serviceModule.getOctane();
         Octane octane = octaneProvider.getOctane();
-        return new ArrayList<>(octane.entityList("tasks").get().execute());
+        return new ArrayList<>(octane.entityList(Constants.TASKS).get().execute());
     }
-
     /**
      * Creates a manual test run
      *
@@ -448,12 +451,12 @@ public abstract class IntegrationTestBase {
      */
     protected EntityModel createManualRun(EntityModel manualTest, String name) {
 
-        EntityModel manualRun = new EntityModel("type", "run");
-        manualRun.setValue(new StringFieldModel("name", "a1"));
-        manualRun.setValue(new StringFieldModel("subtype", "run_manual"));
-        manualRun.setValue(new ReferenceFieldModel("native_status", nativeStatus));
-        manualRun.setValue(new ReferenceFieldModel("release", getRelease()));
-        manualRun.setValue(new ReferenceFieldModel("test", manualTest));
+        EntityModel manualRun = new EntityModel(Constants.TYPE, Constants.ManualRun.RUN);
+        manualRun.setValue(new StringFieldModel(Constants.NAME, Constants.ManualRun.NAME));
+        manualRun.setValue(new StringFieldModel(Constants.SUBTYPE, Constants.ManualRun.SUBTYPE));
+        manualRun.setValue(new ReferenceFieldModel(Constants.NATIVE_STATUS, nativeStatus));
+        manualRun.setValue(new ReferenceFieldModel(Constants.Release.TYPE, getRelease()));
+        manualRun.setValue(new ReferenceFieldModel(Constants.TEST, manualTest));
         Entity entity = Entity.getEntityType(manualRun);
         OctaneProvider octaneProvider = serviceModule.getOctane();
         Octane octane = octaneProvider.getOctane();
@@ -467,9 +470,9 @@ public abstract class IntegrationTestBase {
      * @return the entityModel of the test suite, @null if not created
      */
     protected EntityModel createTestSuite(String name) {
-        EntityModel testSuite = new EntityModel("type", "test");
-        testSuite.setValue(new StringFieldModel("name", name));
-        testSuite.setValue(new StringFieldModel("subtype", "test_suite"));
+        EntityModel testSuite = new EntityModel(Constants.TYPE, Constants.TEST);
+        testSuite.setValue(new StringFieldModel(Constants.NAME, name));
+        testSuite.setValue(new StringFieldModel(Constants.SUBTYPE, Constants.TEST_SUITE));
         Entity entity = Entity.getEntityType(testSuite);
         OctaneProvider octaneProvider = serviceModule.getOctane();
         Octane octane = octaneProvider.getOctane();
@@ -485,12 +488,12 @@ public abstract class IntegrationTestBase {
      * @return the created entityModel of the suite run
      */
     protected EntityModel createTestSuiteRun(EntityModel testSuite, String testSuiteRunName) {
-        EntityModel testSuiteRun = new EntityModel("type", "run");
-        testSuiteRun.setValue(new StringFieldModel("name", testSuiteRunName));
-        testSuiteRun.setValue(new StringFieldModel("subtype", "run_suite"));
-        testSuiteRun.setValue(new ReferenceFieldModel("native_status", nativeStatus));
-        testSuiteRun.setValue(new ReferenceFieldModel("release", getRelease()));
-        testSuiteRun.setValue(new ReferenceFieldModel("test", testSuite));
+        EntityModel testSuiteRun = new EntityModel(Constants.TYPE, Constants.ManualRun.RUN);
+        testSuiteRun.setValue(new StringFieldModel(Constants.NAME, testSuiteRunName));
+        testSuiteRun.setValue(new StringFieldModel(Constants.SUBTYPE, Constants.RUN_SUITE));
+        testSuiteRun.setValue(new ReferenceFieldModel(Constants.NATIVE_STATUS, nativeStatus));
+        testSuiteRun.setValue(new ReferenceFieldModel(Constants.Release.TYPE, getRelease()));
+        testSuiteRun.setValue(new ReferenceFieldModel(Constants.TEST, testSuite));
         Entity entity = Entity.getEntityType(testSuiteRun);
         OctaneProvider octaneProvider = serviceModule.getOctane();
         Octane octane = octaneProvider.getOctane();
@@ -505,9 +508,9 @@ public abstract class IntegrationTestBase {
      * @return the newly created automated test entityModel
      */
     protected EntityModel createAutomatedTest(String testName) {
-        EntityModel automatedTest = new EntityModel("type", "test");
-        automatedTest.setValue(new StringFieldModel("subtype", "test_automated"));
-        automatedTest.setValue(new StringFieldModel("name", testName));
+        EntityModel automatedTest = new EntityModel(Constants.TYPE, Constants.TEST);
+        automatedTest.setValue(new StringFieldModel(Constants.SUBTYPE, Constants.TEST_AUTOMATED));
+        automatedTest.setValue(new StringFieldModel(Constants.NAME, testName));
         Entity entity = Entity.getEntityType(automatedTest);
         OctaneProvider octaneProvider = serviceModule.getOctane();
         Octane octane = octaneProvider.getOctane();
@@ -538,9 +541,9 @@ public abstract class IntegrationTestBase {
      */
     protected void setOwner(EntityModel backlogItem, EntityModel owner) {
         EntityModel updatedEntityModel = new EntityModel();
-        updatedEntityModel.setValue(backlogItem.getValue("id"));
-        updatedEntityModel.setValue(backlogItem.getValue("type"));
-        updatedEntityModel.setValue(new ReferenceFieldModel("owner", owner));
+        updatedEntityModel.setValue(backlogItem.getValue(Constants.ID));
+        updatedEntityModel.setValue(backlogItem.getValue(Constants.TYPE));
+        updatedEntityModel.setValue(new ReferenceFieldModel(Constants.OWNER, owner));
         Entity entity = Entity.getEntityType(updatedEntityModel);
         OctaneProvider octaneProvider = serviceModule.getOctane();
         Octane octane = octaneProvider.getOctane();
@@ -555,9 +558,9 @@ public abstract class IntegrationTestBase {
      */
     protected void setDescription(EntityModel backlogItem, String description) {
         EntityModel updatedEntityModel = new EntityModel();
-        updatedEntityModel.setValue(backlogItem.getValue("id"));
-        updatedEntityModel.setValue(backlogItem.getValue("type"));
-        updatedEntityModel.setValue(new StringFieldModel("description", description));
+        updatedEntityModel.setValue(backlogItem.getValue(Constants.ID));
+        updatedEntityModel.setValue(backlogItem.getValue(Constants.TYPE));
+        updatedEntityModel.setValue(new StringFieldModel(Constants.DESCRIPTION, description));
         Entity entity = Entity.getEntityType(updatedEntityModel);
         OctaneProvider octaneProvider = serviceModule.getOctane();
         Octane octane = octaneProvider.getOctane();
@@ -583,8 +586,8 @@ public abstract class IntegrationTestBase {
     private List<EntityModel> retrieveBacklog() {
         OctaneProvider octaneProvider = serviceModule.getOctane();
         Octane octane = octaneProvider.getOctane();
-        List<EntityModel> workItems = new ArrayList<>(octane.entityList("work_items").get().query(Query.not("subtype", QueryMethod.EqualTo, "work_item_root").build()).execute());
-        List<EntityModel> tests = new ArrayList<>(octane.entityList("tests").get().execute());
+        List<EntityModel> workItems = new ArrayList<>(octane.entityList(Constants.WORK_ITEMS).get().query(Query.not(Constants.SUBTYPE, QueryMethod.EqualTo, Constants.WORK_ITEM_ROOT).build()).execute());
+        List<EntityModel> tests = new ArrayList<>(octane.entityList(Constants.TESTS).get().execute());
         return Stream.concat(workItems.stream(), tests.stream()).collect(Collectors.toList());
 
     }
@@ -597,26 +600,26 @@ public abstract class IntegrationTestBase {
         Query.QueryBuilder workItemsQuery = null;
         Query.QueryBuilder testItemsQuery = null;
         for (EntityModel entityModel : workspaceEntities) {
-            String entityType = entityModel.getValue("type").getValue().toString();
-            if ("work_item".equals(entityType)) {
+            String entityType = entityModel.getValue(Constants.TYPE).getValue().toString();
+            if (Constants.WORK_ITEM.equals(entityType)) {
                 if (workItemsQuery != null) {
-                    workItemsQuery = workItemsQuery.or("id", QueryMethod.EqualTo, entityModel.getValue("id").getValue().toString());
+                    workItemsQuery = workItemsQuery.or(Constants.ID, QueryMethod.EqualTo, entityModel.getValue(Constants.ID).getValue().toString());
                 } else {
-                    workItemsQuery = Query.statement("id", QueryMethod.EqualTo, entityModel.getValue("id").getValue().toString());
+                    workItemsQuery = Query.statement(Constants.ID, QueryMethod.EqualTo, entityModel.getValue(Constants.ID).getValue().toString());
                 }
             }
-            if ("test".equals(entityType)) {
+            if (Constants.TEST.equals(entityType)) {
                 if (testItemsQuery != null) {
-                    testItemsQuery = testItemsQuery.or("id", QueryMethod.EqualTo, entityModel.getValue("id").getValue().toString());
+                    testItemsQuery = testItemsQuery.or(Constants.ID, QueryMethod.EqualTo, entityModel.getValue(Constants.ID).getValue().toString());
                 } else {
-                    testItemsQuery = Query.statement("id", QueryMethod.EqualTo, entityModel.getValue("id").getValue().toString());
+                    testItemsQuery = Query.statement(Constants.ID, QueryMethod.EqualTo, entityModel.getValue(Constants.ID).getValue().toString());
                 }
             }
-            if ("run".equals(entityType)) {
+            if (Constants.ManualRun.RUN.equals(entityType)) {
                 if (testItemsQuery != null) {
-                    testItemsQuery = testItemsQuery.or("id", QueryMethod.EqualTo, entityModel.getValue("id").getValue().toString());
+                    testItemsQuery = testItemsQuery.or(Constants.ID, QueryMethod.EqualTo, entityModel.getValue(Constants.ID).getValue().toString());
                 } else {
-                    testItemsQuery = Query.statement("id", QueryMethod.EqualTo, entityModel.getValue("id").getValue().toString());
+                    testItemsQuery = Query.statement(Constants.ID, QueryMethod.EqualTo, entityModel.getValue(Constants.ID).getValue().toString());
                 }
             }
         }
@@ -627,9 +630,9 @@ public abstract class IntegrationTestBase {
             octaneBuilder.workSpace(connectionSettingsProvider.getConnectionSettings().getWorkspaceId());
             Octane octane = octaneBuilder.Server(connectionSettingsProvider.getConnectionSettings().getBaseUrl()).build();
             if (testItemsQuery != null)
-                octane.entityList("tests").delete().query(testItemsQuery.build()).execute();
+                octane.entityList(Constants.TESTS).delete().query(testItemsQuery.build()).execute();
             if (workItemsQuery != null)
-                octane.entityList("work_items").delete().query(workItemsQuery.build()).execute();
+                octane.entityList(Constants.WORK_ITEMS).delete().query(workItemsQuery.build()).execute();
         }
     }
 
@@ -655,13 +658,13 @@ public abstract class IntegrationTestBase {
     }
 
     protected boolean compareEntities(EntityModel entity1, EntityModel entity2) {
-        return (entity1.getValue("id").getValue().toString().equals(entity2.getValue("id").getValue().toString()));
+        return (entity1.getValue("id").getValue().toString().equals(entity2.getValue(Constants.ID).getValue().toString()));
     }
 
     protected EntityModel findRequirementById(long id) {
         List<EntityModel> requirements = getRequirements();
         for (EntityModel entityModel : requirements) {
-            if (Long.parseLong(entityModel.getValue("id").getValue().toString()) == id) {
+            if (Long.parseLong(entityModel.getValue(Constants.ID).getValue().toString()) == id) {
                 return entityModel;
             }
         }
@@ -671,7 +674,7 @@ public abstract class IntegrationTestBase {
     private EntityModel getRequirementsRoot() {
         List<EntityModel> requirements = getRequirements();
         for (EntityModel entityModel : requirements) {
-            if ("requirement_root".equals(entityModel.getValue("subtype").getValue().toString())) {
+            if (Constants.REQUIREMENT_ROOT.equals(entityModel.getValue(Constants.SUBTYPE).getValue().toString())) {
                 return entityModel;
             }
         }

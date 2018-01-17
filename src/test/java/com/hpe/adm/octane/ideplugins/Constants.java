@@ -1,7 +1,5 @@
 package com.hpe.adm.octane.ideplugins;
 
-import sun.security.provider.PolicySpiFile;
-
 public class Constants {
 
     public static final String SHARED_SPACE = "/api/shared_spaces/";
@@ -30,6 +28,7 @@ public class Constants {
     public static final String RUN_SUITE = "run_suite";
     public static final String TEST_AUTOMATED = "test_automated";
     public static final String OWNER = "owner";
+    public static final String WORK_ITEM = "work_item";
     public static final String WORK_ITEMS = "work_items";
     public static final String WORK_ITEM_ROOT = "work_item_root";
 
