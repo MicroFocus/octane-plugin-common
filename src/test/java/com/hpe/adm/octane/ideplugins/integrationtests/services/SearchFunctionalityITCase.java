@@ -16,8 +16,6 @@ import java.util.stream.Stream;
 
 
 public class SearchFunctionalityITCase extends IntegrationTestBase {
-    @Inject
-    private EntitySearchService searchService;
 
     private List<EntityModel> createSearchableEntities() {
         List<EntityModel> entities = new ArrayList<>();

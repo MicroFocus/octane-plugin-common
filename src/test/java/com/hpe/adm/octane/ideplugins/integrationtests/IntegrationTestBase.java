@@ -40,15 +40,12 @@ import com.hpe.adm.octane.ideplugins.services.nonentity.EntitySearchService;
 import com.hpe.adm.octane.ideplugins.services.nonentity.OctaneVersionService;
 import com.hpe.adm.octane.ideplugins.services.util.ClientType;
 import com.hpe.adm.octane.ideplugins.services.util.OctaneVersion;
-import com.sun.jndi.cosnaming.CNCtx;
-import com.sun.xml.internal.bind.v2.runtime.reflect.opt.Const;
 import org.json.JSONArray;
 import org.json.JSONObject;
 import org.junit.Before;
 import java.lang.annotation.Annotation;
 import java.time.LocalDateTime;
 import java.util.*;
-import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
@@ -69,6 +66,8 @@ public abstract class IntegrationTestBase {
     protected ConnectionSettingsProvider connectionSettingsProvider;
     private ServiceModule serviceModule;
     private EntityModel nativeStatus;
+
+    protected enum Octane_Version {OLD_VERSION, MIDDLE_VERSION, NEW_VERSION};
 
     /**
      * Sets up a context needed for the tests, the context is derived from the annotations set the
@@ -117,10 +116,17 @@ public abstract class IntegrationTestBase {
         }
 
         nativeStatus = new EntityModel(Constants.TYPE, Constants.NativeStatus.NATIVE_STATUS_TYPE_VALUE);
-        if (isNewerOctane())
-            nativeStatus.setValue(new StringFieldModel(Constants.ID, Constants.NativeStatus.NATIVE_STATUS_NEW_ID));
-        else
-            nativeStatus.setValue(new StringFieldModel(Constants.ID, Constants.NativeStatus.NATIVE_STATUS_OLD_ID));
+        switch (getOctaneVersion()){
+            case OLD_VERSION: {
+                nativeStatus.setValue(new StringFieldModel(Constants.ID, Constants.NativeStatus.NATIVE_STATUS_OLD_ID));
+            }
+            case MIDDLE_VERSION: {
+                nativeStatus.setValue(new StringFieldModel(Constants.ID, Constants.NativeStatus.NATIVE_STATUS_NEW_ID));
+            }
+            case NEW_VERSION: {
+                nativeStatus.setValue(new StringFieldModel(Constants.ID, Constants.NativeStatus.NATIVE_STATUS_RUN_ID));
+            }
+        }
 
         createRelease();
     }
@@ -166,7 +172,6 @@ public abstract class IntegrationTestBase {
         try {
             response = octaneHttpClient.execute(postNewWorkspaceRequest);
         } catch (Exception e) {
-            //logger.error("Error while trying to get the response when creating a new workspace!");
             fail(e.toString());
         }
         JSONObject responseJson = new JSONObject(response.getContent());
@@ -193,7 +198,6 @@ public abstract class IntegrationTestBase {
         try {
             response = octaneHttpClient.execute(getAllWorkspacesRequest);
         } catch (Exception e) {
-            //logger.debug("Exception while trying to get all the workspaces");
             fail(e.toString());
         }
         JSONObject responseJson = new JSONObject(response.getContent());
@@ -258,7 +262,7 @@ public abstract class IntegrationTestBase {
         fields.add(new StringFieldModel(Constants.User.PASSWORD, Constants.User.PASSWORD_VALUE));
         fields.add(new MultiReferenceFieldModel(Constants.ROLES, Collections.singletonList(roles.get(0))));
 
-        if (!isNewerOctane()) {
+        if (getOctaneVersion()==Octane_Version.MIDDLE_VERSION) {
             fields.add(new StringFieldModel(Constants.User.PHONE, Constants.User.PHONE_NR));
         }
 
@@ -341,13 +345,19 @@ public abstract class IntegrationTestBase {
     private EntityModel getRelease() {
         OctaneProvider octaneProvider = serviceModule.getOctane();
         Octane octane = octaneProvider.getOctane();
-        return octane.entityList(Constants.Release.TYPE).get().execute().iterator().next();
+        return octane.entityList(Constants.Release.RELEASES).get().execute().iterator().next();
     }
 
-    protected boolean isNewerOctane() {
+    protected Octane_Version getOctaneVersion() {
         OctaneVersion version = versionService.getOctaneVersion();
-
-        return (OctaneVersion.compare(version, OctaneVersion.Operation.HIGHER, OctaneVersion.EVERTON_P3));
+        Octane_Version returnVersion =  Octane_Version.OLD_VERSION;;
+        if((OctaneVersion.compare(version, OctaneVersion.Operation.HIGHER, OctaneVersion.GENT_P3))){
+            returnVersion = Octane_Version.NEW_VERSION;
+        }
+        if((OctaneVersion.compare(version, OctaneVersion.Operation.HIGHER, OctaneVersion.EVERTON_P3))){
+            returnVersion = Octane_Version.MIDDLE_VERSION;
+        }
+        return returnVersion;
     }
 
     private void createRelease() {
@@ -363,7 +373,7 @@ public abstract class IntegrationTestBase {
         releaseJson.put(Constants.Release.START_DATE, localDateTImeNow.toString() + "Z");
         releaseJson.put(Constants.Release.END_DATE, localDateTImeNow.toString() + "Z");
         JSONObject agileTypeJson = new JSONObject();
-        if (isNewerOctane()) {
+        if (getOctaneVersion()!=Octane_Version.OLD_VERSION) {
             agileTypeJson.put(Constants.ID, Constants.AgileType.NEW_ID);
         } else {
             agileTypeJson.put(Constants.ID, Constants.AgileType.OLD_ID);
@@ -419,7 +429,7 @@ public abstract class IntegrationTestBase {
         requirement.setValue(new StringFieldModel(Constants.NAME, requirementName));
         requirement.setValue(new StringFieldModel(Constants.SUBTYPE, Constants.Requirement.DOCUMENT));
         requirement.setValue(new ReferenceFieldModel(Constants.PARENT, parent));
-        requirement.setValue(new ReferenceFieldModel(Constants.PARENT, phase));
+        requirement.setValue(new ReferenceFieldModel(Constants.PHASE, phase));
         Entity entity = Entity.getEntityType(requirement);
         OctaneProvider octaneProvider = serviceModule.getOctane();
         Octane octane = octaneProvider.getOctane();
@@ -450,9 +460,8 @@ public abstract class IntegrationTestBase {
      * @return the entityModel of the run
      */
     protected EntityModel createManualRun(EntityModel manualTest, String name) {
-
         EntityModel manualRun = new EntityModel(Constants.TYPE, Constants.ManualRun.RUN);
-        manualRun.setValue(new StringFieldModel(Constants.NAME, Constants.ManualRun.NAME));
+        manualRun.setValue(new StringFieldModel(Constants.NAME, name));
         manualRun.setValue(new StringFieldModel(Constants.SUBTYPE, Constants.ManualRun.SUBTYPE));
         manualRun.setValue(new ReferenceFieldModel(Constants.NATIVE_STATUS, nativeStatus));
         manualRun.setValue(new ReferenceFieldModel(Constants.Release.TYPE, getRelease()));
@@ -460,7 +469,16 @@ public abstract class IntegrationTestBase {
         Entity entity = Entity.getEntityType(manualRun);
         OctaneProvider octaneProvider = serviceModule.getOctane();
         Octane octane = octaneProvider.getOctane();
-        return octane.entityList(entity.getApiEntityName()).create().entities(Collections.singletonList(manualRun)).execute().iterator().next();
+        try{
+            return octane.entityList(entity.getApiEntityName()).create().entities(Collections.singletonList(manualRun)).execute().iterator().next();
+        } catch (Exception e) {
+            manualRun.removeValue(Constants.NATIVE_STATUS);
+            EntityModel newNativeStatus = nativeStatus;
+            newNativeStatus.removeValue(Constants.ID);
+            newNativeStatus.setValue(new StringFieldModel(Constants.ID, Constants.NativeStatus.NATIVE_STATUS_RUN_ID));
+            manualRun.setValue(new ReferenceFieldModel(Constants.NATIVE_STATUS, newNativeStatus));
+            return octane.entityList(entity.getApiEntityName()).create().entities(Collections.singletonList(manualRun)).execute().iterator().next();
+        }
     }
 
     /**

@@ -62,6 +62,7 @@ public class Constants {
         String NATIVE_STATUS_TYPE_VALUE = "list_node";
         String NATIVE_STATUS_NEW_ID = "1094";
         String NATIVE_STATUS_OLD_ID = "1091";
+        String NATIVE_STATUS_RUN_ID = "list_node.run_native_status.not_completed";
     }
 
     public interface User {

@@ -11,7 +11,7 @@ public class RequirementsITCase extends IntegrationTestBase {
 
     @Test
     public void testCreateRequirement() {
-        if (isNewerOctane()) {
+        if (getOctaneVersion()!=Octane_Version.OLD_VERSION) {
             EntityModel requirementFolder = createRequirementFolder("folder " + UUID.randomUUID());
             EntityModel requirement = createRequirement("requirement " + UUID.randomUUID().toString(), requirementFolder);
             EntityModel createdRequirement = findRequirementById(Long.parseLong(requirement.getValue("id").getValue().toString()));
@@ -21,7 +21,7 @@ public class RequirementsITCase extends IntegrationTestBase {
 
     @Test
     public void testSearchRequirement() {
-        if (isNewerOctane()) {
+        if (getOctaneVersion()!=Octane_Version.OLD_VERSION) {
             EntityModel requirementFolder = createRequirementFolder("folder" + UUID.randomUUID());
             EntityModel entityModel = createRequirement("requirement " + UUID.randomUUID().toString(), requirementFolder);
             String descriptionText = UUID.randomUUID().toString();

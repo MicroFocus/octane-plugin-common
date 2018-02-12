@@ -23,6 +23,7 @@ public class OctaneVersion implements Comparable<OctaneVersion> {
     public static final OctaneVersion FENER_P1 = new OctaneVersion("12.55.5");
     public static final OctaneVersion FENER_P2 = new OctaneVersion("12.55.6");
     public static final OctaneVersion FENER_P3 = new OctaneVersion("12.55.7");
+    public static final OctaneVersion GENT_P3 = new OctaneVersion("12.55.12");
     private String almVersion;
     private Integer octaneVersion;
     private Integer buildNumber;
