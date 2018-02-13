@@ -84,19 +84,23 @@ public class MetadataService {
     }
 
     public Collection<FieldMetadata> getVisibleFields(Entity entityType){
+        if (cache == null) {
+            cache = new ConcurrentHashMap<>();
+            init();
+        }
         ConnectionSettings connectionSettings = connectionSettingsProvider.getConnectionSettings();
         OctaneHttpClient httpClient = httpClientProvider.geOctaneHttpClient();
         if (null == httpClient) {
             throw new ServiceRuntimeException("Failed to authenticate with current connection settings");
         }
         OctaneHttpResponse response;
-        URIBuilder uriBuilder = OctaneUrlBuilder.buildOctaneUri(connectionSettings, "metadata_fields");
+        URIBuilder uriBuilder = OctaneUrlBuilder.buildOctaneUri(connectionSettings, "metadata/fields");
         try {
             uriBuilder.setParameters(new BasicNameValuePair("fields", "is_user_defined,label,subtype,name,id"),
-                    new BasicNameValuePair("limit", "111"),
+                    new BasicNameValuePair("limit", "100"),
                     new BasicNameValuePair("offset", "0"),
                     new BasicNameValuePair("order_by", "logical_name"),
-                    new BasicNameValuePair("query", createQueryForMultipleValues("entity_type", entityType.getSubtypeName().toString())),
+                    new BasicNameValuePair("query", createQueryForMultipleValues("entity_name", "defect")),
                     new BasicNameValuePair("visible_in_ui","true"));
         } catch (UnsupportedEncodingException e) {
             e.printStackTrace();
@@ -125,7 +129,9 @@ public class MetadataService {
         JSONArray jsonDataArr = jsonObj.getJSONArray("data");
         Collection<FieldMetadata> fieldsMetadata = new ArrayList();
         IntStream.range(0, jsonDataArr.length()).forEach((i) -> {
-            fieldsMetadata.add((new Gson()).fromJson(jsonDataArr.getJSONObject(i).toString(), FieldMetadata.class));
+            JSONObject obj = jsonDataArr.getJSONObject(i);
+            if(obj.getBoolean("visible_in_ui"))
+                fieldsMetadata.add((new Gson()).fromJson(obj.toString(), FieldMetadata.class));
         });
         return fieldsMetadata;
     }
