@@ -13,6 +13,7 @@
 
 package com.hpe.adm.octane.ideplugins.services;
 
+import com.google.gson.Gson;
 import com.google.inject.Inject;
 import com.hpe.adm.nga.sdk.Octane;
 import com.hpe.adm.nga.sdk.metadata.FieldMetadata;
@@ -33,6 +34,7 @@ import org.apache.http.client.utils.URIBuilder;
 import org.apache.http.message.BasicNameValuePair;
 import org.json.JSONArray;
 import org.json.JSONObject;
+import org.json.JSONTokener;
 
 import java.io.UnsupportedEncodingException;
 import java.net.URISyntaxException;
@@ -40,6 +42,7 @@ import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.function.Function;
 import java.util.stream.Collectors;
+import java.util.stream.IntStream;
 
 import static com.hpe.adm.octane.ideplugins.services.util.Util.createQueryForMultipleValues;
 
@@ -108,7 +111,7 @@ public class MetadataService {
         response = httpClient.execute(request);
         List<FieldMetadata> fields = new ArrayList<>();
         if (!cache.containsKey(entityType)) {
-            fields = new ArrayList<>();
+            fields = (List<FieldMetadata>) getFieldMetadataFromJSON(response.getContent());
             cache.put(entityType, fields);
         } else {
             fields = (List<FieldMetadata>) cache.get(entityType);
@@ -116,9 +119,15 @@ public class MetadataService {
         return fields;
     }
 
-    private Collection<FieldMetadata> getFieldMetadataFromJSON(JSONObject fieldsData){
-        //TODO extract the field metadata from the json object
-        return new ArrayList<>();
+    private Collection<FieldMetadata> getFieldMetadataFromJSON(String fieldsJSON){
+        JSONTokener tokener = new JSONTokener(fieldsJSON);
+        JSONObject jsonObj = new JSONObject(tokener);
+        JSONArray jsonDataArr = jsonObj.getJSONArray("data");
+        Collection<FieldMetadata> fieldsMetadata = new ArrayList();
+        IntStream.range(0, jsonDataArr.length()).forEach((i) -> {
+            fieldsMetadata.add((new Gson()).fromJson(jsonDataArr.getJSONObject(i).toString(), FieldMetadata.class));
+        });
+        return fieldsMetadata;
     }
 
     public boolean hasFields(Entity entityType, String... fieldNames) {
