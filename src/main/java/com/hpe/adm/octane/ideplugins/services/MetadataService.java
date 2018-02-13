@@ -30,6 +30,7 @@ import com.hpe.adm.octane.ideplugins.services.util.OctaneSystemDefaultForms;
 import com.hpe.adm.octane.ideplugins.services.util.OctaneUrlBuilder;
 import com.hpe.adm.octane.ideplugins.services.util.Util;
 import org.apache.http.client.utils.URIBuilder;
+import org.apache.http.message.BasicNameValuePair;
 import org.json.JSONArray;
 import org.json.JSONObject;
 
@@ -77,6 +78,47 @@ public class MetadataService {
             fields = cache.get(entityType);
         }
         return fields;
+    }
+
+    public Collection<FieldMetadata> getVisibleFields(Entity entityType){
+        ConnectionSettings connectionSettings = connectionSettingsProvider.getConnectionSettings();
+        OctaneHttpClient httpClient = httpClientProvider.geOctaneHttpClient();
+        if (null == httpClient) {
+            throw new ServiceRuntimeException("Failed to authenticate with current connection settings");
+        }
+        OctaneHttpResponse response;
+        URIBuilder uriBuilder = OctaneUrlBuilder.buildOctaneUri(connectionSettings, "metadata_fields");
+        try {
+            uriBuilder.setParameters(new BasicNameValuePair("fields", "is_user_defined,label,subtype,name,id"),
+                    new BasicNameValuePair("limit", "111"),
+                    new BasicNameValuePair("offset", "0"),
+                    new BasicNameValuePair("order_by", "logical_name"),
+                    new BasicNameValuePair("query", createQueryForMultipleValues("entity_type", entityType.getSubtypeName().toString())),
+                    new BasicNameValuePair("visible_in_ui","true"));
+        } catch (UnsupportedEncodingException e) {
+            e.printStackTrace();
+        }
+
+        OctaneHttpRequest request = null;
+        try {
+            request = new OctaneHttpRequest.GetOctaneHttpRequest(uriBuilder.build().toASCIIString());
+        } catch (URISyntaxException e) {
+            e.printStackTrace();
+        }
+        response = httpClient.execute(request);
+        List<FieldMetadata> fields = new ArrayList<>();
+        if (!cache.containsKey(entityType)) {
+            fields = new ArrayList<>();
+            cache.put(entityType, fields);
+        } else {
+            fields = (List<FieldMetadata>) cache.get(entityType);
+        }
+        return fields;
+    }
+
+    private Collection<FieldMetadata> getFieldMetadataFromJSON(JSONObject fieldsData){
+        //TODO extract the field metadata from the json object
+        return new ArrayList<>();
     }
 
     public boolean hasFields(Entity entityType, String... fieldNames) {

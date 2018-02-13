@@ -36,5 +36,10 @@ public class MetadataServiceITCase extends IntegrationTestBase {
         }
     }
 
+    @Test
+    public void testMethodForVisibleFields(){
+        metadataService.getVisibleFields(Entity.DEFECT);
+    }
+
 }
 
