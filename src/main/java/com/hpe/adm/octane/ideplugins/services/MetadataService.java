@@ -96,12 +96,9 @@ public class MetadataService {
         OctaneHttpResponse response;
         URIBuilder uriBuilder = OctaneUrlBuilder.buildOctaneUri(connectionSettings, "metadata/fields");
         try {
-            uriBuilder.setParameters(new BasicNameValuePair("fields", "is_user_defined,label,subtype,name,id"),
-                    new BasicNameValuePair("limit", "100"),
-                    new BasicNameValuePair("offset", "0"),
-                    new BasicNameValuePair("order_by", "logical_name"),
-                    new BasicNameValuePair("query", createQueryForMultipleValues("entity_name", "defect")),
-                    new BasicNameValuePair("visible_in_ui","true"));
+            uriBuilder.setParameters(
+                    new BasicNameValuePair("query",
+                            createQueryForMultipleValues("entity_name", entityType.getEntityName())));
         } catch (UnsupportedEncodingException e) {
             e.printStackTrace();
         }

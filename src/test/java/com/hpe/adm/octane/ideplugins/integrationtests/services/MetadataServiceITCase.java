@@ -38,12 +38,12 @@ public class MetadataServiceITCase extends IntegrationTestBase {
 
     @Test
     public void testMethodForVisibleFields(){
-        metadataService.getVisibleFields(Entity.DEFECT).stream().forEach(e-> System.out.println(e.getLabel()));
+        metadataService.getVisibleFields(Entity.USER_STORY).stream().forEach(e-> System.out.println(e.getFieldType()));
     }
 
     @Test
     public void testGetFields(){
-        metadataService.getFields(Entity.DEFECT).stream().forEach(e-> System.out.println(e.getLabel()));
+        metadataService.getFields(Entity.DEFECT.getSubtypeOf()).stream().forEach(e-> System.out.println(e.getLabel()));
     }
 
 }
