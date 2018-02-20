@@ -101,6 +101,7 @@ public class MetadataService {
                             createQueryForMultipleValues("entity_name", entityType.getEntityName())));
         } catch (UnsupportedEncodingException e) {
             e.printStackTrace();
+            return null;
         }
 
         OctaneHttpRequest request = null;
@@ -108,6 +109,7 @@ public class MetadataService {
             request = new OctaneHttpRequest.GetOctaneHttpRequest(uriBuilder.build().toASCIIString());
         } catch (URISyntaxException e) {
             e.printStackTrace();
+            return null;
         }
         response = httpClient.execute(request);
         List<FieldMetadata> fields = new ArrayList<>();
