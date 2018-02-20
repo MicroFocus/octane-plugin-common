@@ -42,6 +42,7 @@ import com.hpe.adm.octane.ideplugins.services.util.ClientType;
 import com.hpe.adm.octane.ideplugins.services.util.OctaneVersion;
 import org.json.JSONArray;
 import org.json.JSONObject;
+import org.junit.After;
 import org.junit.Before;
 import java.lang.annotation.Annotation;
 import java.time.LocalDateTime;
@@ -395,6 +396,18 @@ public abstract class IntegrationTestBase {
             fail(e.toString());
         }
     }
+
+    @After
+    public void deleteRelease(){
+        OctaneProvider octaneProvider = serviceModule.getOctane();
+        Octane octane = octaneProvider.getOctane();
+        octane.entityList(Constants.Release.RELEASES)
+                .delete()
+                .query(
+                        Query.statement(Constants.ID, QueryMethod.EqualTo, getRelease().getValue(Constants.ID).getValue().toString()).build())
+                .execute();
+    }
+
 
     /**
      * Creates a Task
