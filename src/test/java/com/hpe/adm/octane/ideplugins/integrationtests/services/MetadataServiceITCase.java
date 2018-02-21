@@ -14,13 +14,18 @@
 package com.hpe.adm.octane.ideplugins.integrationtests.services;
 
 import com.google.inject.Inject;
+import com.hpe.adm.nga.sdk.metadata.FieldMetadata;
 import com.hpe.adm.octane.ideplugins.integrationtests.IntegrationTestBase;
 import com.hpe.adm.octane.ideplugins.services.MetadataService;
 import com.hpe.adm.octane.ideplugins.services.filtering.Entity;
+import com.hpe.adm.octane.ideplugins.services.util.DefaultEntityFieldsUtil;
 import org.junit.Assert;
 import org.junit.Test;
 
 import java.io.UnsupportedEncodingException;
+import java.util.List;
+import java.util.Set;
+import java.util.stream.Collectors;
 
 public class MetadataServiceITCase extends IntegrationTestBase {
 
@@ -38,12 +43,32 @@ public class MetadataServiceITCase extends IntegrationTestBase {
 
     @Test
     public void testMethodForVisibleFields(){
-        metadataService.getVisibleFields(Entity.USER_STORY).stream().forEach(e-> System.out.println(e.getFieldType()));
+        Set<String> defaltFields = DefaultEntityFieldsUtil.getDefaultFields().get(Entity.USER_STORY);
+        List<FieldMetadata> fieldMetadata =(List) metadataService.getVisibleFields(Entity.USER_STORY);
+        List<String> fields = fieldMetadata.stream().map(FieldMetadata::getName).collect(Collectors.toList());
+        boolean flag = true;
+        for(String fieldName : defaltFields){
+            if(!fields.contains(fieldName)){
+                flag = false;
+                break;
+            }
+        }
+        assert flag;
     }
 
     @Test
     public void testGetFields(){
-        metadataService.getFields(Entity.DEFECT.getSubtypeOf()).stream().forEach(e-> System.out.println(e.getLabel()));
+        Set<String> defaltFields = DefaultEntityFieldsUtil.getDefaultFields().get(Entity.USER_STORY);
+        List<FieldMetadata> fieldMetadata =(List) metadataService.getFields(Entity.USER_STORY);
+        List<String> fields = fieldMetadata.stream().map(FieldMetadata::getName).collect(Collectors.toList());
+        boolean flag = true;
+        for(String fieldName : defaltFields){
+            if(!fields.contains(fieldName)){
+                flag = false;
+                break;
+            }
+        }
+        assert flag;
     }
 
 }
