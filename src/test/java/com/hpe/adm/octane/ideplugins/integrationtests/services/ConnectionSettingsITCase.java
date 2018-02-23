@@ -37,7 +37,7 @@ public class ConnectionSettingsITCase extends IntegrationTestBase {
 
         OctaneHttpClient octaneHttpClient = new GoogleHttpClient(baseUrl);
         try {
-            return octaneHttpClient.authenticate(new SimpleUserAuthentication(username, password, ClientType.HPE_MQM_UI.name()));
+            return octaneHttpClient.authenticate(new SimpleUserAuthentication(username, password, ClientType.HPE_REST_API_TECH_PREVIEW.name()));
         } catch (OctaneException e) {
             String errorMessage = SdkUtil.getMessageFromOctaneException(e);
             return false;
