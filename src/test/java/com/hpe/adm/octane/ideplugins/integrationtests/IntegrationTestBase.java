@@ -417,9 +417,9 @@ public abstract class IntegrationTestBase {
      * @return the built entityModel
      */
     protected EntityModel createTask(EntityModel userStory, String taskName) {
-        EntityModel taskEntityModel = new EntityModel(Constants.TYPE, Constants.TASK);
+        EntityModel taskEntityModel = new EntityModel(Constants.TYPE, Entity.TASK.getEntityName());
         taskEntityModel.setValue(new StringFieldModel(Constants.NAME, taskName));
-        taskEntityModel.setValue(new ReferenceFieldModel(Constants.STORY, userStory));
+        taskEntityModel.setValue(new ReferenceFieldModel(Entity.USER_STORY.getSubtypeName(), userStory));
         Entity entity = Entity.getEntityType(taskEntityModel);
         OctaneProvider octaneProvider = serviceModule.getOctane();
         Octane octane = octaneProvider.getOctane();
@@ -438,9 +438,9 @@ public abstract class IntegrationTestBase {
         phase.setValue(new StringFieldModel(Constants.ID, Constants.Requirement.ID));
         phase.setValue(new StringFieldModel(Constants.NAME, Constants.Requirement.NAME));
         phase.setValue(new StringFieldModel(Constants.LOGICAL_NAME, Constants.Requirement.LOGICAL_NAME));
-        EntityModel requirement = new EntityModel(Constants.TYPE, Constants.Requirement.TYPE);
+        EntityModel requirement = new EntityModel(Constants.TYPE, Entity.REQUIREMENT_BASE_ENTITY.getEntityName());
         requirement.setValue(new StringFieldModel(Constants.NAME, requirementName));
-        requirement.setValue(new StringFieldModel(Constants.SUBTYPE, Constants.Requirement.DOCUMENT));
+        requirement.setValue(new StringFieldModel(Constants.SUBTYPE, Entity.REQUIREMENT.getEntityName()));
         requirement.setValue(new ReferenceFieldModel(Constants.PARENT, parent));
         requirement.setValue(new ReferenceFieldModel(Constants.PHASE, phase));
         Entity entity = Entity.getEntityType(requirement);
@@ -450,7 +450,7 @@ public abstract class IntegrationTestBase {
     }
 
     protected EntityModel createRequirementFolder(String folderName) {
-        EntityModel requirement = new EntityModel(Constants.TYPE, Constants.Requirement.TYPE);
+        EntityModel requirement = new EntityModel(Constants.TYPE, Entity.REQUIREMENT_BASE_ENTITY.getEntityName());
         requirement.setValue(new StringFieldModel(Constants.NAME, folderName));
         requirement.setValue(new StringFieldModel(Constants.SUBTYPE, Constants.Requirement.FOLDER));
         requirement.setValue(new ReferenceFieldModel(Constants.PARENT, getRequirementsRoot()));
@@ -463,7 +463,7 @@ public abstract class IntegrationTestBase {
     protected List<EntityModel> getTasks() {
         OctaneProvider octaneProvider = serviceModule.getOctane();
         Octane octane = octaneProvider.getOctane();
-        return new ArrayList<>(octane.entityList(Constants.TASKS).get().execute());
+        return new ArrayList<>(octane.entityList(Entity.TASK.getApiEntityName()).get().execute());
     }
     /**
      * Creates a manual test run
@@ -473,12 +473,12 @@ public abstract class IntegrationTestBase {
      * @return the entityModel of the run
      */
     protected EntityModel createManualRun(EntityModel manualTest, String name) {
-        EntityModel manualRun = new EntityModel(Constants.TYPE, Constants.ManualRun.RUN);
+        EntityModel manualRun = new EntityModel(Constants.TYPE, Entity.TEST_RUN.getEntityName());
         manualRun.setValue(new StringFieldModel(Constants.NAME, name));
-        manualRun.setValue(new StringFieldModel(Constants.SUBTYPE, Constants.ManualRun.SUBTYPE));
+        manualRun.setValue(new StringFieldModel(Constants.SUBTYPE, Entity.MANUAL_TEST_RUN.getEntityName()));
         manualRun.setValue(new ReferenceFieldModel(Constants.NATIVE_STATUS, nativeStatus));
         manualRun.setValue(new ReferenceFieldModel(Constants.Release.TYPE, getRelease()));
-        manualRun.setValue(new ReferenceFieldModel(Constants.TEST, manualTest));
+        manualRun.setValue(new ReferenceFieldModel(Entity.TEST.getEntityName(), manualTest));
         Entity entity = Entity.getEntityType(manualRun);
         OctaneProvider octaneProvider = serviceModule.getOctane();
         Octane octane = octaneProvider.getOctane();
@@ -501,9 +501,9 @@ public abstract class IntegrationTestBase {
      * @return the entityModel of the test suite, @null if not created
      */
     protected EntityModel createTestSuite(String name) {
-        EntityModel testSuite = new EntityModel(Constants.TYPE, Constants.TEST);
+        EntityModel testSuite = new EntityModel(Constants.TYPE, Entity.TEST.getSubtypeName());
         testSuite.setValue(new StringFieldModel(Constants.NAME, name));
-        testSuite.setValue(new StringFieldModel(Constants.SUBTYPE, Constants.TEST_SUITE));
+        testSuite.setValue(new StringFieldModel(Constants.SUBTYPE, Entity.TEST_SUITE.getSubtypeName()));
         Entity entity = Entity.getEntityType(testSuite);
         OctaneProvider octaneProvider = serviceModule.getOctane();
         Octane octane = octaneProvider.getOctane();
@@ -519,12 +519,12 @@ public abstract class IntegrationTestBase {
      * @return the created entityModel of the suite run
      */
     protected EntityModel createTestSuiteRun(EntityModel testSuite, String testSuiteRunName) {
-        EntityModel testSuiteRun = new EntityModel(Constants.TYPE, Constants.ManualRun.RUN);
+        EntityModel testSuiteRun = new EntityModel(Constants.TYPE, Entity.TEST_RUN.getEntityName());
         testSuiteRun.setValue(new StringFieldModel(Constants.NAME, testSuiteRunName));
-        testSuiteRun.setValue(new StringFieldModel(Constants.SUBTYPE, Constants.RUN_SUITE));
+        testSuiteRun.setValue(new StringFieldModel(Constants.SUBTYPE, Entity.TEST_SUITE_RUN.getEntityName()));
         testSuiteRun.setValue(new ReferenceFieldModel(Constants.NATIVE_STATUS, nativeStatus));
         testSuiteRun.setValue(new ReferenceFieldModel(Constants.Release.TYPE, getRelease()));
-        testSuiteRun.setValue(new ReferenceFieldModel(Constants.TEST, testSuite));
+        testSuiteRun.setValue(new ReferenceFieldModel(Entity.TEST.getEntityName(), testSuite));
         Entity entity = Entity.getEntityType(testSuiteRun);
         OctaneProvider octaneProvider = serviceModule.getOctane();
         Octane octane = octaneProvider.getOctane();
@@ -539,8 +539,8 @@ public abstract class IntegrationTestBase {
      * @return the newly created automated test entityModel
      */
     protected EntityModel createAutomatedTest(String testName) {
-        EntityModel automatedTest = new EntityModel(Constants.TYPE, Constants.TEST);
-        automatedTest.setValue(new StringFieldModel(Constants.SUBTYPE, Constants.TEST_AUTOMATED));
+        EntityModel automatedTest = new EntityModel(Constants.TYPE, Entity.TEST.getEntityName());
+        automatedTest.setValue(new StringFieldModel(Constants.SUBTYPE, Entity.AUTOMATED_TEST.getEntityName()));
         automatedTest.setValue(new StringFieldModel(Constants.NAME, testName));
         Entity entity = Entity.getEntityType(automatedTest);
         OctaneProvider octaneProvider = serviceModule.getOctane();
@@ -617,8 +617,8 @@ public abstract class IntegrationTestBase {
     private List<EntityModel> retrieveBacklog() {
         OctaneProvider octaneProvider = serviceModule.getOctane();
         Octane octane = octaneProvider.getOctane();
-        List<EntityModel> workItems = new ArrayList<>(octane.entityList(Constants.WORK_ITEMS).get().query(Query.not(Constants.SUBTYPE, QueryMethod.EqualTo, Constants.WORK_ITEM_ROOT).build()).execute());
-        List<EntityModel> tests = new ArrayList<>(octane.entityList(Constants.TESTS).get().execute());
+        List<EntityModel> workItems = new ArrayList<>(octane.entityList(Entity.WORK_ITEM.getApiEntityName()).get().query(Query.not(Constants.SUBTYPE, QueryMethod.EqualTo, Constants.WORK_ITEM_ROOT).build()).execute());
+        List<EntityModel> tests = new ArrayList<>(octane.entityList(Entity.TEST.getApiEntityName()).get().execute());
         return Stream.concat(workItems.stream(), tests.stream()).collect(Collectors.toList());
 
     }
@@ -632,21 +632,21 @@ public abstract class IntegrationTestBase {
         Query.QueryBuilder testItemsQuery = null;
         for (EntityModel entityModel : workspaceEntities) {
             String entityType = entityModel.getValue(Constants.TYPE).getValue().toString();
-            if (Constants.WORK_ITEM.equals(entityType)) {
+            if (Entity.WORK_ITEM.getEntityName().equals(entityType)) {
                 if (workItemsQuery != null) {
                     workItemsQuery = workItemsQuery.or(Constants.ID, QueryMethod.EqualTo, entityModel.getValue(Constants.ID).getValue().toString());
                 } else {
                     workItemsQuery = Query.statement(Constants.ID, QueryMethod.EqualTo, entityModel.getValue(Constants.ID).getValue().toString());
                 }
             }
-            if (Constants.TEST.equals(entityType)) {
+            if (Entity.TEST.getEntityName().equals(entityType)) {
                 if (testItemsQuery != null) {
                     testItemsQuery = testItemsQuery.or(Constants.ID, QueryMethod.EqualTo, entityModel.getValue(Constants.ID).getValue().toString());
                 } else {
                     testItemsQuery = Query.statement(Constants.ID, QueryMethod.EqualTo, entityModel.getValue(Constants.ID).getValue().toString());
                 }
             }
-            if (Constants.ManualRun.RUN.equals(entityType)) {
+            if (Entity.TEST_RUN.getEntityName().equals(entityType)) {
                 if (testItemsQuery != null) {
                     testItemsQuery = testItemsQuery.or(Constants.ID, QueryMethod.EqualTo, entityModel.getValue(Constants.ID).getValue().toString());
                 } else {
@@ -661,9 +661,9 @@ public abstract class IntegrationTestBase {
             octaneBuilder.workSpace(connectionSettingsProvider.getConnectionSettings().getWorkspaceId());
             Octane octane = octaneBuilder.Server(connectionSettingsProvider.getConnectionSettings().getBaseUrl()).build();
             if (testItemsQuery != null)
-                octane.entityList(Constants.TESTS).delete().query(testItemsQuery.build()).execute();
+                octane.entityList(Entity.TEST.getApiEntityName()).delete().query(testItemsQuery.build()).execute();
             if (workItemsQuery != null)
-                octane.entityList(Constants.WORK_ITEMS).delete().query(workItemsQuery.build()).execute();
+                octane.entityList(Entity.WORK_ITEM.getApiEntityName()).delete().query(workItemsQuery.build()).execute();
         }
     }
 

@@ -12,9 +12,6 @@ public class Constants {
     public static final String ROLES = "roles";
     public static final String WORKSPACE_ENITY_NAME = "workspace_users";
     public static final String RELEASES = "/releases";
-    public static final String TASK = "task";
-    public static final String TASKS = "tasks";
-    public static final String STORY = "story";
     public static final String REQUIREMENTS = "requirements";
     public static final String REQUIREMENT_ROOT = "requirement_root";
     public static final String PHASE = "phase";
@@ -22,30 +19,18 @@ public class Constants {
     public static final String SUBTYPE = "subtype";
     public static final String PARENT = "parent";
     public static final String NATIVE_STATUS = "native_status";
-    public static final String TEST = "test";
-    public static final String TESTS = "tests";
-    public static final String TEST_SUITE = "test_suite";
-    public static final String RUN_SUITE = "run_suite";
-    public static final String TEST_AUTOMATED = "test_automated";
     public static final String OWNER = "owner";
-    public static final String WORK_ITEM = "work_item";
-    public static final String WORK_ITEMS = "work_items";
     public static final String WORK_ITEM_ROOT = "work_item_root";
 
-    public interface ManualRun {
-        String RUN = "run";
-        String NAME = "test_manual_run";
-        String SUBTYPE = "run_manual";
-    }
+
 
 
     public interface Requirement {
         String ID = "phase.requirement_document.draft";
         String NAME = "Draft";
         String LOGICAL_NAME = "phase.requirement_document.draft";
-        String TYPE = "requirement";
-        String DOCUMENT = "requirement_document";
         String FOLDER = "requirement_folder";
+
     }
 
     public interface Workspace {
@@ -68,7 +53,7 @@ public class Constants {
     public interface User {
         String FULL_NAME = "full_name";
         String LAST_NAME = "last_name";
-        String USER_TYPE = "workspace_user";
+        String USER_TYPE = "workspace_users";
         String FIRST_NAME = "first_name";
         String EMAIL = "email";
         String EMAIL_DOMAIN = "@hpe.com";
