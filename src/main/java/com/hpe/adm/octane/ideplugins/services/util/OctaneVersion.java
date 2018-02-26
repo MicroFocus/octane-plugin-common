@@ -28,10 +28,10 @@ public class OctaneVersion implements Comparable<OctaneVersion> {
     private Integer octaneVersion;
     private Integer buildNumber;
 
-    public OctaneVersion(String versionString){
+    public OctaneVersion(String versionString) {
         String[] parts = versionString.split("\\.");
 
-        if(!(parts.length == 3 || parts.length == 4)){
+        if (!(parts.length == 3 || parts.length == 4)) {
             throw new RuntimeException("Unable to parse octane version from string: " + versionString);
         }
 
@@ -45,10 +45,10 @@ public class OctaneVersion implements Comparable<OctaneVersion> {
 
             octaneVersion = Integer.parseInt(parts[2]);
 
-            if(parts.length == 4){
+            if (parts.length == 4) {
                 buildNumber = Integer.parseInt(parts[3]);
             }
-        } catch (NumberFormatException ex){
+        } catch (NumberFormatException ex) {
             throw new RuntimeException("Unable to parse octane version from string: " + versionString, ex);
         }
     }
@@ -61,7 +61,7 @@ public class OctaneVersion implements Comparable<OctaneVersion> {
         return octaneVersion;
     }
 
-    public Integer getBuildNumber(){
+    public Integer getBuildNumber() {
         return buildNumber;
     }
 
@@ -91,29 +91,48 @@ public class OctaneVersion implements Comparable<OctaneVersion> {
         if (this == octaneVersion) return 0;
 
         int compareAlmVersion = this.almVersion.compareTo(octaneVersion.getAlmVersion());
-        if(compareAlmVersion != 0){
+        if (compareAlmVersion != 0) {
             return compareAlmVersion;
         }
 
         int compareOctaneVersion = this.octaneVersion.compareTo(octaneVersion.getOctaneVersion());
-        if(compareOctaneVersion != 0){
+        if (compareOctaneVersion != 0) {
             return compareOctaneVersion;
         }
 
         return nullSafeComparator(buildNumber, octaneVersion.buildNumber);
     }
 
-    public enum Operation{
-        LOWER, LOWER_EQ, EQ, HIGHER_EQ, HIGHER
+
+    public enum Operation {
+        LOWER, LOWER_EQ, EQ, HIGHER_EQ, HIGHER;
+
     }
 
-    public static boolean compare(OctaneVersion v1, Operation op, OctaneVersion v2){
+    public static boolean isBetween(OctaneVersion version,OctaneVersion lowerLimit,OctaneVersion upperLimit) {
+        return isBetween(version, lowerLimit, upperLimit, true);
+    }
+
+    public static boolean isBetween(OctaneVersion version,OctaneVersion lowerLimit,OctaneVersion upperLimit, boolean inclusive) {
+        int comparisonWithLower = version.compareTo(lowerLimit);
+        int comparisonWithUpper = version.compareTo(upperLimit);
+
+        //check if the version is either of the limits if the comparison is inclusive
+        if((comparisonWithLower == 0 || comparisonWithUpper == 0) && inclusive)
+            return true;
+
+        if(comparisonWithLower >= 0 && comparisonWithUpper <= 0) return true;
+
+        return false;
+    }
+
+    public static boolean compare(OctaneVersion v1, Operation op, OctaneVersion v2) {
         int comparison = v1.compareTo(v2);
-        if(comparison <  0 && Operation.LOWER == op) return true;
-        if(comparison <= 0 && Operation.LOWER_EQ == op) return true;
-        if(comparison == 0 && Operation.EQ == op) return true;
-        if(comparison >= 0 && Operation.HIGHER_EQ == op) return true;
-        if(comparison >  0 && Operation.HIGHER == op) return true;
+        if (comparison < 0 && Operation.LOWER == op) return true;
+        if (comparison <= 0 && Operation.LOWER_EQ == op) return true;
+        if (comparison == 0 && Operation.EQ == op) return true;
+        if (comparison >= 0 && Operation.HIGHER_EQ == op) return true;
+        if (comparison > 0 && Operation.HIGHER == op) return true;
         return false;
     }
 
@@ -124,7 +143,7 @@ public class OctaneVersion implements Comparable<OctaneVersion> {
         sb.append(almVersion);
         sb.append(".");
         sb.append(octaneVersion);
-        if(buildNumber != null) {
+        if (buildNumber != null) {
             sb.append(".");
             sb.append(buildNumber);
         }
@@ -132,7 +151,7 @@ public class OctaneVersion implements Comparable<OctaneVersion> {
         return sb.toString();
     }
 
-    public String getVersionString(){
+    public String getVersionString() {
         return almVersion + "." + octaneVersion;
     }
 
@@ -146,7 +165,7 @@ public class OctaneVersion implements Comparable<OctaneVersion> {
         return one.compareTo(two);
     }
 
-    public void discardBuildNumber(){
+    public void discardBuildNumber() {
         buildNumber = null;
     }
 }
