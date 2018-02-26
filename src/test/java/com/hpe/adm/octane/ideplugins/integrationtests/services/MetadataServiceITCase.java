@@ -43,11 +43,11 @@ public class MetadataServiceITCase extends IntegrationTestBase {
 
     @Test
     public void testMethodForVisibleFields(){
-        Set<String> defaltFields = DefaultEntityFieldsUtil.getDefaultFields().get(Entity.USER_STORY);
+        Set<String> defaultFields = DefaultEntityFieldsUtil.getDefaultFields().get(Entity.USER_STORY);
         List<FieldMetadata> fieldMetadata =(List) metadataService.getVisibleFields(Entity.USER_STORY);
-        List<String> fields = fieldMetadata.stream().map(FieldMetadata::getName).collect(Collectors.toList());
+        Set<String> fields = fieldMetadata.stream().map(FieldMetadata::getName).collect(Collectors.toSet());
         boolean flag = true;
-        for(String fieldName : defaltFields){
+        for(String fieldName : defaultFields){
             if(!fields.contains(fieldName)){
                 flag = false;
                 break;
@@ -58,11 +58,11 @@ public class MetadataServiceITCase extends IntegrationTestBase {
 
     @Test
     public void testGetFields(){
-        Set<String> defaltFields = DefaultEntityFieldsUtil.getDefaultFields().get(Entity.USER_STORY);
+        Set<String> defaultFields = DefaultEntityFieldsUtil.getDefaultFields().get(Entity.USER_STORY);
         List<FieldMetadata> fieldMetadata =(List) metadataService.getFields(Entity.USER_STORY);
-        List<String> fields = fieldMetadata.stream().map(FieldMetadata::getName).collect(Collectors.toList());
+        Set<String> fields = fieldMetadata.stream().map(FieldMetadata::getName).collect(Collectors.toSet());
         boolean flag = true;
-        for(String fieldName : defaltFields){
+        for(String fieldName : defaultFields){
             if(!fields.contains(fieldName)){
                 flag = false;
                 break;
