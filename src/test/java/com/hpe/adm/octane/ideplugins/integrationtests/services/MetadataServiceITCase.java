@@ -23,9 +23,8 @@ import org.junit.Assert;
 import org.junit.Test;
 
 import java.io.UnsupportedEncodingException;
+import java.util.Collection;
 import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
 import java.util.stream.Collectors;
 
 public class MetadataServiceITCase extends IntegrationTestBase {
@@ -44,32 +43,16 @@ public class MetadataServiceITCase extends IntegrationTestBase {
 
     @Test
     public void testMethodForVisibleFields(){
-        Set<String> defaultFields = DefaultEntityFieldsUtil.getDefaultFields().get(Entity.USER_STORY);
-        List<FieldMetadata> fieldMetadata =(List) metadataService.getVisibleFields(Entity.USER_STORY);
-        Set<String> fields = fieldMetadata.stream().map(FieldMetadata::getName).collect(Collectors.toCollection(HashSet::new));
-        boolean flag = true;
-        for(String fieldName : defaultFields){
-            if(!fields.contains(fieldName)){
-                flag = false;
-                break;
-            }
-        }
-        assert flag;
+        Collection<String> defaultFields = DefaultEntityFieldsUtil.getDefaultFields().get(Entity.USER_STORY);
+        Collection<String> returnedFields = metadataService.getVisibleFields(Entity.USER_STORY).stream().map(FieldMetadata::getName).collect(Collectors.toCollection(HashSet::new));
+        assert defaultFields.stream().allMatch(returnedFields::contains);
     }
 
     @Test
     public void testGetFields(){
-        Set<String> defaultFields = DefaultEntityFieldsUtil.getDefaultFields().get(Entity.USER_STORY);
-        List<FieldMetadata> fieldMetadata =(List) metadataService.getFields(Entity.USER_STORY);
-        Set<String> fields = fieldMetadata.stream().map(FieldMetadata::getName).collect(Collectors.toCollection(HashSet::new));
-        boolean flag = true;
-        for(String fieldName : defaultFields){
-            if(!fields.contains(fieldName)){
-                flag = false;
-                break;
-            }
-        }
-        assert flag;
+        Collection<String> defaultFields = DefaultEntityFieldsUtil.getDefaultFields().get(Entity.USER_STORY);
+        Collection<String> returnedFields = metadataService.getFields(Entity.USER_STORY).stream().map(FieldMetadata::getName).collect(Collectors.toCollection(HashSet::new));
+        assert defaultFields.stream().allMatch(returnedFields::contains);
     }
 
 }
