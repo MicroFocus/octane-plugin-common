@@ -51,6 +51,8 @@ public class CommentService {
         supportedEntities.put(Entity.WORK_ITEM, "owner_work_item");
         supportedEntities.put(Entity.TEST, "owner_test");
         supportedEntities.put(Entity.REQUIREMENT, "owner_requirement");
+        supportedEntities.put(Entity.TEST_RUN, "owner_run");
+
     }
 
     private String getCommentReferenceFieldName(Entity entityType){
@@ -62,7 +64,6 @@ public class CommentService {
         }
         return null;
     }
-
 
     public Collection<EntityModel> getComments(EntityModel entityModel){
         Entity entityType = Entity.getEntityType(entityModel);
