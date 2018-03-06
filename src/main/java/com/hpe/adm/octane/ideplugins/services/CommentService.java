@@ -13,7 +13,6 @@
 
 package com.hpe.adm.octane.ideplugins.services;
 
-
 import java.util.Collection;
 import java.util.HashSet;
 import java.util.Set;
@@ -45,7 +44,7 @@ public class CommentService {
     @Inject
     private UserService userService;
 
-    //Aggregate types include their subtypes when the check is done
+    // Aggregate types include their subtypes when the check is done
     private static final BiMap<Entity, String> supportedEntities = HashBiMap.create();
     static {
         supportedEntities.put(Entity.WORK_ITEM, "owner_work_item");
@@ -55,62 +54,67 @@ public class CommentService {
 
     }
 
-    private String getCommentReferenceFieldName(Entity entityType){
-        if(supportedEntities.keySet().contains(entityType)){
+    private String getCommentReferenceFieldName(Entity entityType) {
+        if (supportedEntities.keySet().contains(entityType)) {
             return supportedEntities.get(entityType);
         }
-        if(entityType.isSubtype() && supportedEntities.keySet().contains(entityType.getSubtypeOf())){
+        if (entityType.isSubtype() && supportedEntities.keySet().contains(entityType.getSubtypeOf())) {
             return supportedEntities.get(entityType.getSubtypeOf());
         }
         return null;
     }
 
-    public Collection<EntityModel> getComments(EntityModel entityModel){
+    public Collection<EntityModel> getComments(EntityModel entityModel) {
         Entity entityType = Entity.getEntityType(entityModel);
         String id = entityModel.getValue("id").getValue().toString();
         return getComments(entityType, id);
     }
 
-    public Collection<EntityModel> getComments(Entity entityType, String id){
-        //Check if comments are supported
+    public Collection<EntityModel> getComments(Entity entityType, String id) {
+        // Check if comments are supported
 
         String referenceFieldName = getCommentReferenceFieldName(entityType);
-        if(referenceFieldName!=null){
+        if (referenceFieldName != null) {
             return getComments(referenceFieldName, id);
         }
 
-        //TODO: atoth: probably better to check features using the sdk metadata service
+        // TODO: atoth: probably better to check features using the sdk metadata
+        // service
         throw new ServiceRuntimeException("Comments not supported for: " + entityType);
     }
 
-    private Collection<EntityModel> getComments(String referenceFieldName, String id){
+    private Collection<EntityModel> getComments(String referenceFieldName, String id) {
         Octane octane = octaneProvider.getOctane();
 
         GetEntities get = octane.entityList(Entity.COMMENT.getApiEntityName()).get();
 
-        Query query =  Query.statement(referenceFieldName, QueryMethod.EqualTo,
-                 Query.statement("id", QueryMethod.EqualTo, id)).build();
+        Query query = Query.statement(referenceFieldName, QueryMethod.EqualTo,
+                Query.statement("id", QueryMethod.EqualTo, id)).build();
 
         return get.query(query)
-                .addOrderBy("creation_time",false)
+                .addOrderBy("creation_time", false)
                 .execute();
     }
 
     /**
      * Add comment to entity
-     * @param entityType {@link Entity}
-     * @param id entity id
-     * @param text should be html
+     * 
+     * @param entityType
+     *            {@link Entity}
+     * @param id
+     *            entity id
+     * @param text
+     *            should be html
      */
-    public void postComment(Entity entityType, String id, String text){
+    public void postComment(Entity entityType, String id, String text) {
         Octane octane = octaneProvider.getOctane();
         String referenceFieldName = getCommentReferenceFieldName(entityType);
 
-        if(referenceFieldName == null){
+        if (referenceFieldName == null) {
             throw new ServiceRuntimeException("Comments not supported for: " + entityType);
         }
 
-        //Create comment entity
+        // Create comment entity
         Set<FieldModel> fields = new HashSet<>();
 
         fields.add(new ReferenceFieldModel("author", userService.getCurrentUser()));
@@ -121,17 +125,17 @@ public class CommentService {
         octane.entityList(
                 Entity.COMMENT.getApiEntityName())
                 .create()
-                .entities(Lists.asList(newComment, new EntityModel[]{}))
+                .entities(Lists.asList(newComment, new EntityModel[] {}))
                 .execute();
     }
 
-    public void postComment(EntityModel entityModel, String text){
+    public void postComment(EntityModel entityModel, String text) {
         Entity entityType = Entity.getEntityType(entityModel);
         String id = entityModel.getValue("id").getValue().toString();
         postComment(entityType, id, text);
     }
 
-    public EntityModel deleteComment(String commentId){
+    public EntityModel deleteComment(String commentId) {
         Octane octane = octaneProvider.getOctane();
 
         return octane.entityList(Entity.COMMENT.getApiEntityName())
@@ -140,8 +144,8 @@ public class CommentService {
                 .execute();
     }
 
-    private EntityModel createOwner(Entity entityType, String id){
-        //Create owner entity (needs id and type)
+    private EntityModel createOwner(Entity entityType, String id) {
+        // Create owner entity (needs id and type)
         Set<FieldModel> ownerFields = new HashSet<>();
         ownerFields.add(new StringFieldModel("id", id));
         String apiEntityType = supportedEntities.inverse().get(getCommentReferenceFieldName(entityType)).getTypeName();
