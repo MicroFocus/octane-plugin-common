@@ -13,6 +13,7 @@
 
 package com.hpe.adm.octane.ideplugins.services;
 
+import com.google.gson.Gson;
 import com.google.inject.Inject;
 import com.hpe.adm.nga.sdk.Octane;
 import com.hpe.adm.nga.sdk.metadata.FieldMetadata;
@@ -30,8 +31,10 @@ import com.hpe.adm.octane.ideplugins.services.util.OctaneSystemDefaultForms;
 import com.hpe.adm.octane.ideplugins.services.util.OctaneUrlBuilder;
 import com.hpe.adm.octane.ideplugins.services.util.Util;
 import org.apache.http.client.utils.URIBuilder;
+import org.apache.http.message.BasicNameValuePair;
 import org.json.JSONArray;
 import org.json.JSONObject;
+import org.json.JSONTokener;
 
 import java.io.UnsupportedEncodingException;
 import java.net.URISyntaxException;
@@ -39,6 +42,7 @@ import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.function.Function;
 import java.util.stream.Collectors;
+import java.util.stream.IntStream;
 
 import static com.hpe.adm.octane.ideplugins.services.util.Util.createQueryForMultipleValues;
 
@@ -79,6 +83,55 @@ public class MetadataService {
         return fields;
     }
 
+    public Collection<FieldMetadata> getVisibleFields(Entity entityType){
+        if (cache == null) {
+            cache = new ConcurrentHashMap<>();
+            init();
+        }
+        ConnectionSettings connectionSettings = connectionSettingsProvider.getConnectionSettings();
+        OctaneHttpClient httpClient = httpClientProvider.geOctaneHttpClient();
+        if (null == httpClient) {
+            throw new ServiceRuntimeException("Failed to authenticate with current connection settings");
+        }
+        OctaneHttpResponse response;
+        URIBuilder uriBuilder = OctaneUrlBuilder.buildOctaneUri(connectionSettings, "metadata/fields");
+        try {
+            uriBuilder.setParameters(
+                    new BasicNameValuePair("query",
+                            createQueryForMultipleValues("entity_name", entityType.getEntityName())));
+        } catch (UnsupportedEncodingException e) {
+            throw new ServiceRuntimeException(e);
+        }
+
+        OctaneHttpRequest request = null;
+        try {
+            request = new OctaneHttpRequest.GetOctaneHttpRequest(uriBuilder.build().toASCIIString());
+        } catch (URISyntaxException e) {
+            throw new ServiceRuntimeException(e);
+        }
+        response = httpClient.execute(request);
+        List<FieldMetadata> fields = new ArrayList<>();
+        if (!cache.containsKey(entityType)) {
+            fields = (List<FieldMetadata>) getFieldMetadataFromJSON(response.getContent());
+            cache.put(entityType, fields);
+        } else {
+            fields = (List<FieldMetadata>) cache.get(entityType);
+        }
+        return fields;
+    }
+    
+    private Collection<FieldMetadata> getFieldMetadataFromJSON(String fieldsJSON){
+        JSONTokener tokener = new JSONTokener(fieldsJSON);
+        JSONObject jsonObj = new JSONObject(tokener);
+        JSONArray jsonDataArr = jsonObj.getJSONArray("data");
+        Collection<FieldMetadata> fieldsMetadata = new ArrayList();
+        IntStream.range(0, jsonDataArr.length()).forEach((i) -> {
+            JSONObject obj = jsonDataArr.getJSONObject(i);
+            if(obj.getBoolean("visible_in_ui"))
+                fieldsMetadata.add((new Gson()).fromJson(obj.toString(), FieldMetadata.class));
+        });
+        return fieldsMetadata;
+    }
     public boolean hasFields(Entity entityType, String... fieldNames) {
         Collection<FieldMetadata> responseFields = getFields(entityType);
 
