@@ -179,7 +179,7 @@ public class Util {
     }
 
     public static String createQueryForMultipleValues(String queryParamName, List<String> queryParamValues) throws UnsupportedEncodingException {
-        return createQueryForMultipleValues(queryParamName, (String[]) queryParamValues.toArray());
+        return createQueryForMultipleValues(queryParamName, queryParamValues.toArray(new String[]{}));
     }
 
     public static List<FormLayout> parseJsonWithFormLayoutData(String responseJson) {
