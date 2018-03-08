@@ -19,7 +19,7 @@ import java.util.List;
 
 public class PredefinedEntityComparator implements Comparator<Entity> {
 
-    public static PredefinedEntityComparator instance = new PredefinedEntityComparator();
+    public static final PredefinedEntityComparator instance = new PredefinedEntityComparator();
 
     private static final List<Entity> predefinedOrder = Arrays.asList(Entity.USER_STORY,
             Entity.QUALITY_STORY,
