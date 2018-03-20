@@ -66,6 +66,22 @@ public class MetadataService {
     private Map<Entity, Collection<FieldMetadata>> cache;
     private Map<Entity, FormLayout> octaneFormsCache;
     private JSONObject udfCache;
+    
+    public FieldMetadata getMetadata(Entity entityType, String fieldName) {
+        Collection<FieldMetadata> allFieldMetadata = getFields(entityType);
+        
+        Optional<FieldMetadata> singleFieldMetadata = 
+            allFieldMetadata
+                .stream()
+                .filter(metadata -> fieldName.equals(metadata.getName()))
+                .findFirst();
+        
+        if(!singleFieldMetadata.isPresent()) {
+            throw new ServiceRuntimeException("Cannot find metadata for field " + fieldName + ", entity " + entityType);
+        } else {
+            return singleFieldMetadata.get();
+        }
+    }
 
     public Collection<FieldMetadata> getFields(Entity entityType) {
         if (cache == null) {
