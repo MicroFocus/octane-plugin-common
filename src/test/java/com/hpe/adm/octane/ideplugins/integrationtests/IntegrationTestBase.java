@@ -252,7 +252,7 @@ public abstract class IntegrationTestBase {
         if (roles.size() == 0) {
             return null;
         }
-        fields.add(new StringFieldModel(Constants.User.FULL_NAME, firstName + lastName));
+
         fields.add(new StringFieldModel(Constants.User.LAST_NAME, lastName));
         fields.add(new StringFieldModel(Constants.TYPE, Constants.User.USER_TYPE));
         fields.add(new StringFieldModel(Constants.User.FIRST_NAME, firstName));
