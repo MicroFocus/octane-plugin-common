@@ -19,7 +19,9 @@
 				{ "name":"defect_type" },
 				{ "name":"taxonomies" },
 				{ "name":"team" },
-				{ "name":"blocked_reason" }
+				{ "name":"blocked_reason"},
+				{ "name":"owner"},
+				{ "name":"detected_by"}
 			]
 		 },
 		{ 
@@ -36,8 +38,10 @@
 				{ "name":"sprint" },
 				{ "name":"team" },
 				{ "name":"blocked" },
-				{ "name":"blocked_reason" }
-			]  
+				{ "name":"blocked_reason"},
+				{ "name":"author"},
+				{ "name":"owner"}
+			]
 		 },   
 		{   
 			"type": "QUALITY_STORY",
@@ -53,7 +57,9 @@
 				{ "name":"team" },
 				{ "name":"quality_story_type" },
 				{ "name":"blocked" },
-				{ "name":"blocked_reason" }
+				{ "name":"blocked_reason" },
+				{ "name":"author"},
+				{ "name":"owner"}
 			]
 		 },
 		{ 
@@ -66,7 +72,9 @@
 				{ "name":"last_modified" },
 				{ "name":"covered_content" },
 				{ "name":"product_areas" },
-				{ "name":"automation_status" }
+				{ "name":"automation_status" },
+				{ "name":"owner"},
+				{ "name":"designer"}
 			]
 		 },
 		{ 
@@ -79,7 +87,9 @@
 				{ "name":"last_modified" },
 				{ "name":"covered_content" },
 				{ "name":"product_areas" },
-				{ "name":"automation_status" }
+				{ "name":"automation_status" },
+				{ "name":"owner"},
+				{ "name":"designer"}
 			]
 		 },
 		{ 
@@ -92,7 +102,8 @@
 				{ "name":"scm_repository" },
 				{ "name":"product_areas" },
 				{ "name":"covered_content" },
-				{ "name":"executable" }
+				{ "name":"executable" },
+				{ "name":"owner"}
 			]
 		 },
 		{ 
@@ -105,7 +116,9 @@
 				{ "name":"last_modified" },
 				{ "name":"covered_content" },
 				{ "name":"product_areas" },
-				{ "name":"automation_status" }
+				{ "name":"automation_status" },
+				{ "name":"owner"},
+				{ "name":"designer"}
 			]
 		 },
 		{ 
@@ -118,7 +131,9 @@
 				{ "name":"content" },
 				{ "name":"release" },
 				{ "name":"last_modified" },
-				{ "name":"draft_run" }
+				{ "name":"draft_run" },
+				{ "name":"owner"},
+				{ "name":"run_by"}
 			]
 		 },
 		 { 
@@ -131,7 +146,8 @@
 				{ "name":"release" },
 				{ "name":"draft_run" },
 				{ "name":"last_modified" },
-				{ "name":"default_taxonomies" }
+				{ "name":"default_taxonomies" },
+				{ "name":"owner"}
 			]
 		 },
 		{ 
@@ -143,7 +159,9 @@
 				{ "name":"item_type" },
 				{ "name":"estimated_hours" },
 				{ "name":"invested_hours" },
-				{ "name":"remaining_hours" }
+				{ "name":"remaining_hours" },
+				{ "name":"author"},
+				{ "name":"owner"}
 			]
 		 },
 		{ 
@@ -151,7 +169,9 @@
 			"fields": [
 				{ "name":"release" },
 				{ "name":"creation_time" },
-				{ "name":"last_modified" }
+				{ "name":"last_modified" },
+				{ "name":"author"},
+				{ "name":"owner"}
 			]
 		 }
 	]
