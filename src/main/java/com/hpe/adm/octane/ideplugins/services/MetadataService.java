@@ -26,10 +26,7 @@ import com.hpe.adm.octane.ideplugins.services.connection.HttpClientProvider;
 import com.hpe.adm.octane.ideplugins.services.connection.OctaneProvider;
 import com.hpe.adm.octane.ideplugins.services.exception.ServiceRuntimeException;
 import com.hpe.adm.octane.ideplugins.services.filtering.Entity;
-import com.hpe.adm.octane.ideplugins.services.ui.FormLayout;
-import com.hpe.adm.octane.ideplugins.services.util.OctaneSystemDefaultForms;
 import com.hpe.adm.octane.ideplugins.services.util.OctaneUrlBuilder;
-import com.hpe.adm.octane.ideplugins.services.util.Util;
 import org.apache.http.client.utils.URIBuilder;
 import org.apache.http.message.BasicNameValuePair;
 import org.json.JSONArray;
@@ -40,20 +37,12 @@ import java.io.UnsupportedEncodingException;
 import java.net.URISyntaxException;
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
-import java.util.function.Function;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 
 import static com.hpe.adm.octane.ideplugins.services.util.Util.createQueryForMultipleValues;
 
 public class MetadataService {
-
-    private final Runnable clearUdfCache = new Runnable() {
-        @Override
-        public void run() {
-            udfCache = null;
-        }
-    };
 
     @Inject
     protected HttpClientProvider httpClientProvider;
@@ -64,8 +53,6 @@ public class MetadataService {
 
 
     private Map<Entity, Collection<FieldMetadata>> cache;
-    private Map<Entity, FormLayout> octaneFormsCache;
-    private JSONObject udfCache;
 
     public Collection<FieldMetadata> getFields(Entity entityType) {
         if (cache == null) {
@@ -157,95 +144,6 @@ public class MetadataService {
     private void init() {
         cache = new ConcurrentHashMap<>();
         connectionSettingsProvider.addChangeHandler(() -> cache.clear());
-    }
-
-    public Map<Entity, FormLayout> getFormLayoutForAllEntityTypes() throws UnsupportedEncodingException {
-        if (null == octaneFormsCache) {
-            connectionSettingsProvider.addChangeHandler(() -> octaneFormsCache.clear());
-            octaneFormsCache = retrieveFormsFromOctane();
-        }
-        if (octaneFormsCache.isEmpty()) {
-            octaneFormsCache = retrieveFormsFromOctane();
-        }
-        return octaneFormsCache;
-    }
-
-    public FormLayout getFormLayoutForSpecificEntityType(Entity entityType) throws UnsupportedEncodingException {
-        FormLayout entityOctaneForm = getFormLayoutForAllEntityTypes().get(entityType);
-        if (null == entityOctaneForm) {
-            entityOctaneForm = getSystemDefinedFormsForEntity(entityType);
-        }
-        return entityOctaneForm;
-    }
-
-    private Map<Entity, FormLayout> retrieveFormsFromOctane() throws UnsupportedEncodingException {
-        ConnectionSettings connectionSettings = connectionSettingsProvider.getConnectionSettings();
-        OctaneHttpClient httpClient = httpClientProvider.geOctaneHttpClient();
-        if (null == httpClient) {
-            throw new ServiceRuntimeException("Failed to authenticate with current connection settings");
-        }
-        OctaneHttpResponse response;
-        URIBuilder uriBuilder = OctaneUrlBuilder.buildOctaneUri(connectionSettings, "form_layouts");
-        uriBuilder.setParameter("query", createQueryForMultipleValues("entity_type", Arrays.asList(
-                "run", "defect", "quality_story",
-                "epic", "story", "run_suite",
-                "run_manual", "run_automated", "test",
-                "test_automated", "test_suite", "gherkin_test",
-                "test_manual", "work_item", "user_tag", "task", "requirement_document", "requirement")));
-
-        OctaneHttpRequest request = null;
-        try {
-            request = new OctaneHttpRequest.GetOctaneHttpRequest(uriBuilder.build().toASCIIString());
-        } catch (URISyntaxException e) {
-            e.printStackTrace();
-        }
-        response = httpClient.execute(request);
-        List<FormLayout> formList = new ArrayList<>();
-        if (response.isSuccessStatusCode()) {
-            formList = Util.parseJsonWithFormLayoutData(response.getContent());
-        }
-
-        return formList
-                .stream()
-                .filter((form) -> form.getDefaultField().equals("EDIT"))
-                .collect(Collectors.toMap(FormLayout::getEntity, Function.identity()));
-    }
-
-    private FormLayout getSystemDefinedFormsForEntity(Entity entityType) {
-        Map<Entity, FormLayout> formsMap;
-        List<FormLayout> formList = Util.parseJsonWithFormLayoutData(OctaneSystemDefaultForms.ALL);
-        formsMap = formList
-                .stream()
-                .filter((form) -> form.getDefaultField().equals("EDIT"))
-                .collect(Collectors.toMap(FormLayout::getEntity, Function.identity()));
-        return formsMap.get(entityType);
-    }
-
-    public String getUdfLabel(String udf) {
-        if (null == udfCache) {
-            if (!connectionSettingsProvider.hasChangeHandler(clearUdfCache)) {
-                connectionSettingsProvider.addChangeHandler(clearUdfCache);
-            }
-
-            String getUrl = connectionSettingsProvider.getConnectionSettings().getBaseUrl() + "/api/shared_spaces/" +
-                    connectionSettingsProvider.getConnectionSettings().getSharedSpaceId() + "/workspaces/" +
-                    connectionSettingsProvider.getConnectionSettings().getWorkspaceId() + "/metadata_fields";
-
-            OctaneHttpClient octaneHttpClient = httpClientProvider.geOctaneHttpClient();
-            OctaneHttpRequest request = new OctaneHttpRequest.GetOctaneHttpRequest(getUrl);
-            OctaneHttpResponse response = octaneHttpClient.execute(request);
-            udfCache = new JSONObject(response.getContent());
-        }
-
-        JSONArray fields = udfCache.getJSONArray("data");
-        for (Object field : fields) {
-            if (field instanceof JSONObject) {
-                if (((JSONObject) field).getString("name").equals(udf)) {
-                    return ((JSONObject) field).getString("label");
-                }
-            }
-        }
-        return udf;
     }
 
 }

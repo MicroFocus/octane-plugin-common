@@ -17,37 +17,20 @@ import com.hpe.adm.nga.sdk.model.EntityModel;
 import com.hpe.adm.nga.sdk.model.FieldModel;
 import com.hpe.adm.nga.sdk.model.MultiReferenceFieldModel;
 import com.hpe.adm.nga.sdk.model.ReferenceFieldModel;
-import com.hpe.adm.octane.ideplugins.services.filtering.Entity;
-import com.hpe.adm.octane.ideplugins.services.nonentity.OctaneVersionService;
-import com.hpe.adm.octane.ideplugins.services.ui.FormField;
-import com.hpe.adm.octane.ideplugins.services.ui.FormLayout;
-import com.hpe.adm.octane.ideplugins.services.ui.FormLayoutSection;
-import java.io.UnsupportedEncodingException;
-import java.time.ZoneId;
-import java.time.ZonedDateTime;
-import java.time.format.DateTimeFormatter;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.List;
-import java.util.StringJoiner;
-
 import org.apache.commons.lang.CharEncoding;
-import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
-import org.json.JSONTokener;
 import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Entities;
 
-import com.hpe.adm.nga.sdk.model.EntityModel;
-import com.hpe.adm.nga.sdk.model.FieldModel;
-import com.hpe.adm.nga.sdk.model.MultiReferenceFieldModel;
-import com.hpe.adm.nga.sdk.model.ReferenceFieldModel;
-import com.hpe.adm.octane.ideplugins.services.filtering.Entity;
-import com.hpe.adm.octane.ideplugins.services.ui.FormField;
-import com.hpe.adm.octane.ideplugins.services.ui.FormLayout;
-import com.hpe.adm.octane.ideplugins.services.ui.FormLayoutSection;
+import java.io.UnsupportedEncodingException;
+import java.time.ZoneId;
+import java.time.ZonedDateTime;
+import java.time.format.DateTimeFormatter;
+import java.util.Collection;
+import java.util.List;
+import java.util.StringJoiner;
 
 public class Util {
     public static final String DATE_FORMAT = "MM/dd/yyyy HH:mm:ss";
@@ -182,51 +165,4 @@ public class Util {
         return createQueryForMultipleValues(queryParamName, queryParamValues.toArray(new String[]{}));
     }
 
-    public static List<FormLayout> parseJsonWithFormLayoutData(String responseJson) {
-        List<FormLayout> entitiesFormLayout = new ArrayList<>();
-        if (responseJson != null && !responseJson.isEmpty()) {
-            JSONTokener tokener = new JSONTokener(responseJson);
-            JSONObject jsonObj = new JSONObject(tokener);
-            JSONArray data = jsonObj.getJSONArray("data");
-            for (int i = 0; i < data.length(); i++) {
-                JSONObject tempJsonObj = data.getJSONObject(i);
-                FormLayout formLayout = new FormLayout();
-                formLayout.setFormId(Long.valueOf(tempJsonObj.getString("id")));
-                formLayout.setFormName(tempJsonObj.getString("name"));
-                formLayout.setEntity(Entity.getEntityType(tempJsonObj.getString("entity_type"), tempJsonObj.optString("entity_subtype")));
-                formLayout.setFormLayoutSections(getFormLayoutSections(tempJsonObj.getJSONObject("body").getJSONObject("layout").getJSONArray("sections")));
-                if(tempJsonObj.has("is_default")){
-                	  formLayout.setDefault(tempJsonObj.getInt("is_default"));
-                } else {
-                    formLayout.setDefault(tempJsonObj.getJSONObject("body").getBoolean("isDefault"));
-                }
-                entitiesFormLayout.add(formLayout);
-            }
-        }
-        return entitiesFormLayout;
-    }
-
-    private static List<FormLayoutSection> getFormLayoutSections(JSONArray sections) {
-        List<FormLayoutSection> retSections = new ArrayList<>();
-        for (int i = 0; i < sections.length(); i++) {
-            JSONObject tempSections = sections.getJSONObject(i);
-            FormLayoutSection formLayoutSection = new FormLayoutSection();
-            formLayoutSection.setSectionTitle(tempSections.getString("title"));
-            formLayoutSection.setFields(getSectionFields(tempSections.getJSONArray("fields")));
-            retSections.add(formLayoutSection);
-        }
-        return retSections;
-    }
-
-    private static List<FormField> getSectionFields(JSONArray fields) {
-        List<FormField> retFields = new ArrayList<>();
-        for (int i = 0; i < fields.length(); i++) {
-            JSONObject tempField = fields.getJSONObject(i);
-            FormField formField = new FormField();
-            formField.setName(tempField.getString("name"));
-            formField.setSize("large");
-            retFields.add(formField);
-        }
-        return retFields;
-    }
 }

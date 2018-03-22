@@ -13,10 +13,6 @@
 
 package com.hpe.adm.octane.ideplugins.services;
 
-import java.util.Collection;
-import java.util.HashSet;
-import java.util.Set;
-
 import com.google.common.collect.BiMap;
 import com.google.common.collect.HashBiMap;
 import com.google.common.collect.Lists;
@@ -32,6 +28,10 @@ import com.hpe.adm.nga.sdk.query.QueryMethod;
 import com.hpe.adm.octane.ideplugins.services.connection.OctaneProvider;
 import com.hpe.adm.octane.ideplugins.services.exception.ServiceRuntimeException;
 import com.hpe.adm.octane.ideplugins.services.filtering.Entity;
+
+import java.util.Collection;
+import java.util.HashSet;
+import java.util.Set;
 
 /**
  * Comments only seem to work for work_item and tests (composite types)
