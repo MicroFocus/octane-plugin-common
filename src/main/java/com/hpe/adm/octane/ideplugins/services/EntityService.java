@@ -13,18 +13,6 @@
 
 package com.hpe.adm.octane.ideplugins.services;
 
-import static com.hpe.adm.octane.ideplugins.services.util.Util.getUiDataFromModel;
-
-import java.awt.Desktop;
-import java.net.URI;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.HashSet;
-import java.util.Map;
-import java.util.Set;
-import java.util.concurrent.ConcurrentHashMap;
-import java.util.stream.Collectors;
-
 import com.google.inject.Inject;
 import com.hpe.adm.nga.sdk.entities.EntityList;
 import com.hpe.adm.nga.sdk.entities.get.GetEntities;
@@ -45,6 +33,14 @@ import com.hpe.adm.octane.ideplugins.services.util.OctaneVersion;
 import com.hpe.adm.octane.ideplugins.services.util.SdkUtil;
 import com.hpe.adm.octane.ideplugins.services.util.UrlParser;
 import com.hpe.adm.octane.ideplugins.services.util.Util;
+
+import java.awt.*;
+import java.net.URI;
+import java.util.*;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.stream.Collectors;
+
+import static com.hpe.adm.octane.ideplugins.services.util.Util.getUiDataFromModel;
 
 public class EntityService {
 
