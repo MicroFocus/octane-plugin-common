@@ -45,36 +45,52 @@ import static com.hpe.adm.octane.ideplugins.services.util.Util.createQueryForMul
 public class MetadataService {
 
     @Inject
-    protected HttpClientProvider httpClientProvider;
+    private HttpClientProvider httpClientProvider;
+
     @Inject
     private OctaneProvider octaneProvider;
     @Inject
     private ConnectionSettingsProvider connectionSettingsProvider;
 
+    private Map<Entity, Collection<FieldMetadata>> fieldsCache;
 
-    private Map<Entity, Collection<FieldMetadata>> cache;
+    private Map<Entity, Collection<FieldMetadata>> visibleFieldsCache;
 
     public Collection<FieldMetadata> getFields(Entity entityType) {
-        if (cache == null) {
-            cache = new ConcurrentHashMap<>();
-            init();
+        if (fieldsCache == null) {
+            fieldsCache = new ConcurrentHashMap<>();
+            connectionSettingsProvider.addChangeHandler(() -> fieldsCache.clear());
         }
+
         Octane octane = octaneProvider.getOctane();
+
         Collection<FieldMetadata> fields;
-        if (!cache.containsKey(entityType)) {
+
+        if (!fieldsCache.containsKey(entityType)) {
             fields = octane.metadata().fields(entityType.getEntityName()).execute();
-            cache.put(entityType, fields);
+            fieldsCache.put(entityType, fields);
         } else {
-            fields = cache.get(entityType);
+            fields = fieldsCache.get(entityType);
         }
+
         return fields;
     }
 
+    public boolean hasFields(Entity entityType, String... fieldNames) {
+        Collection<FieldMetadata> responseFields = getFields(entityType);
+
+        Set<String> fields = responseFields.stream().map(FieldMetadata::getName).collect(Collectors.toSet());
+
+        return Arrays.stream(fieldNames)
+                .allMatch(fields::contains);
+    }
+
     public Collection<FieldMetadata> getVisibleFields(Entity entityType){
-        if (cache == null) {
-            cache = new ConcurrentHashMap<>();
-            init();
+        if (visibleFieldsCache == null) {
+            visibleFieldsCache = new ConcurrentHashMap<>();
+            connectionSettingsProvider.addChangeHandler(() -> visibleFieldsCache.clear());
         }
+
         ConnectionSettings connectionSettings = connectionSettingsProvider.getConnectionSettings();
         OctaneHttpClient httpClient = httpClientProvider.geOctaneHttpClient();
         if (null == httpClient) {
@@ -90,19 +106,19 @@ public class MetadataService {
             throw new ServiceRuntimeException(e);
         }
 
-        OctaneHttpRequest request = null;
+        OctaneHttpRequest request;
         try {
             request = new OctaneHttpRequest.GetOctaneHttpRequest(uriBuilder.build().toASCIIString());
         } catch (URISyntaxException e) {
             throw new ServiceRuntimeException(e);
         }
         response = httpClient.execute(request);
-        List<FieldMetadata> fields = new ArrayList<>();
-        if (!cache.containsKey(entityType)) {
+        List<FieldMetadata> fields;
+        if (!visibleFieldsCache.containsKey(entityType)) {
             fields = (List<FieldMetadata>) getFieldMetadataFromJSON(response.getContent());
-            cache.put(entityType, fields);
+            visibleFieldsCache.put(entityType, fields);
         } else {
-            fields = (List<FieldMetadata>) cache.get(entityType);
+            fields = (List<FieldMetadata>) visibleFieldsCache.get(entityType);
         }
         return fields;
     }
@@ -111,39 +127,13 @@ public class MetadataService {
         JSONTokener tokener = new JSONTokener(fieldsJSON);
         JSONObject jsonObj = new JSONObject(tokener);
         JSONArray jsonDataArr = jsonObj.getJSONArray("data");
-        Collection<FieldMetadata> fieldsMetadata = new ArrayList();
+        List<FieldMetadata> fieldsMetadata = new ArrayList<>();
         IntStream.range(0, jsonDataArr.length()).forEach((i) -> {
             JSONObject obj = jsonDataArr.getJSONObject(i);
             if(obj.getBoolean("visible_in_ui"))
                 fieldsMetadata.add((new Gson()).fromJson(obj.toString(), FieldMetadata.class));
         });
         return fieldsMetadata;
-    }
-    public boolean hasFields(Entity entityType, String... fieldNames) {
-        Collection<FieldMetadata> responseFields = getFields(entityType);
-
-        Set<String> fields = responseFields.stream().map(FieldMetadata::getName).collect(Collectors.toSet());
-
-        return Arrays.stream(fieldNames)
-                .allMatch(fields::contains);
-    }
-
-    public void eagerInit(Entity... entities) {
-        if (cache == null) {
-            cache = new ConcurrentHashMap<>();
-            init();
-        }
-
-        Octane octane = octaneProvider.getOctane();
-
-        Arrays.stream(entities)
-                .parallel()
-                .forEach(entityType -> cache.put(entityType, octane.metadata().fields(entityType.getEntityName()).execute()));
-    }
-
-    private void init() {
-        cache = new ConcurrentHashMap<>();
-        connectionSettingsProvider.addChangeHandler(() -> cache.clear());
     }
 
 }
