@@ -136,4 +136,17 @@ public class MetadataService {
         return fieldsMetadata;
     }
 
+    public void eagerInit(Entity... entities) {
+        if (fieldsCache == null) {
+            fieldsCache = new ConcurrentHashMap<>();
+            connectionSettingsProvider.addChangeHandler(() -> fieldsCache.clear());
+        }
+
+        Octane octane = octaneProvider.getOctane();
+
+        Arrays.stream(entities)
+                .parallel()
+                .forEach(entityType -> fieldsCache.put(entityType, octane.metadata().fields(entityType.getEntityName()).execute()));
+    }
+
 }
