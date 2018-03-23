@@ -13,33 +13,23 @@
 
 package com.hpe.adm.octane.ideplugins.integrationtests.services;
 
+import java.util.Collection;
+import java.util.HashSet;
+import java.util.stream.Collectors;
+
+import org.junit.Test;
+
 import com.google.inject.Inject;
 import com.hpe.adm.nga.sdk.metadata.FieldMetadata;
 import com.hpe.adm.octane.ideplugins.integrationtests.IntegrationTestBase;
 import com.hpe.adm.octane.ideplugins.services.MetadataService;
 import com.hpe.adm.octane.ideplugins.services.filtering.Entity;
 import com.hpe.adm.octane.ideplugins.services.util.DefaultEntityFieldsUtil;
-import org.junit.Assert;
-import org.junit.Test;
-
-import java.io.UnsupportedEncodingException;
-import java.util.Collection;
-import java.util.HashSet;
-import java.util.stream.Collectors;
 
 public class MetadataServiceITCase extends IntegrationTestBase {
 
     @Inject
     MetadataService metadataService;
-
-    @Test
-    public void testGetFormLayoutsForEntityType() {
-        try {
-            Assert.assertNotNull(metadataService.getFormLayoutForSpecificEntityType(Entity.USER_STORY));
-        } catch (UnsupportedEncodingException e) {
-            e.printStackTrace();
-        }
-    }
 
     @Test
     public void testMethodForVisibleFields(){
@@ -56,4 +46,3 @@ public class MetadataServiceITCase extends IntegrationTestBase {
     }
 
 }
-
