@@ -13,8 +13,13 @@
 
 package com.hpe.adm.octane.ideplugins.unittests;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.fail;
+import com.google.api.client.util.Charsets;
+import com.google.common.io.CharStreams;
+import com.hpe.adm.octane.ideplugins.services.exception.ServiceRuntimeException;
+import com.hpe.adm.octane.ideplugins.services.filtering.Entity;
+import com.hpe.adm.octane.ideplugins.services.util.DefaultEntityFieldsUtil;
+import org.json.JSONObject;
+import org.junit.Test;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -22,14 +27,8 @@ import java.io.InputStreamReader;
 import java.util.Map;
 import java.util.Set;
 
-import org.json.JSONObject;
-import org.junit.Test;
-
-import com.google.api.client.util.Charsets;
-import com.google.common.io.CharStreams;
-import com.hpe.adm.octane.ideplugins.services.exception.ServiceRuntimeException;
-import com.hpe.adm.octane.ideplugins.services.filtering.Entity;
-import com.hpe.adm.octane.ideplugins.services.util.DefaultEntityFieldsUtil;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.fail;
 
 public class DefaultEntityFieldsUtilUTCase {
 

@@ -102,7 +102,7 @@
         <dependency>
             <groupId>com.hpe.adm.nga.sdk.extension</groupId>
             <artifactId>sdk-extension-src</artifactId>
-            <version>12.55.5</version>
+            <version>12.55.8</version>
         </dependency>
         <dependency>
             <groupId>org.jsoup</groupId>
@@ -244,6 +244,18 @@
                 </snapshotRepository>
             </distributionManagement>
         </profile>
+
+        <profile>
+            <id>release-internal</id>
+            <distributionManagement>
+                <repository>
+                    <id>mqm-snapshots</id>
+                    <name>Internal Nexus</name>
+                    <url>${internal-nexus-url}</url>
+                </repository>
+            </distributionManagement>
+        </profile>
+
     </profiles>
 
 </project>

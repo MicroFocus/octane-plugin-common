@@ -26,10 +26,7 @@ import com.hpe.adm.octane.ideplugins.services.connection.HttpClientProvider;
 import com.hpe.adm.octane.ideplugins.services.connection.OctaneProvider;
 import com.hpe.adm.octane.ideplugins.services.exception.ServiceRuntimeException;
 import com.hpe.adm.octane.ideplugins.services.filtering.Entity;
-import com.hpe.adm.octane.ideplugins.services.ui.FormLayout;
-import com.hpe.adm.octane.ideplugins.services.util.OctaneSystemDefaultForms;
 import com.hpe.adm.octane.ideplugins.services.util.OctaneUrlBuilder;
-import com.hpe.adm.octane.ideplugins.services.util.Util;
 import org.apache.http.client.utils.URIBuilder;
 import org.apache.http.message.BasicNameValuePair;
 import org.json.JSONArray;
@@ -40,7 +37,6 @@ import java.io.UnsupportedEncodingException;
 import java.net.URISyntaxException;
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
-import java.util.function.Function;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 
@@ -48,24 +44,17 @@ import static com.hpe.adm.octane.ideplugins.services.util.Util.createQueryForMul
 
 public class MetadataService {
 
-    private final Runnable clearUdfCache = new Runnable() {
-        @Override
-        public void run() {
-            udfCache = null;
-        }
-    };
-
     @Inject
-    protected HttpClientProvider httpClientProvider;
+    private HttpClientProvider httpClientProvider;
+
     @Inject
     private OctaneProvider octaneProvider;
     @Inject
     private ConnectionSettingsProvider connectionSettingsProvider;
 
+    private Map<Entity, Collection<FieldMetadata>> fieldsCache;
 
-    private Map<Entity, Collection<FieldMetadata>> cache;
-    private Map<Entity, FormLayout> octaneFormsCache;
-    private JSONObject udfCache;
+    private Map<Entity, Collection<FieldMetadata>> visibleFieldsCache;
     
     public FieldMetadata getMetadata(Entity entityType, String fieldName) {
         Collection<FieldMetadata> allFieldMetadata = getFields(entityType);
@@ -84,26 +73,40 @@ public class MetadataService {
     }
 
     public Collection<FieldMetadata> getFields(Entity entityType) {
-        if (cache == null) {
-            cache = new ConcurrentHashMap<>();
-            init();
+        if (fieldsCache == null) {
+            fieldsCache = new ConcurrentHashMap<>();
+            connectionSettingsProvider.addChangeHandler(() -> fieldsCache.clear());
         }
+
         Octane octane = octaneProvider.getOctane();
+
         Collection<FieldMetadata> fields;
-        if (!cache.containsKey(entityType)) {
+
+        if (!fieldsCache.containsKey(entityType)) {
             fields = octane.metadata().fields(entityType.getEntityName()).execute();
-            cache.put(entityType, fields);
+            fieldsCache.put(entityType, fields);
         } else {
-            fields = cache.get(entityType);
+            fields = fieldsCache.get(entityType);
         }
+
         return fields;
     }
 
+    public boolean hasFields(Entity entityType, String... fieldNames) {
+        Collection<FieldMetadata> responseFields = getFields(entityType);
+
+        Set<String> fields = responseFields.stream().map(FieldMetadata::getName).collect(Collectors.toSet());
+
+        return Arrays.stream(fieldNames)
+                .allMatch(fields::contains);
+    }
+
     public Collection<FieldMetadata> getVisibleFields(Entity entityType){
-        if (cache == null) {
-            cache = new ConcurrentHashMap<>();
-            init();
+        if (visibleFieldsCache == null) {
+            visibleFieldsCache = new ConcurrentHashMap<>();
+            connectionSettingsProvider.addChangeHandler(() -> visibleFieldsCache.clear());
         }
+
         ConnectionSettings connectionSettings = connectionSettingsProvider.getConnectionSettings();
         OctaneHttpClient httpClient = httpClientProvider.geOctaneHttpClient();
         if (null == httpClient) {
@@ -119,28 +122,28 @@ public class MetadataService {
             throw new ServiceRuntimeException(e);
         }
 
-        OctaneHttpRequest request = null;
+        OctaneHttpRequest request;
         try {
             request = new OctaneHttpRequest.GetOctaneHttpRequest(uriBuilder.build().toASCIIString());
         } catch (URISyntaxException e) {
             throw new ServiceRuntimeException(e);
         }
         response = httpClient.execute(request);
-        List<FieldMetadata> fields = new ArrayList<>();
-        if (!cache.containsKey(entityType)) {
+        List<FieldMetadata> fields;
+        if (!visibleFieldsCache.containsKey(entityType)) {
             fields = (List<FieldMetadata>) getFieldMetadataFromJSON(response.getContent());
-            cache.put(entityType, fields);
+            visibleFieldsCache.put(entityType, fields);
         } else {
-            fields = (List<FieldMetadata>) cache.get(entityType);
+            fields = (List<FieldMetadata>) visibleFieldsCache.get(entityType);
         }
         return fields;
     }
-
+    
     private Collection<FieldMetadata> getFieldMetadataFromJSON(String fieldsJSON){
         JSONTokener tokener = new JSONTokener(fieldsJSON);
         JSONObject jsonObj = new JSONObject(tokener);
         JSONArray jsonDataArr = jsonObj.getJSONArray("data");
-        Collection<FieldMetadata> fieldsMetadata = new ArrayList();
+        List<FieldMetadata> fieldsMetadata = new ArrayList<>();
         IntStream.range(0, jsonDataArr.length()).forEach((i) -> {
             JSONObject obj = jsonDataArr.getJSONObject(i);
             if(obj.getBoolean("visible_in_ui"))
@@ -149,120 +152,17 @@ public class MetadataService {
         return fieldsMetadata;
     }
 
-    public boolean hasFields(Entity entityType, String... fieldNames) {
-        Collection<FieldMetadata> responseFields = getFields(entityType);
-
-        Set<String> fields = responseFields.stream().map(FieldMetadata::getName).collect(Collectors.toSet());
-
-        return Arrays.stream(fieldNames)
-                .allMatch(fields::contains);
-    }
-
     public void eagerInit(Entity... entities) {
-        if (cache == null) {
-            cache = new ConcurrentHashMap<>();
-            init();
+        if (fieldsCache == null) {
+            fieldsCache = new ConcurrentHashMap<>();
+            connectionSettingsProvider.addChangeHandler(() -> fieldsCache.clear());
         }
 
         Octane octane = octaneProvider.getOctane();
 
         Arrays.stream(entities)
                 .parallel()
-                .forEach(entityType -> cache.put(entityType, octane.metadata().fields(entityType.getEntityName()).execute()));
-    }
-
-    private void init() {
-        cache = new ConcurrentHashMap<>();
-        connectionSettingsProvider.addChangeHandler(() -> cache.clear());
-    }
-
-    public Map<Entity, FormLayout> getFormLayoutForAllEntityTypes() throws UnsupportedEncodingException {
-        if (null == octaneFormsCache) {
-            connectionSettingsProvider.addChangeHandler(() -> octaneFormsCache.clear());
-            octaneFormsCache = retrieveFormsFromOctane();
-        }
-        if (octaneFormsCache.isEmpty()) {
-            octaneFormsCache = retrieveFormsFromOctane();
-        }
-        return octaneFormsCache;
-    }
-
-    public FormLayout getFormLayoutForSpecificEntityType(Entity entityType) throws UnsupportedEncodingException {
-        FormLayout entityOctaneForm = getFormLayoutForAllEntityTypes().get(entityType);
-        if (null == entityOctaneForm) {
-            entityOctaneForm = getSystemDefinedFormsForEntity(entityType);
-        }
-        return entityOctaneForm;
-    }
-
-    private Map<Entity, FormLayout> retrieveFormsFromOctane() throws UnsupportedEncodingException {
-        ConnectionSettings connectionSettings = connectionSettingsProvider.getConnectionSettings();
-        OctaneHttpClient httpClient = httpClientProvider.geOctaneHttpClient();
-        if (null == httpClient) {
-            throw new ServiceRuntimeException("Failed to authenticate with current connection settings");
-        }
-        OctaneHttpResponse response;
-        URIBuilder uriBuilder = OctaneUrlBuilder.buildOctaneUri(connectionSettings, "form_layouts");
-        uriBuilder.setParameter("query", createQueryForMultipleValues("entity_type", Arrays.asList(
-                "run", "defect", "quality_story",
-                "epic", "story", "run_suite",
-                "run_manual", "run_automated", "test",
-                "test_automated", "test_suite", "gherkin_test",
-                "test_manual", "work_item", "user_tag", "task", "requirement_document", "requirement")));
-
-        OctaneHttpRequest request = null;
-        try {
-            request = new OctaneHttpRequest.GetOctaneHttpRequest(uriBuilder.build().toASCIIString());
-        } catch (URISyntaxException e) {
-            e.printStackTrace();
-        }
-        response = httpClient.execute(request);
-        List<FormLayout> formList = new ArrayList<>();
-        if (response.isSuccessStatusCode()) {
-            formList = Util.parseJsonWithFormLayoutData(response.getContent());
-        }
-
-        return formList
-                .stream()
-                .filter((form) -> form.getDefaultField().equals("EDIT"))
-                .collect(Collectors.toMap(FormLayout::getEntity, Function.identity()));
-    }
-
-    private FormLayout getSystemDefinedFormsForEntity(Entity entityType) {
-        Map<Entity, FormLayout> formsMap;
-        List<FormLayout> formList = Util.parseJsonWithFormLayoutData(OctaneSystemDefaultForms.ALL);
-        formsMap = formList
-                .stream()
-                .filter((form) -> form.getDefaultField().equals("EDIT"))
-                .collect(Collectors.toMap(FormLayout::getEntity, Function.identity()));
-        return formsMap.get(entityType);
-    }
-
-    public String getUdfLabel(String udf) {
-        if (null == udfCache) {
-            if (!connectionSettingsProvider.hasChangeHandler(clearUdfCache)) {
-                connectionSettingsProvider.addChangeHandler(clearUdfCache);
-            }
-
-            String getUrl = connectionSettingsProvider.getConnectionSettings().getBaseUrl() + "/api/shared_spaces/" +
-                    connectionSettingsProvider.getConnectionSettings().getSharedSpaceId() + "/workspaces/" +
-                    connectionSettingsProvider.getConnectionSettings().getWorkspaceId() + "/metadata_fields";
-
-            OctaneHttpClient octaneHttpClient = httpClientProvider.geOctaneHttpClient();
-            OctaneHttpRequest request = new OctaneHttpRequest.GetOctaneHttpRequest(getUrl);
-            OctaneHttpResponse response = octaneHttpClient.execute(request);
-            udfCache = new JSONObject(response.getContent());
-        }
-
-        JSONArray fields = udfCache.getJSONArray("data");
-        for (Object field : fields) {
-            if (field instanceof JSONObject) {
-                if (((JSONObject) field).getString("name").equals(udf)) {
-                    return ((JSONObject) field).getString("label");
-                }
-            }
-        }
-        return udf;
+                .forEach(entityType -> fieldsCache.put(entityType, octane.metadata().fields(entityType.getEntityName()).execute()));
     }
 
 }

@@ -13,8 +13,6 @@
 
 package com.hpe.adm.octane.ideplugins.services;
 
-import java.util.Collection;
-
 import com.google.inject.Inject;
 import com.hpe.adm.nga.sdk.Octane;
 import com.hpe.adm.nga.sdk.entities.EntityList;
@@ -26,6 +24,8 @@ import com.hpe.adm.octane.ideplugins.services.connection.ConnectionSettingsProvi
 import com.hpe.adm.octane.ideplugins.services.connection.OctaneProvider;
 import com.hpe.adm.octane.ideplugins.services.exception.ServiceRuntimeException;
 import com.hpe.adm.octane.ideplugins.services.filtering.Entity;
+
+import java.util.Collection;
 
 public class UserService {
 
@@ -69,11 +69,7 @@ public class UserService {
     }
 
     public EntityModel getCurrentUser(){
-        if(currentUserEntityModel == null){
-            getCurrentUserRunnable.run();
-            lastConnectionSettings = connectionSettingsProvider.getConnectionSettings();
-        }
-        else if(!lastConnectionSettings.equals(connectionSettingsProvider.getConnectionSettings())){
+        if(currentUserEntityModel == null || (!lastConnectionSettings.equals(connectionSettingsProvider.getConnectionSettings()))){
             getCurrentUserRunnable.run();
             lastConnectionSettings = connectionSettingsProvider.getConnectionSettings();
         }
