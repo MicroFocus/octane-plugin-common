@@ -13,17 +13,6 @@
 
 package com.hpe.adm.octane.ideplugins.services.util;
 
-import com.hpe.adm.nga.sdk.model.EntityModel;
-import com.hpe.adm.nga.sdk.model.FieldModel;
-import com.hpe.adm.nga.sdk.model.MultiReferenceFieldModel;
-import com.hpe.adm.nga.sdk.model.ReferenceFieldModel;
-import org.apache.commons.lang.CharEncoding;
-import org.json.JSONException;
-import org.json.JSONObject;
-import org.jsoup.Jsoup;
-import org.jsoup.nodes.Document;
-import org.jsoup.nodes.Entities;
-
 import java.io.UnsupportedEncodingException;
 import java.time.ZoneId;
 import java.time.ZonedDateTime;
@@ -32,9 +21,22 @@ import java.util.Collection;
 import java.util.List;
 import java.util.StringJoiner;
 
+import org.apache.commons.lang.CharEncoding;
+import org.json.JSONException;
+import org.json.JSONObject;
+import org.jsoup.Jsoup;
+import org.jsoup.nodes.Document;
+import org.jsoup.nodes.Entities;
+
+import com.hpe.adm.nga.sdk.model.EntityModel;
+import com.hpe.adm.nga.sdk.model.FieldModel;
+import com.hpe.adm.nga.sdk.model.MultiReferenceFieldModel;
+import com.hpe.adm.nga.sdk.model.ReferenceFieldModel;
+
+@SuppressWarnings("rawtypes")
 public class Util {
     public static final String DATE_FORMAT = "MM/dd/yyyy HH:mm:ss";
-
+    
     /**
      * This method is for displaying in the UI only
      *
@@ -43,7 +45,17 @@ public class Util {
      * @return string value of the field
      */
     public static String getUiDataFromModel(FieldModel fieldModel) {
-        return getUiDataFromModel(fieldModel, "name");
+        String referenceEntityField = "name"; //default
+        
+        //Exception for all user fields
+        if(fieldModel instanceof ReferenceFieldModel && fieldModel.getValue() != null) {
+            EntityModel entity = (EntityModel) fieldModel.getValue();
+            if(entity.getValue("full_name") != null) {
+                referenceEntityField = "full_name";
+            }
+        }
+        
+        return getUiDataFromModel(fieldModel, referenceEntityField);
     }
 
     /**
