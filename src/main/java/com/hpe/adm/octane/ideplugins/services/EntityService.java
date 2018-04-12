@@ -34,6 +34,7 @@ import com.hpe.adm.nga.sdk.extension.entities.ExtendedGetEntities;
 import com.hpe.adm.nga.sdk.model.EntityModel;
 import com.hpe.adm.nga.sdk.model.FieldModel;
 import com.hpe.adm.nga.sdk.model.ReferenceFieldModel;
+import com.hpe.adm.nga.sdk.model.StringFieldModel;
 import com.hpe.adm.nga.sdk.query.Query;
 import com.hpe.adm.nga.sdk.query.QueryMethod;
 import com.hpe.adm.octane.ideplugins.services.connection.ConnectionSettingsProvider;
@@ -206,8 +207,15 @@ public class EntityService {
                 get = get.addFields(fields.toArray(new String[] {}));
             }
 
-            return get.execute();
-
+            EntityModel retrivedEntity = get.execute();
+            
+            //Make sure subtype is always set
+            if(entityType.isSubtype()) {
+                retrivedEntity.setValue(new StringFieldModel("subtype", entityType.getSubtypeName()));
+            }
+            
+            return retrivedEntity;
+            
         } catch (Exception e) {
             String message = "Failed to get " + entityType.name() + ": " + entityId;
             if (e instanceof OctaneException) {
@@ -260,6 +268,7 @@ public class EntityService {
         return possibleTransitions;
     }
 
+    @SuppressWarnings("rawtypes")
     public void updateEntityPhase(EntityModel entityModel, ReferenceFieldModel nextPhase) {
         String entityId = getUiDataFromModel(entityModel.getValue("id"));
         Entity entityType = Entity.getEntityType(entityModel);
