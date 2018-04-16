@@ -55,6 +55,22 @@ public class MetadataService {
     private Map<Entity, Collection<FieldMetadata>> fieldsCache;
 
     private Map<Entity, Collection<FieldMetadata>> visibleFieldsCache;
+    
+    public FieldMetadata getMetadata(Entity entityType, String fieldName) {
+        Collection<FieldMetadata> allFieldMetadata = getFields(entityType);
+        
+        Optional<FieldMetadata> singleFieldMetadata = 
+            allFieldMetadata
+                .stream()
+                .filter(metadata -> fieldName.equals(metadata.getName()))
+                .findFirst();
+        
+        if(!singleFieldMetadata.isPresent()) {
+            throw new ServiceRuntimeException("Cannot find metadata for field " + fieldName + ", entity " + entityType);
+        } else {
+            return singleFieldMetadata.get();
+        }
+    }
 
     public Collection<FieldMetadata> getFields(Entity entityType) {
         if (fieldsCache == null) {
