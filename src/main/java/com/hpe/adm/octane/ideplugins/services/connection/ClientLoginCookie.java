@@ -4,16 +4,21 @@ import com.google.api.client.http.*;
 import com.google.api.client.http.javanet.NetHttpTransport;
 import com.google.inject.Inject;
 import com.hpe.adm.nga.sdk.authentication.SimpleUserAuthentication;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
+import java.lang.invoke.MethodHandles;
 import java.net.HttpCookie;
 import java.util.List;
 import java.util.Optional;
+
 
 public class ClientLoginCookie {
 
     private static HttpResponse httpResponse;
     private static HttpCookie lwssoCookie;
+    private static final Logger logger = LoggerFactory.getLogger(MethodHandles.lookup().lookupClass());
 
     @Inject
     private static ConnectionSettingsProvider connectionSettingsProvider;
@@ -31,7 +36,7 @@ public class ClientLoginCookie {
                     content);
             httpResponse = httpRequest.execute();
         } catch (IOException e) {
-            //TODO add logger
+            logger.error(e.getMessage());
             return null;
         }
         return httpResponse;
@@ -71,7 +76,7 @@ public class ClientLoginCookie {
             httpRequest.getHeaders().setCookie(lwssoCookie.toString());
             httpResponse = httpRequest.execute();
         } catch (IOException e) {
-            //todo logg
+            logger.error(e.getMessage());
             return null;
         }
         //test http request format when cookie is expired

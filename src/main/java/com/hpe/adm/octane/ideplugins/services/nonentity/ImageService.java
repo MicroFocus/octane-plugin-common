@@ -9,20 +9,21 @@ import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
 import org.jsoup.select.Elements;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.io.*;
+import java.lang.invoke.MethodHandles;
 
 public class ImageService {
 
-    private ClientLoginCookie clientLoginCookie = new ClientLoginCookie();
-    private File octanePhotosDir;
-
-    private static ImageService imageService;
-
+    private static File octanePhotosDir;
+    private static final Logger logger = LoggerFactory.getLogger(MethodHandles.lookup().lookupClass());
+    
     @Inject
     private static ConnectionSettingsProvider connectionSettingsProvider;
 
-    private void saveImage(String pictureLink, String octanePhotosName) {
+    private static void saveImage(String pictureLink, String octanePhotosName) {
 
         HttpResponse httpResponse = ClientLoginCookie.getImageData(pictureLink);
 
@@ -30,12 +31,12 @@ public class ImageService {
              OutputStream os = new FileOutputStream(octanePhotosName)) {
             IOUtils.copy(is, os);
         } catch (IOException e) {
-            //todo logg
+            logger.error(e.getMessage());
         }
     }
 
-    private String downloadPictures(String descriptionField) {
-        //todo check if the image hasnt be swapped meanwhile (new image with the same name uploaded) (*check size, byte with byte, delete with every relog)
+    public static String downloadPictures(String descriptionField) {
+        //todo check if the image hasnt been swapped meanwhile (new image with the same name uploaded) (*check size, byte with byte, delete with every relog)
         String baseUrl = connectionSettingsProvider.getConnectionSettings().getBaseUrl();
         String tmpPath = System.getProperty("java.io.tmpdir");
         File tmpDir = new File(tmpPath);
