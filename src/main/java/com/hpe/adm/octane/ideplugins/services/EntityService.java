@@ -67,6 +67,10 @@ public class EntityService {
     }
 
     public Collection<EntityModel> findEntities(Entity entity, Query.QueryBuilder query, Set<String> fields, Map<String, Set<String>> expand) {
+        return findEntities(entity, query, fields, expand, null, null);
+    }
+
+    public Collection<EntityModel> findEntities(Entity entity, Query.QueryBuilder query, Set<String> fields, Map<String, Set<String>> expand, Integer offset, Integer limit) {
         EntityList entityList = octaneProvider.getOctane().entityList(entity.getApiEntityName());
 
         Query.QueryBuilder queryBuilder = null;
@@ -129,7 +133,15 @@ public class EntityService {
             }
         }
 
-        getRequest.addOrderBy("id", true);
+        if (offset != null) {
+            getRequest = getRequest.offset(offset);
+        }
+
+        if (limit != null) {
+            getRequest = getRequest.limit(limit);
+        }
+
+        getRequest = getRequest.addOrderBy("id", true);
         return getRequest.execute();
     }
 
