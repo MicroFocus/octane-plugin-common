@@ -16,14 +16,14 @@ import java.util.Optional;
 
 public class ClientLoginCookie {
 
-    private static HttpResponse httpResponse;
-    private static HttpCookie lwssoCookie;
-    private static final Logger logger = LoggerFactory.getLogger(MethodHandles.lookup().lookupClass());
+    private HttpResponse httpResponse;
+    private HttpCookie lwssoCookie;
+    private final Logger logger = LoggerFactory.getLogger(MethodHandles.lookup().lookupClass());
 
     @Inject
-    private static ConnectionSettingsProvider connectionSettingsProvider;
+    private ConnectionSettingsProvider connectionSettingsProvider;
 
-    public static HttpResponse loginClient() {
+    public HttpResponse loginClient() {
         ConnectionSettings connectionSettings = connectionSettingsProvider.getConnectionSettings();
         HttpRequest httpRequest;
         HttpTransport HTTP_TRANSPORT = new NetHttpTransport();
@@ -43,7 +43,7 @@ public class ClientLoginCookie {
 
     }
 
-    private static HttpCookie setLwssoCookie() {
+    private HttpCookie setLwssoCookie() {
         List<String> strHPSSOCookieCsrf1 = httpResponse.getHeaders().getHeaderStringValues("Set-Cookie");
 
         for (String strCookie : strHPSSOCookieCsrf1) {
@@ -63,7 +63,7 @@ public class ClientLoginCookie {
      * @param pictureLink - src link to the image from server
      * @return
      */
-    public static HttpResponse getImageData(String pictureLink) {
+    public HttpResponse getImageData(String pictureLink) {
         if (lwssoCookie == null) {
             loginClient();
             lwssoCookie = setLwssoCookie();
