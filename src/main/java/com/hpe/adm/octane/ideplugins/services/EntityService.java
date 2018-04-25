@@ -71,6 +71,10 @@ public class EntityService {
     }
 
     public Collection<EntityModel> findEntities(Entity entity, Query.QueryBuilder query, Set<String> fields, Map<String, Set<String>> expand, Integer offset, Integer limit) {
+        return findEntities(entity, query, fields, expand, offset, limit, null, null);
+    }
+
+    public Collection<EntityModel> findEntities(Entity entity, Query.QueryBuilder query, Set<String> fields, Map<String, Set<String>> expand, Integer offset, Integer limit, String orderByField, Boolean orderByAsc) {
         EntityList entityList = octaneProvider.getOctane().entityList(entity.getApiEntityName());
 
         Query.QueryBuilder queryBuilder = null;
@@ -139,6 +143,10 @@ public class EntityService {
 
         if (limit != null) {
             getRequest = getRequest.limit(limit);
+        }
+
+        if(orderByField != null && orderByAsc != null){
+            getRequest = getRequest.addOrderBy(orderByField, orderByAsc);
         }
 
         getRequest = getRequest.addOrderBy("id", true);
