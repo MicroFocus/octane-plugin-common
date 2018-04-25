@@ -13,19 +13,20 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.*;
-import java.lang.invoke.MethodHandles;
 
 public class ImageService {
 
-    private static File octanePhotosDir;
-    private static final Logger logger = LoggerFactory.getLogger(MethodHandles.lookup().lookupClass());
-    
+    private File octanePhotosDir;
+    private final Logger logger = LoggerFactory.getLogger(this.getClass());
     @Inject
-    private static ConnectionSettingsProvider connectionSettingsProvider;
+    private ClientLoginCookie  clientLoginCookie;
 
-    private static void saveImage(String pictureLink, String octanePhotosName) {
+    @Inject
+    private ConnectionSettingsProvider connectionSettingsProvider;
 
-        HttpResponse httpResponse = ClientLoginCookie.getImageData(pictureLink);
+    private void saveImage(String pictureLink, String octanePhotosName) {
+
+        HttpResponse httpResponse = clientLoginCookie.getImageData(pictureLink);
 
         try (InputStream is = httpResponse.getContent();
              OutputStream os = new FileOutputStream(octanePhotosName)) {
@@ -35,7 +36,7 @@ public class ImageService {
         }
     }
 
-    public static String downloadPictures(String descriptionField) {
+    public String downloadPictures(String descriptionField) {
         //todo check if the image hasnt been swapped meanwhile (new image with the same name uploaded) (*check size, byte with byte, delete with every relog)
         String baseUrl = connectionSettingsProvider.getConnectionSettings().getBaseUrl();
         String tmpPath = System.getProperty("java.io.tmpdir");
@@ -63,10 +64,12 @@ public class ImageService {
             int index = pictureLink.lastIndexOf("/");
             String pictureName = pictureLink.substring(index + 1, pictureLink.length());
             String picturePath = octanePhotosPath + "\\" + pictureName;
-            if (!new File(octanePhotosDir, pictureName).exists()) {
+            File imgFile = new File(octanePhotosDir, pictureName);
+            if (!imgFile.exists()) {
                 saveImage(pictureLink, picturePath);
+                imgFile = new File(octanePhotosDir, pictureName);
             }
-            el.attr("src", picturePath);
+            el.attr("src", imgFile.toURI().toString());
         }
         return descriptionParser.toString();
     }
