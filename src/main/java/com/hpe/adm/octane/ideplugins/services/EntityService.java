@@ -147,9 +147,10 @@ public class EntityService {
 
         if(orderByField != null && orderByAsc != null){
             getRequest = getRequest.addOrderBy(orderByField, orderByAsc);
+        } else {
+            getRequest = getRequest.addOrderBy("id", true);
         }
 
-        getRequest = getRequest.addOrderBy("id", true);
         return getRequest.execute();
     }
 
