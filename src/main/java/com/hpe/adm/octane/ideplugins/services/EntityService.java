@@ -59,15 +59,15 @@ public class EntityService {
     private OctaneVersionService versionService;
 
     public Collection<EntityModel> findEntities(Entity entity) {
-        return findEntities(entity, null, null);
+        return findEntities(entity, null, null, null, null, null, null, null);
     }
 
     public Collection<EntityModel> findEntities(Entity entity, Query.QueryBuilder query, Set<String> fields) {
-        return findEntities(entity, query, fields, null);
+        return findEntities(entity, query, fields, null, null, null, null, null);
     }
 
     public Collection<EntityModel> findEntities(Entity entity, Query.QueryBuilder query, Set<String> fields, Map<String, Set<String>> expand) {
-        return findEntities(entity, query, fields, expand, null, null);
+        return findEntities(entity, query, fields, expand, null, null, null, null);
     }
 
     public Collection<EntityModel> findEntities(Entity entity, Query.QueryBuilder query, Set<String> fields, Map<String, Set<String>> expand, Integer offset, Integer limit) {
