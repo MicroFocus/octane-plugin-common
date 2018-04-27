@@ -81,17 +81,17 @@ public class ConnectionSettingsITCase extends IntegrationTestBase {
 
     @Test
     public void testCorrectWorkspaceAndIncorrectSharedSpace() {
-        assert !validateWorkspaceAndSharedSpace(correctWorkspaceId, 900l, connectionSettings);
+        assert !validateWorkspaceAndSharedSpace(correctWorkspaceId, 900L, connectionSettings);
     }
 
     @Test
     public void testIncorrectWorkspaceAndCorrectSharedSpace() {
-        assert !validateWorkspaceAndSharedSpace(900l, correctSharedSpaceId, connectionSettings);
+        assert !validateWorkspaceAndSharedSpace(900L, correctSharedSpaceId, connectionSettings);
     }
 
     @Test
     public void testIncorrectWorkspaceAndIncorrectSharedSpace() {
-        assert !validateWorkspaceAndSharedSpace(901l, 900l, connectionSettings);
+        assert !validateWorkspaceAndSharedSpace(901L, 900L, connectionSettings);
     }
 
 }
