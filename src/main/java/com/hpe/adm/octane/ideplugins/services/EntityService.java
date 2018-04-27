@@ -187,9 +187,8 @@ public class EntityService {
      * @param entityId   id
      * @param fields     fields to be returned for the entity
      * @return EntityModel
-     * @throws ServiceException on sdk error
      */
-    public EntityModel findEntity(Entity entityType, Long entityId, Set<String> fields) throws ServiceException {
+    public EntityModel findEntity(Entity entityType, Long entityId, Set<String> fields) {
 
         GetEntity get = octaneProvider.getOctane()
                 .entityList(entityType.getApiEntityName())

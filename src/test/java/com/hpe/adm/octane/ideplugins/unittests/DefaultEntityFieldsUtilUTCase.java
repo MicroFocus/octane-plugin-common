@@ -49,7 +49,7 @@ public class DefaultEntityFieldsUtilUTCase {
     }
 
     @Test
-    public void testDefaultFields() throws IOException {
+    public void testDefaultFields() {
 
         String readJsonString = readDefaultFile();
 
