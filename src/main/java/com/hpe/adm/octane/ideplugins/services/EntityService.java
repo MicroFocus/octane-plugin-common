@@ -43,7 +43,6 @@ import com.hpe.adm.octane.ideplugins.services.exception.ServiceException;
 import com.hpe.adm.octane.ideplugins.services.filtering.Entity;
 import com.hpe.adm.octane.ideplugins.services.nonentity.OctaneVersionService;
 import com.hpe.adm.octane.ideplugins.services.util.OctaneVersion;
-import com.hpe.adm.octane.ideplugins.services.util.SdkUtil;
 import com.hpe.adm.octane.ideplugins.services.util.UrlParser;
 import com.hpe.adm.octane.ideplugins.services.util.Util;
 
@@ -116,7 +115,7 @@ public class EntityService {
             }
 
             if (fields != null || expand != null) {
-                getRequest = getRequest.addFields(expandFields.toArray(new String[] {}));
+                getRequest = getRequest.addFields(expandFields.toArray(new String[]{}));
             }
 
         } else {
@@ -125,7 +124,7 @@ public class EntityService {
                 getRequest = ((ExtendedGetEntities) getRequest).expand(expand);
             }
             if (fields != null && fields.size() != 0) {
-                getRequest = getRequest.addFields(fields.toArray(new String[] {}));
+                getRequest = getRequest.addFields(fields.toArray(new String[]{}));
             }
         }
 
@@ -144,7 +143,7 @@ public class EntityService {
             getRequest = getRequest.query(query.build());
         }
         if (fields != null && fields.size() != 0) {
-            getRequest = getRequest.addFields(fields.toArray(new String[] {}));
+            getRequest = getRequest.addFields(fields.toArray(new String[]{}));
         }
         getRequest.addOrderBy("id", true);
 
@@ -157,16 +156,14 @@ public class EntityService {
      * time This method will make concurrent rest calls for each type of entity
      * (key of the maps)
      *
-     * @param filterCriteria
-     *            a query builder used for querying the entity type (key of the
-     *            maps)
-     * @param fieldListMap
-     *            a map of the fields that will be returned after querying the
-     *            entity type
+     * @param filterCriteria a query builder used for querying the entity type (key of the
+     *                       maps)
+     * @param fieldListMap   a map of the fields that will be returned after querying the
+     *                       entity type
      * @return a map with the result entities organized by entity type
      */
     public Map<Entity, Collection<EntityModel>> concurrentFindEntities(Map<Entity, Query.QueryBuilder> filterCriteria,
-            Map<Entity, Set<String>> fieldListMap) {
+                                                                       Map<Entity, Set<String>> fieldListMap) {
         Map<Entity, Collection<EntityModel>> resultMap = new ConcurrentHashMap<>();
 
         // TODO, known subtypes should be under same rest call
@@ -185,44 +182,32 @@ public class EntityService {
 
     /**
      * Return a single entity model
-     * 
-     * @param entityType
-     *            {@link Entity}
-     * @param entityId
-     *            id
-     * @param fields
-     *            fields to be returned for the entity
+     *
+     * @param entityType {@link Entity}
+     * @param entityId   id
+     * @param fields     fields to be returned for the entity
      * @return EntityModel
-     * @throws ServiceException
-     *             on sdk error
+     * @throws ServiceException on sdk error
      */
     public EntityModel findEntity(Entity entityType, Long entityId, Set<String> fields) throws ServiceException {
-        try {
-            GetEntity get = octaneProvider.getOctane()
-                    .entityList(entityType.getApiEntityName())
-                    .at(entityId.toString())
-                    .get();
 
-            if (fields != null && fields.size() != 0) {
-                get = get.addFields(fields.toArray(new String[] {}));
-            }
+        GetEntity get = octaneProvider.getOctane()
+                .entityList(entityType.getApiEntityName())
+                .at(entityId.toString())
+                .get();
 
-            EntityModel retrivedEntity = get.execute();
-            
-            //Make sure subtype is always set
-            if(entityType.isSubtype()) {
-                retrivedEntity.setValue(new StringFieldModel("subtype", entityType.getSubtypeName()));
-            }
-            
-            return retrivedEntity;
-            
-        } catch (Exception e) {
-            String message = "Failed to get " + entityType.name() + ": " + entityId;
-            if (e instanceof OctaneException) {
-                message = message + "<br>" + SdkUtil.getMessageFromOctaneException((OctaneException) e);
-            }
-            throw new ServiceException(message, e);
+        if (fields != null && fields.size() != 0) {
+            get = get.addFields(fields.toArray(new String[]{}));
         }
+
+        EntityModel retrivedEntity = get.execute();
+
+        //Make sure subtype is always set
+        if (entityType.isSubtype()) {
+            retrivedEntity.setValue(new StringFieldModel("subtype", entityType.getSubtypeName()));
+        }
+
+        return retrivedEntity;
     }
 
     public EntityModel findEntity(Entity entityType, Long entityId) throws ServiceException {
@@ -232,10 +217,8 @@ public class EntityService {
     /**
      * Get next possible phases for an entity
      *
-     * @param entityType
-     *            {@link Entity}
-     * @param currentPhaseId
-     *            id of the current phase object
+     * @param entityType     {@link Entity}
+     * @param currentPhaseId id of the current phase object
      * @return list of {@link Entity#PHASE}
      */
     public Collection<EntityModel> findPossibleTransitionFromCurrentPhase(Entity entityType, String currentPhaseId) {

@@ -10,7 +10,6 @@ import com.hpe.adm.octane.ideplugins.services.TestService;
 import com.hpe.adm.octane.ideplugins.services.connection.ConnectionSettings;
 import com.hpe.adm.octane.ideplugins.services.filtering.Entity;
 import com.hpe.adm.octane.ideplugins.services.util.ClientType;
-import com.hpe.adm.octane.ideplugins.services.util.SdkUtil;
 import org.junit.Before;
 import org.junit.Test;
 
@@ -39,7 +38,6 @@ public class ConnectionSettingsITCase extends IntegrationTestBase {
         try {
             return octaneHttpClient.authenticate(new SimpleUserAuthentication(username, password, ClientType.HPE_REST_API_TECH_PREVIEW.name()));
         } catch (OctaneException e) {
-            String errorMessage = SdkUtil.getMessageFromOctaneException(e);
             return false;
         }
     }
@@ -72,7 +70,6 @@ public class ConnectionSettingsITCase extends IntegrationTestBase {
             testService.getOctane(connectionSettings).entityList(Entity.WORK_ITEM_ROOT.getApiEntityName()).get().execute();
             return true;
         } catch (OctaneException e) {
-            String message = SdkUtil.getMessageFromOctaneException(e);
             return false;
         }
     }

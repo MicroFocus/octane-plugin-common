@@ -26,7 +26,6 @@ import com.hpe.adm.octane.ideplugins.services.connection.ConnectionSettings;
 import com.hpe.adm.octane.ideplugins.services.di.ServiceModule;
 import com.hpe.adm.octane.ideplugins.services.exception.ServiceException;
 import com.hpe.adm.octane.ideplugins.services.filtering.Entity;
-import com.hpe.adm.octane.ideplugins.services.util.SdkUtil;
 
 /**
  * Does not rely on the Octane from the DI,
@@ -65,27 +64,13 @@ public class TestService {
      * @throws ServiceException on connection error
      */
     public void testConnection(ConnectionSettings connectionSettings) throws ServiceException {
-
         //Try basic http connection first
         testHttpConnection(connectionSettings);
 
-        try{
-            Query query =  Query.statement("subtype", QueryMethod.EqualTo, Entity.WORK_ITEM_ROOT.getSubtypeName()).build();
-            //Try to fetch the backlog root
-            getOctane(connectionSettings).entityList(Entity.WORK_ITEM_ROOT.getApiEntityName()).get().query(query).execute();
-        } catch (Exception ex){
-            String message = null;
+        Query query =  Query.statement("subtype", QueryMethod.EqualTo, Entity.WORK_ITEM_ROOT.getSubtypeName()).build();
 
-            if(ex instanceof OctaneException){
-                message = SdkUtil.getMessageFromOctaneException((OctaneException)ex);
-            }
-            //Default
-            if(message == null) {
-                message = ex.getMessage();
-            }
-
-            throw new ServiceException(message, ex);
-        }
+        //Try to fetch the backlog root
+        getOctane(connectionSettings).entityList(Entity.WORK_ITEM_ROOT.getApiEntityName()).get().query(query).execute();
     }
 
 }
