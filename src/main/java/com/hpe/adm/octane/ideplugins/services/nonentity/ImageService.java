@@ -31,20 +31,23 @@ import java.net.HttpCookie;
 
 public class ImageService {
 
-    private File octanePhotosDir;
-    private final Logger logger = LoggerFactory.getLogger(this.getClass());
+    private final Logger logger = LoggerFactory.getLogger(ImageService.class.getClass());
+
     @Inject
     private ClientLoginCookieProvider clientLoginCookieProvider;
 
-    private HttpCookie lwssoCookie;
     @Inject
     private ConnectionSettingsProvider connectionSettingsProvider;
+
+    private static HttpCookie lwssoCookie;
+    private static Runnable resetLwssoCookie = () -> lwssoCookie = null;
+
 
     private File saveImageToTempFile(String pictureLink) {
 
         String tmpPath = System.getProperty("java.io.tmpdir");
         File tmpDir = new File(tmpPath);
-        octanePhotosDir = new File(tmpDir, "Octane_pictures");
+        File octanePhotosDir = new File(tmpDir, "Octane_pictures");
 
         if (!octanePhotosDir.exists()) {
             octanePhotosDir.mkdir();
@@ -75,9 +78,9 @@ public class ImageService {
      */
     private HttpResponse downloadImage(String pictureLink, int tryCount) {
         if (lwssoCookie == null) {
-
             lwssoCookie = clientLoginCookieProvider.get();
         }
+
         HttpResponse httpResponse;
         HttpTransport HTTP_TRANSPORT = new NetHttpTransport();
         HttpRequestFactory requestFactory = HTTP_TRANSPORT.createRequestFactory();
@@ -92,13 +95,19 @@ public class ImageService {
         //test http request format when cookie is expired
         if(httpResponse.getStatusCode() == 403 && tryCount > 0){
             //means that the cookie expired
-            lwssoCookie = clientLoginCookieProvider.get();;
+            lwssoCookie = clientLoginCookieProvider.get();
             httpResponse = downloadImage(pictureLink, --tryCount);
         }
         return httpResponse;
     }
 
     public String downloadPictures(String descriptionField) {
+
+        //Reset cookie in case connection settings change
+        if(!connectionSettingsProvider.hasChangeHandler(resetLwssoCookie)) {
+            connectionSettingsProvider.addChangeHandler(resetLwssoCookie);
+        }
+
         //todo check if the image hasnt been swapped meanwhile (new image with the same name uploaded) (*check size, byte with byte, delete with every relog)
         String baseUrl = connectionSettingsProvider.getConnectionSettings().getBaseUrl();
 

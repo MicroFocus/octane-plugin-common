@@ -36,7 +36,6 @@ public class ClientLoginCookieProvider implements Provider<HttpCookie>{
     @Inject
     private ConnectionSettingsProvider connectionSettingsProvider;
 
-
     @Override
     public HttpCookie get() {
         // Disable the CookieHandler for this request, since if the cached login cookie is
