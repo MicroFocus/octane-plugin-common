@@ -29,7 +29,6 @@ import com.google.inject.Inject;
 import com.hpe.adm.nga.sdk.entities.EntityList;
 import com.hpe.adm.nga.sdk.entities.get.GetEntities;
 import com.hpe.adm.nga.sdk.entities.get.GetEntity;
-import com.hpe.adm.nga.sdk.exception.OctaneException;
 import com.hpe.adm.nga.sdk.extension.entities.ExtendedGetEntities;
 import com.hpe.adm.nga.sdk.model.EntityModel;
 import com.hpe.adm.nga.sdk.model.FieldModel;
@@ -58,14 +57,22 @@ public class EntityService {
     private OctaneVersionService versionService;
 
     public Collection<EntityModel> findEntities(Entity entity) {
-        return findEntities(entity, null, null);
+        return findEntities(entity, null, null, null, null, null, null, null);
     }
 
     public Collection<EntityModel> findEntities(Entity entity, Query.QueryBuilder query, Set<String> fields) {
-        return findEntities(entity, query, fields, null);
+        return findEntities(entity, query, fields, null, null, null, null, null);
     }
 
     public Collection<EntityModel> findEntities(Entity entity, Query.QueryBuilder query, Set<String> fields, Map<String, Set<String>> expand) {
+        return findEntities(entity, query, fields, expand, null, null, null, null);
+    }
+
+    public Collection<EntityModel> findEntities(Entity entity, Query.QueryBuilder query, Set<String> fields, Map<String, Set<String>> expand, Integer offset, Integer limit) {
+        return findEntities(entity, query, fields, expand, offset, limit, null, null);
+    }
+
+    public Collection<EntityModel> findEntities(Entity entity, Query.QueryBuilder query, Set<String> fields, Map<String, Set<String>> expand, Integer offset, Integer limit, String orderByField, Boolean orderByAsc) {
         EntityList entityList = octaneProvider.getOctane().entityList(entity.getApiEntityName());
 
         Query.QueryBuilder queryBuilder = null;
@@ -108,9 +115,9 @@ public class EntityService {
                     expandFields.add(
                             relationFieldName + "{" +
                                     expand.get(relationFieldName)
-                                            .stream()
-                                            .collect(Collectors.joining(","))
-                                    + "}");
+                            .stream()
+                            .collect(Collectors.joining(","))
+                            + "}");
                 });
             }
 
@@ -128,7 +135,20 @@ public class EntityService {
             }
         }
 
-        getRequest.addOrderBy("id", true);
+        if (offset != null) {
+            getRequest = getRequest.offset(offset);
+        }
+
+        if (limit != null) {
+            getRequest = getRequest.limit(limit);
+        }
+
+        if(orderByField != null && orderByAsc != null){
+            getRequest = getRequest.addOrderBy(orderByField, orderByAsc);
+        } else {
+            getRequest = getRequest.addOrderBy("id", true);
+        }
+
         return getRequest.execute();
     }
 
@@ -163,19 +183,19 @@ public class EntityService {
      * @return a map with the result entities organized by entity type
      */
     public Map<Entity, Collection<EntityModel>> concurrentFindEntities(Map<Entity, Query.QueryBuilder> filterCriteria,
-                                                                       Map<Entity, Set<String>> fieldListMap) {
+            Map<Entity, Set<String>> fieldListMap) {
         Map<Entity, Collection<EntityModel>> resultMap = new ConcurrentHashMap<>();
 
         // TODO, known subtypes should be under same rest call
         filterCriteria
-                .keySet()
-                .parallelStream()
-                .forEach(
-                        entityType -> resultMap.put(entityType,
-                                findEntities(
-                                        entityType.getApiEntityName(),
-                                        filterCriteria.get(entityType),
-                                        fieldListMap.get(entityType))));
+        .keySet()
+        .parallelStream()
+        .forEach(
+                entityType -> resultMap.put(entityType,
+                        findEntities(
+                                entityType.getApiEntityName(),
+                                filterCriteria.get(entityType),
+                                fieldListMap.get(entityType))));
 
         return resultMap;
     }
@@ -202,7 +222,7 @@ public class EntityService {
         EntityModel retrivedEntity = get.execute();
 
         //Make sure subtype is always set
-        if (entityType.isSubtype()) {
+        if(entityType.isSubtype()) {
             retrivedEntity.setValue(new StringFieldModel("subtype", entityType.getSubtypeName()));
         }
 
@@ -288,7 +308,7 @@ public class EntityService {
                 URI uri = UrlParser.createEntityWebURI(
                         connectionSettingsProvider.getConnectionSettings(),
                         entityType == Entity.COMMENT ? ownerEntityType : entityType,
-                        entityType == Entity.COMMENT ? ownerEntityId : entityId);
+                                entityType == Entity.COMMENT ? ownerEntityId : entityId);
                 desktop.browse(uri);
             } catch (Exception ex) {
                 ex.printStackTrace();
