@@ -13,6 +13,19 @@
 
 package com.hpe.adm.octane.ideplugins.services.mywork;
 
+import static com.hpe.adm.octane.ideplugins.services.mywork.MyWorkUtil.addToMyWorkEntities;
+import static com.hpe.adm.octane.ideplugins.services.mywork.MyWorkUtil.cloneFieldListMap;
+import static com.hpe.adm.octane.ideplugins.services.mywork.MyWorkUtil.createUserQuery;
+
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collection;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.Map;
+import java.util.Set;
+import java.util.stream.Collectors;
+
 import com.google.inject.Inject;
 import com.hpe.adm.nga.sdk.Octane;
 import com.hpe.adm.nga.sdk.model.EntityModel;
@@ -21,15 +34,8 @@ import com.hpe.adm.nga.sdk.query.Query;
 import com.hpe.adm.octane.ideplugins.services.EntityService;
 import com.hpe.adm.octane.ideplugins.services.UserService;
 import com.hpe.adm.octane.ideplugins.services.connection.OctaneProvider;
-import com.hpe.adm.octane.ideplugins.services.exception.ServiceException;
-import com.hpe.adm.octane.ideplugins.services.exception.ServiceRuntimeException;
 import com.hpe.adm.octane.ideplugins.services.filtering.Entity;
 import com.hpe.adm.octane.ideplugins.services.util.EntityUtil;
-
-import java.util.*;
-import java.util.stream.Collectors;
-
-import static com.hpe.adm.octane.ideplugins.services.mywork.MyWorkUtil.*;
 
 class DynamoMyWorkService implements MyWorkService{
 
@@ -237,15 +243,11 @@ class DynamoMyWorkService implements MyWorkService{
     }
 
     private EntityModel fetchEntityFields(EntityModel entityModel, String... fields) {
-        try {
-            return entityService.findEntity(
-                    Entity.getEntityType(entityModel),
-                    Long.parseLong(entityModel.getValue("id").getValue().toString()),
-                    new HashSet<>(Arrays.asList(fields))
-            );
-        } catch (ServiceException e) {
-            throw new ServiceRuntimeException(e);
-        }
+        return entityService.findEntity(
+                Entity.getEntityType(entityModel),
+                Long.parseLong(entityModel.getValue("id").getValue().toString()),
+                new HashSet<>(Arrays.asList(fields))
+        );
     }
 
 }

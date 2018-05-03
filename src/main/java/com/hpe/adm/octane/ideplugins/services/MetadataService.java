@@ -13,6 +13,26 @@
 
 package com.hpe.adm.octane.ideplugins.services;
 
+import static com.hpe.adm.octane.ideplugins.services.util.Util.createQueryForMultipleValues;
+
+import java.net.URISyntaxException;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collection;
+import java.util.List;
+import java.util.Map;
+import java.util.Optional;
+import java.util.Set;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.stream.Collectors;
+import java.util.stream.IntStream;
+
+import org.apache.http.client.utils.URIBuilder;
+import org.apache.http.message.BasicNameValuePair;
+import org.json.JSONArray;
+import org.json.JSONObject;
+import org.json.JSONTokener;
+
 import com.google.gson.Gson;
 import com.google.inject.Inject;
 import com.hpe.adm.nga.sdk.Octane;
@@ -27,20 +47,6 @@ import com.hpe.adm.octane.ideplugins.services.connection.OctaneProvider;
 import com.hpe.adm.octane.ideplugins.services.exception.ServiceRuntimeException;
 import com.hpe.adm.octane.ideplugins.services.filtering.Entity;
 import com.hpe.adm.octane.ideplugins.services.util.OctaneUrlBuilder;
-import org.apache.http.client.utils.URIBuilder;
-import org.apache.http.message.BasicNameValuePair;
-import org.json.JSONArray;
-import org.json.JSONObject;
-import org.json.JSONTokener;
-
-import java.io.UnsupportedEncodingException;
-import java.net.URISyntaxException;
-import java.util.*;
-import java.util.concurrent.ConcurrentHashMap;
-import java.util.stream.Collectors;
-import java.util.stream.IntStream;
-
-import static com.hpe.adm.octane.ideplugins.services.util.Util.createQueryForMultipleValues;
 
 public class MetadataService {
 
@@ -114,13 +120,7 @@ public class MetadataService {
         }
         OctaneHttpResponse response;
         URIBuilder uriBuilder = OctaneUrlBuilder.buildOctaneUri(connectionSettings, "metadata/fields");
-        try {
-            uriBuilder.setParameters(
-                    new BasicNameValuePair("query",
-                            createQueryForMultipleValues("entity_name", entityType.getEntityName())));
-        } catch (UnsupportedEncodingException e) {
-            throw new ServiceRuntimeException(e);
-        }
+        uriBuilder.setParameters(new BasicNameValuePair("query", createQueryForMultipleValues("entity_name", entityType.getEntityName())));
 
         OctaneHttpRequest request;
         try {
