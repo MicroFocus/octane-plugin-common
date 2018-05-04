@@ -78,6 +78,7 @@ public class ImageService {
 
             lwssoCookie = clientLoginCookieProvider.get();
         }
+
         HttpResponse httpResponse;
         HttpTransport HTTP_TRANSPORT = new NetHttpTransport();
         HttpRequestFactory requestFactory = HTTP_TRANSPORT.createRequestFactory();
@@ -86,15 +87,17 @@ public class ImageService {
             httpRequest.getHeaders().setCookie(lwssoCookie.toString());
             httpResponse = httpRequest.execute();
         } catch (IOException e) {
-            logger.error(e.getMessage());
-            return null;
+            if(e instanceof HttpResponseException && ((HttpResponseException)e).getStatusCode() == 401 && tryCount > 0) {
+                //means that the cookie expired
+                logger.error("Cookie expired, retrying: " + e.getMessage());
+                lwssoCookie = clientLoginCookieProvider.get();
+                return downloadImage(pictureLink, --tryCount);
+            } else {
+                logger.error(e.getMessage());
+                return null;
+            }
         }
-        //test http request format when cookie is expired
-        if(httpResponse.getStatusCode() == 403 && tryCount > 0){
-            //means that the cookie expired
-            lwssoCookie = clientLoginCookieProvider.get();;
-            httpResponse = downloadImage(pictureLink, --tryCount);
-        }
+
         return httpResponse;
     }
 
