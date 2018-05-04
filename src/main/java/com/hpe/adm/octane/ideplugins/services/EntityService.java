@@ -38,7 +38,6 @@ import com.hpe.adm.nga.sdk.query.Query;
 import com.hpe.adm.nga.sdk.query.QueryMethod;
 import com.hpe.adm.octane.ideplugins.services.connection.ConnectionSettingsProvider;
 import com.hpe.adm.octane.ideplugins.services.connection.OctaneProvider;
-import com.hpe.adm.octane.ideplugins.services.exception.ServiceException;
 import com.hpe.adm.octane.ideplugins.services.filtering.Entity;
 import com.hpe.adm.octane.ideplugins.services.nonentity.OctaneVersionService;
 import com.hpe.adm.octane.ideplugins.services.util.OctaneVersion;
@@ -229,7 +228,7 @@ public class EntityService {
         return retrivedEntity;
     }
 
-    public EntityModel findEntity(Entity entityType, Long entityId) throws ServiceException {
+    public EntityModel findEntity(Entity entityType, Long entityId) {
         return findEntity(entityType, entityId, null);
     }
 
