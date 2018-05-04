@@ -31,20 +31,23 @@ import java.net.HttpCookie;
 
 public class ImageService {
 
-    private File octanePhotosDir;
-    private final Logger logger = LoggerFactory.getLogger(this.getClass());
+    private final Logger logger = LoggerFactory.getLogger(ImageService.class.getClass());
+
     @Inject
     private ClientLoginCookieProvider clientLoginCookieProvider;
 
-    private HttpCookie lwssoCookie;
     @Inject
     private ConnectionSettingsProvider connectionSettingsProvider;
+
+    private static HttpCookie lwssoCookie;
+    private static Runnable resetLwssoCookie = () -> lwssoCookie = null;
+
 
     private File saveImageToTempFile(String pictureLink) {
 
         String tmpPath = System.getProperty("java.io.tmpdir");
         File tmpDir = new File(tmpPath);
-        octanePhotosDir = new File(tmpDir, "Octane_pictures");
+        File octanePhotosDir = new File(tmpDir, "Octane_pictures");
 
         if (!octanePhotosDir.exists()) {
             octanePhotosDir.mkdir();
@@ -75,7 +78,6 @@ public class ImageService {
      */
     private HttpResponse downloadImage(String pictureLink, int tryCount) {
         if (lwssoCookie == null) {
-
             lwssoCookie = clientLoginCookieProvider.get();
         }
 
@@ -97,11 +99,16 @@ public class ImageService {
                 return null;
             }
         }
-
         return httpResponse;
     }
 
     public String downloadPictures(String descriptionField) {
+
+        //Reset cookie in case connection settings change
+        if(!connectionSettingsProvider.hasChangeHandler(resetLwssoCookie)) {
+            connectionSettingsProvider.addChangeHandler(resetLwssoCookie);
+        }
+
         //todo check if the image hasnt been swapped meanwhile (new image with the same name uploaded) (*check size, byte with byte, delete with every relog)
         String baseUrl = connectionSettingsProvider.getConnectionSettings().getBaseUrl();
 

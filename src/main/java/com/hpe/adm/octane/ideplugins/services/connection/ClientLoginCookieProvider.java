@@ -23,6 +23,7 @@ import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
 import java.lang.invoke.MethodHandles;
+import java.net.CookieHandler;
 import java.net.HttpCookie;
 import java.util.List;
 import java.util.Optional;
@@ -35,9 +36,14 @@ public class ClientLoginCookieProvider implements Provider<HttpCookie>{
     @Inject
     private ConnectionSettingsProvider connectionSettingsProvider;
 
-
     @Override
     public HttpCookie get() {
+        // Disable the CookieHandler for this request, since if the cached login cookie is
+        // sent to Octane in the login post request, the renewed login cookie would not be visible
+        // Or something like that, no idea
+        CookieHandler cookieHandler = CookieHandler.getDefault();
+        CookieHandler.setDefault(null);
+
         ConnectionSettings connectionSettings = connectionSettingsProvider.getConnectionSettings();
         HttpRequest httpRequest;
         HttpTransport HTTP_TRANSPORT = new NetHttpTransport();
@@ -47,8 +53,8 @@ public class ClientLoginCookieProvider implements Provider<HttpCookie>{
 
         HttpResponse httpResponse;
         try {
-            httpRequest = requestFactory.buildPostRequest(new GenericUrl(connectionSettings.getBaseUrl() + "/authentication/sign_in"),
-                    content);
+            GenericUrl url = new GenericUrl(connectionSettings.getBaseUrl() + "/authentication/sign_in");
+            httpRequest = requestFactory.buildPostRequest(url, content);
             httpResponse = httpRequest.execute();
             httpResponse.disconnect();
         } catch (IOException e) {
@@ -66,6 +72,10 @@ public class ClientLoginCookieProvider implements Provider<HttpCookie>{
                 break;
             }
         }
+
+        // Restore the old cookie handler after the request is done
+        // God knows how many requests in other threads this will destroy
+        CookieHandler.setDefault(cookieHandler);
         return lwssoCookie;
     }
 }
