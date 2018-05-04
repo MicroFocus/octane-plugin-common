@@ -161,7 +161,7 @@ public class Util {
         return text;
     }
 
-    public static String createQueryForMultipleValues(String queryParamName, String... queryParamValues) throws UnsupportedEncodingException {
+    public static String createQueryForMultipleValues(String queryParamName, String... queryParamValues) {
         StringJoiner stringJoiner = new StringJoiner("||", "\"(", ")\"");
         String finalQuery = "";
         if (queryParamValues.length != 0) {
