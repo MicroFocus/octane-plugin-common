@@ -269,7 +269,14 @@ public class EntityService {
         return possibleTransitions;
     }
 
+
+    /**
+     * @deprecated <br> use {@link #updateEntity(EntityModel)}
+     * @param entityModel base entity model
+     * @param nextPhase entity representing the new phase
+     */
     @SuppressWarnings("rawtypes")
+    @Deprecated
     public void updateEntityPhase(EntityModel entityModel, ReferenceFieldModel nextPhase) {
         String entityId = getUiDataFromModel(entityModel.getValue("id"));
         Entity entityType = Entity.getEntityType(entityModel);
