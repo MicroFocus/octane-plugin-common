@@ -161,10 +161,10 @@ public class MetadataService {
      * Check if server configured in connection settings has client lock stamp supports
      * It checks if FIELD_CLIENT_LOCK_STAMP exists in the field metadata
      * Used for backwards compatibility
+     * @param entityType type of entity to check if lock stamp is supported on
      */
-    public boolean hasClientLockStampSupport() {
-        //The entity type does not matter since it was added for all entity types at the same time
-        return getFields(Entity.WORK_ITEM)
+    public boolean hasClientLockStampSupport(Entity entityType) {
+        return getFields(entityType)
                 .stream()
                 .map(fieldMetadata -> fieldMetadata.getName())
                 .anyMatch(fieldName -> FIELD_CLIENT_LOCK_STAMP.equals(fieldName));
