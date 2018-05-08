@@ -53,7 +53,7 @@ public class MetadataService {
     /**
      * For backwards compatibility, check if this field exists
      */
-    private static final String FIELD_CLIENT_LOCK_STAMP = "client_lock_stamp";
+    public static final String FIELD_CLIENT_LOCK_STAMP = "client_lock_stamp";
 
     @Inject
     private HttpClientProvider httpClientProvider;
