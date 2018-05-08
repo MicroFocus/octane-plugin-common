@@ -46,7 +46,7 @@ public class SearchFunctionalityITCase extends IntegrationTestBase {
         } catch (Exception e) {
             e.printStackTrace();
         }
-        EntityModel retrievedEntity = null;
+        EntityModel retrievedEntity;
         for (EntityModel entityModel : entityModels) {
             //search by name
             retrievedEntity = search("name", entityModel.getValue("name").getValue().toString());
@@ -57,7 +57,6 @@ public class SearchFunctionalityITCase extends IntegrationTestBase {
             //search by description
             retrievedEntity = search("description", entityModel.getValue("description").getValue().toString());
             assert compareEntities(entityModel, retrievedEntity);
-            retrievedEntity = null;
         }
     }
 
