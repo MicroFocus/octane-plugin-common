@@ -1,5 +1,6 @@
 package com.hpe.adm.octane.ideplugins.integrationtests.services;
 
+import com.google.api.client.http.HttpResponseException;
 import com.hpe.adm.nga.sdk.authentication.SimpleUserAuthentication;
 import com.hpe.adm.nga.sdk.exception.OctaneException;
 import com.hpe.adm.nga.sdk.model.EntityModel;
@@ -10,6 +11,7 @@ import com.hpe.adm.octane.ideplugins.services.TestService;
 import com.hpe.adm.octane.ideplugins.services.connection.ConnectionSettings;
 import com.hpe.adm.octane.ideplugins.services.filtering.Entity;
 import com.hpe.adm.octane.ideplugins.services.util.ClientType;
+import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 
@@ -33,12 +35,16 @@ public class ConnectionSettingsITCase extends IntegrationTestBase {
     }
 
     private boolean validateCredentials(String username, String password, String baseUrl) {
-
         OctaneHttpClient octaneHttpClient = new GoogleHttpClient(baseUrl);
         try {
             return octaneHttpClient.authenticate(new SimpleUserAuthentication(username, password, ClientType.HPE_REST_API_TECH_PREVIEW.name()));
-        } catch (OctaneException e) {
-            return false;
+        } catch (Exception e) {
+            if(e.getCause() instanceof HttpResponseException && ((HttpResponseException) e.getCause()).getStatusCode() == 401) {
+                return false;
+            } else {
+                Assert.fail("Unexpected exception from sdk during auth failure: " + e);
+                throw e;
+            }
         }
     }
 
