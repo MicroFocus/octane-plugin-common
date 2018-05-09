@@ -31,6 +31,8 @@ import org.apache.http.client.utils.URIBuilder;
 import org.json.JSONArray;
 import org.json.JSONObject;
 
+import java.net.MalformedURLException;
+import java.net.URL;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
@@ -44,18 +46,22 @@ public class EntitySearchService {
     private static final String GLOBAL_TEXT_SEARCH_RESULT_TAG = "global_text_search_result";
 
     @Inject
-    protected ConnectionSettingsProvider connectionSettingsProvider;
+    private ConnectionSettingsProvider connectionSettingsProvider;
+
     @Inject
-    protected HttpClientProvider httpClientProvider;
+    private HttpClientProvider httpClientProvider;
 
     public Collection<EntityModel> searchGlobal(String queryString, int limit, Entity... entity) {
         final String escapedQueryString = TextUtil.escapeText(queryString);
         Map<Entity, Collection<EntityModel>> result = new ConcurrentHashMap<>();
 
+        //Doing the httpClientProvider.geOctaneHttpClient() will make the login execute outside of the parallel threads
+        OctaneHttpClient httpClient = httpClientProvider.geOctaneHttpClient();
+
         Arrays
             .stream(entity)
             .parallel()
-            .forEach(entityType -> result.put(entityType, searchGlobal(escapedQueryString , limit, entityType)));
+            .forEach(entityType -> result.put(entityType, searchGlobal(escapedQueryString , limit, entityType, httpClient)));
 
         return result
                 .keySet()
@@ -67,26 +73,24 @@ public class EntitySearchService {
 
 
     public Collection<EntityModel> searchGlobal(String queryString, int limit, Entity entity) {
+        OctaneHttpClient httpClient = httpClientProvider.geOctaneHttpClient();
+        return searchGlobal(queryString, limit, entity, httpClient);
+    }
+
+    private Collection<EntityModel> searchGlobal(String queryString, int limit, Entity entity, OctaneHttpClient httpClient) {
 
         ConnectionSettings connectionSettings = connectionSettingsProvider.getConnectionSettings();
-        OctaneHttpClient httpClient = httpClientProvider.geOctaneHttpClient();
-        if(null == httpClient){
-            throw new ServiceRuntimeException("Failed to authenticate with current connection settings");
-        }
-
         URIBuilder uriBuilder = new URIBuilder();
+        URL baseUrl;
+        try {
+            baseUrl = new URL(connectionSettings.getBaseUrl());
+        } catch (MalformedURLException e) {
+            throw new ServiceRuntimeException("Cannot parse base url from connection settings: " + e);
+        }
 
-        //set the scheme, the protocol must be removed for the uri builder setHost method
-        if(connectionSettings.getBaseUrl().contains("https")){
-            uriBuilder.setScheme("https");
-            uriBuilder.setHost(connectionSettings.getBaseUrl().replace("https://", ""));
-        }
-        else if (connectionSettings.getBaseUrl().contains("http")){
-            uriBuilder.setScheme("http");
-            uriBuilder.setHost(connectionSettings.getBaseUrl().replace("http://", ""));
-        } else {
-            throw new ServiceRuntimeException("Cannot find http/https protocol is connections settings base URL");
-        }
+        uriBuilder.setScheme(baseUrl.getProtocol());
+        uriBuilder.setHost(baseUrl.getHost());
+        uriBuilder.setPort(baseUrl.getPort());
 
         uriBuilder.setPath(
                 "/api"
