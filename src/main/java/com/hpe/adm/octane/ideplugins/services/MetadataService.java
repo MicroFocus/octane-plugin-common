@@ -49,6 +49,11 @@ import com.hpe.adm.octane.ideplugins.services.filtering.Entity;
 import com.hpe.adm.octane.ideplugins.services.util.OctaneUrlBuilder;
 
 public class MetadataService {
+    
+    /**
+     * For backwards compatibility, check if this field exists
+     */
+    public static final String FIELD_CLIENT_LOCK_STAMP = "client_lock_stamp";
 
     @Inject
     private HttpClientProvider httpClientProvider;
@@ -150,6 +155,19 @@ public class MetadataService {
                 fieldsMetadata.add((new Gson()).fromJson(obj.toString(), FieldMetadata.class));
         });
         return fieldsMetadata;
+    }
+    
+    /**
+     * Check if server configured in connection settings has client lock stamp supports
+     * It checks if FIELD_CLIENT_LOCK_STAMP exists in the field metadata
+     * Used for backwards compatibility
+     * @param entityType type of entity to check if lock stamp is supported on
+     */
+    public boolean hasClientLockStampSupport(Entity entityType) {
+        return getFields(entityType)
+                .stream()
+                .map(fieldMetadata -> fieldMetadata.getName())
+                .anyMatch(fieldName -> FIELD_CLIENT_LOCK_STAMP.equals(fieldName));
     }
 
     public void eagerInit(Entity... entities) {
