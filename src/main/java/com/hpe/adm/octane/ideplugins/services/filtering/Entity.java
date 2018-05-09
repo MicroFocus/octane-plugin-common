@@ -41,7 +41,6 @@ public enum Entity {
     AUTOMATED_TEST(Entity.TEST, "test_automated"),
     TEST_SUITE(Entity.TEST, "test_suite"),
 
-
     TASK("tasks", "task"),
     PHASE("phases", "phases"),
     TRANSITION("transitions", "transition"),
@@ -57,7 +56,10 @@ public enum Entity {
     REQUIREMENT(Entity.REQUIREMENT_BASE_ENTITY, "requirement_document"),
 
     //Entity used to hold items added to my work
-    USER_ITEM("user_items","user_item");
+    USER_ITEM("user_items","user_item"),
+    
+    LIST_NODE("list_nodes","list_node");
+    
     //This is the name of the entity passed to the sdk, used for the rest, call, usually plural
     private String apiEntityName;
 
