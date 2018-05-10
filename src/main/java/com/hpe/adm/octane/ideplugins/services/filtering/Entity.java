@@ -51,6 +51,7 @@ public enum Entity {
     COMMENT("comments", "comment"),
 
     WORKSPACE_USER("workspace_users", "workspace_user"),
+    TEAM("team", "teams"),
 
     REQUIREMENT_BASE_ENTITY("requirements", "requirement"),
     REQUIREMENT(Entity.REQUIREMENT_BASE_ENTITY, "requirement_document"),
@@ -58,7 +59,15 @@ public enum Entity {
     //Entity used to hold items added to my work
     USER_ITEM("user_items","user_item"),
     
-    LIST_NODE("list_nodes","list_node");
+    LIST_NODE("list_nodes","list_node"),
+    
+    RELEASE("releases", "release"),
+    
+    SPRINT("sprints", "sprint"),
+    
+    PRODUCT_AREA("product_areas", "product_area"),
+    
+    TAXONOMY_ITEM_NODE("taxonomy_item_nodes", "taxonomy_item_node");
     
     //This is the name of the entity passed to the sdk, used for the rest, call, usually plural
     private String apiEntityName;
