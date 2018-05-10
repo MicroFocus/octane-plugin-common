@@ -51,13 +51,14 @@ public enum Entity {
     COMMENT("comments", "comment"),
 
     WORKSPACE_USER("workspace_users", "workspace_user"),
-    TEAM("team", "teams"),
+    TEAM("teams", "team"),
 
     REQUIREMENT_BASE_ENTITY("requirements", "requirement"),
     REQUIREMENT(Entity.REQUIREMENT_BASE_ENTITY, "requirement_document"),
 
     //Entity used to hold items added to my work
     USER_ITEM("user_items","user_item"),
+    USER_TAG("user_tags", "user_tag"),
     
     LIST_NODE("list_nodes","list_node"),
     
