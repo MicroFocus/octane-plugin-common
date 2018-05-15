@@ -84,4 +84,31 @@ public class SearchFunctionalityITCase extends IntegrationTestBase {
         else
             assert false;
     }
+    
+    @Test
+    public void testSearchWithEmptyString() {
+        if (search("", String.valueOf(UUID.randomUUID().toString())) == null) {
+            assert true;
+        } else {
+            assert false;
+        }
+    }
+
+    @Test
+    public void testSearchWithDoubleQuotes() {
+        if (search("\"", String.valueOf(UUID.randomUUID().toString())) == null) {
+            assert true;
+        } else {
+            assert false;
+        }
+    }
+    
+    @Test 
+    public void testSearchWithBackslash() {
+        if (search("\\\\", String.valueOf(UUID.randomUUID().toString())) == null) {
+            assert true;
+        } else {
+            assert false;
+        }
+    }
 }

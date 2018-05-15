@@ -13,6 +13,21 @@
 
 package com.hpe.adm.octane.ideplugins.services.nonentity;
 
+import java.net.MalformedURLException;
+import java.net.URL;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collection;
+import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.stream.Collectors;
+
+import org.apache.commons.lang.StringEscapeUtils;
+import org.apache.commons.lang.StringUtils;
+import org.apache.http.client.utils.URIBuilder;
+import org.json.JSONArray;
+import org.json.JSONObject;
+
 import com.google.inject.Inject;
 import com.hpe.adm.nga.sdk.model.EntityModel;
 import com.hpe.adm.nga.sdk.model.StringFieldModel;
@@ -25,20 +40,6 @@ import com.hpe.adm.octane.ideplugins.services.connection.HttpClientProvider;
 import com.hpe.adm.octane.ideplugins.services.exception.ServiceRuntimeException;
 import com.hpe.adm.octane.ideplugins.services.filtering.Entity;
 import com.hpe.adm.octane.ideplugins.services.filtering.PredefinedEntityComparator;
-import com.hpe.adm.octane.ideplugins.services.util.TextUtil;
-import org.apache.commons.lang.StringUtils;
-import org.apache.http.client.utils.URIBuilder;
-import org.json.JSONArray;
-import org.json.JSONObject;
-
-import java.net.MalformedURLException;
-import java.net.URL;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collection;
-import java.util.Map;
-import java.util.concurrent.ConcurrentHashMap;
-import java.util.stream.Collectors;
 
 public class EntitySearchService {
 
@@ -52,16 +53,16 @@ public class EntitySearchService {
     private HttpClientProvider httpClientProvider;
 
     public Collection<EntityModel> searchGlobal(String queryString, int limit, Entity... entity) {
-        final String escapedQueryString = TextUtil.escapeText(queryString);
+        final String escapedQueryString = StringEscapeUtils.escapeJavaScript(queryString);
+
         Map<Entity, Collection<EntityModel>> result = new ConcurrentHashMap<>();
 
-        //Doing the httpClientProvider.geOctaneHttpClient() will make the login execute outside of the parallel threads
+        // Doing the httpClientProvider.geOctaneHttpClient() will make the login execute outside of the parallel threads
         OctaneHttpClient httpClient = httpClientProvider.geOctaneHttpClient();
-
         Arrays
-            .stream(entity)
-            .parallel()
-            .forEach(entityType -> result.put(entityType, searchGlobal(escapedQueryString , limit, entityType, httpClient)));
+                .stream(entity)
+                .parallel()
+                .forEach(entityType -> result.put(entityType, searchGlobal(escapedQueryString, limit, entityType, httpClient)));
 
         return result
                 .keySet()
@@ -69,6 +70,7 @@ public class EntitySearchService {
                 .sorted(PredefinedEntityComparator.instance)
                 .flatMap(key -> result.get(key).stream())
                 .collect(Collectors.toList());
+
     }
 
 
