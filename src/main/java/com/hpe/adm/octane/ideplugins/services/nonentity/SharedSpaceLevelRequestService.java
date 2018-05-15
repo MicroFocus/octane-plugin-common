@@ -43,7 +43,7 @@ public class SharedSpaceLevelRequestService{
     public String getCurrentWorkspaceName() {
 
         ConnectionSettings connectionSettings = connectionSettingsProvider.getConnectionSettings();
-        String retVal = " ";
+        String retVal = "";
         OctaneHttpClient httpClient = httpClientProvider.geOctaneHttpClient();
 
         if (null !=httpClient) {
