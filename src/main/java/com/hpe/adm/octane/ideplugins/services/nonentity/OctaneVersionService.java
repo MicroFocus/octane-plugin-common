@@ -23,11 +23,15 @@ import com.hpe.adm.octane.ideplugins.services.connection.ConnectionSettings;
 import com.hpe.adm.octane.ideplugins.services.connection.ConnectionSettingsProvider;
 import com.hpe.adm.octane.ideplugins.services.exception.ServiceRuntimeException;
 import com.hpe.adm.octane.ideplugins.services.util.OctaneVersion;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * Retrieves the Octane version.
  */
 public class OctaneVersionService {
+
+    private static final Logger logger = LoggerFactory.getLogger(OctaneVersionService.class.getClass());
 
     public static final OctaneVersion fallbackVersion = OctaneVersion.EVERTON_P3;
 
@@ -45,7 +49,7 @@ public class OctaneVersionService {
             String jsonString = response.getContent();
             return new JsonParser().parse(jsonString).getAsJsonObject().get("display_version").getAsString();
         } catch (Exception e) {
-            //TODO: logging
+            logger.error("Failed to retrieve Octane server version");
             throw new ServiceRuntimeException("Failed to retrieve Octane server version", e);
         }
     }
