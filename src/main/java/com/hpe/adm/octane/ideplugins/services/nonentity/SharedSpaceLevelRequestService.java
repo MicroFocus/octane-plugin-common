@@ -24,8 +24,14 @@ import com.hpe.adm.octane.ideplugins.services.UserService;
 import com.hpe.adm.octane.ideplugins.services.connection.ConnectionSettings;
 import com.hpe.adm.octane.ideplugins.services.connection.ConnectionSettingsProvider;
 import com.hpe.adm.octane.ideplugins.services.connection.HttpClientProvider;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import java.io.UnsupportedEncodingException;
 
 public class SharedSpaceLevelRequestService{
+
+    private final Logger logger = LoggerFactory.getLogger(SharedSpaceLevelRequestService.class.getClass());
 
     @Inject
     protected ConnectionSettingsProvider connectionSettingsProvider;
@@ -37,7 +43,7 @@ public class SharedSpaceLevelRequestService{
     public String getCurrentWorkspaceName() {
 
         ConnectionSettings connectionSettings = connectionSettingsProvider.getConnectionSettings();
-        String retVal = " ";
+        String retVal = "";
         OctaneHttpClient httpClient = httpClientProvider.geOctaneHttpClient();
 
         if (null !=httpClient) {
@@ -54,6 +60,12 @@ public class SharedSpaceLevelRequestService{
                 }
             }
         }
+        try {
+            retVal = new String(retVal.getBytes("ISO-8859-1"),"UTF-8" );
+        } catch (UnsupportedEncodingException e) {
+           logger.error("Unsupported encoding");
+        }
         return retVal;
     }
+
 }
