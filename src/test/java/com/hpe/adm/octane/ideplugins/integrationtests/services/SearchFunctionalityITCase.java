@@ -1,17 +1,18 @@
 package com.hpe.adm.octane.ideplugins.integrationtests.services;
 
 
-import com.hpe.adm.nga.sdk.model.EntityModel;
-import com.hpe.adm.nga.sdk.model.StringFieldModel;
-import com.hpe.adm.octane.ideplugins.integrationtests.IntegrationTestBase;
-import com.hpe.adm.octane.ideplugins.services.filtering.Entity;
-import org.junit.Test;
-
 import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
+
+import org.junit.Test;
+
+import com.hpe.adm.nga.sdk.model.EntityModel;
+import com.hpe.adm.nga.sdk.model.StringFieldModel;
+import com.hpe.adm.octane.ideplugins.integrationtests.IntegrationTestBase;
+import com.hpe.adm.octane.ideplugins.services.filtering.Entity;
 
 
 public class SearchFunctionalityITCase extends IntegrationTestBase {
@@ -57,6 +58,12 @@ public class SearchFunctionalityITCase extends IntegrationTestBase {
             //search by description
             retrievedEntity = search("description", entityModel.getValue("description").getValue().toString());
             assert compareEntities(entityModel, retrievedEntity);
+            //search by double quotes
+            retrievedEntity = search("name", "\"");
+            assert compareEntities(entityModel, retrievedEntity);
+            //search by backslash
+            retrievedEntity = search("name", "\\");
+            assert compareEntities(entityModel, retrievedEntity);
         }
     }
 
@@ -85,30 +92,4 @@ public class SearchFunctionalityITCase extends IntegrationTestBase {
             assert false;
     }
     
-    @Test
-    public void testSearchWithEmptyString() {
-        if (search("", String.valueOf(UUID.randomUUID().toString())) == null) {
-            assert true;
-        } else {
-            assert false;
-        }
-    }
-
-    @Test
-    public void testSearchWithDoubleQuotes() {
-        if (search("\"", String.valueOf(UUID.randomUUID().toString())) == null) {
-            assert true;
-        } else {
-            assert false;
-        }
-    }
-    
-    @Test 
-    public void testSearchWithBackslash() {
-        if (search("\\\\", String.valueOf(UUID.randomUUID().toString())) == null) {
-            assert true;
-        } else {
-            assert false;
-        }
-    }
 }
