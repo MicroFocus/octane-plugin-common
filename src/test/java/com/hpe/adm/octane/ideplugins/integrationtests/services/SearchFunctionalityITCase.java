@@ -16,7 +16,7 @@ import com.hpe.adm.octane.ideplugins.services.filtering.Entity;
 
 public class SearchFunctionalityITCase extends IntegrationTestBase {
 
-    private String randomUUID = String.valueOf(UUID.randomUUID().toString());
+    private static final String randomUUID = UUID.randomUUID().toString();
 
     private List<EntityModel> createSearchableEntities() {
         List<EntityModel> entities = new ArrayList<>();
@@ -78,12 +78,26 @@ public class SearchFunctionalityITCase extends IntegrationTestBase {
 
     @Test
     public void testSearchWithGoodDoubleQuotes() {
-        Assert.assertNotNull(search("name", "task 2 with \" double quotes \""));
+        Assert.assertNotNull(search("name", "task 2 with \" double quotes \"" + randomUUID));
     }
     
     @Test
     public void testSearchWithGoodBackslash() {
         Assert.assertNotNull(search("name", "\\"));        
+    }
+    
+    @Test
+    public void testCompareIfReturnedEntitiesMatch() {
+        EntityModel myUS = createEntity(Entity.USER_STORY);
+        EntityModel myTask = createTask(myUS, "something searchable" + randomUUID);
+        try {
+            Thread.sleep(40000);// --wait until the elastic search is updated with the entities
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+
+        EntityModel retrievedEntity = search("name", "something searchable" + randomUUID);
+        Assert.assertTrue(compareEntities(retrievedEntity, myTask));
     }
 
 }

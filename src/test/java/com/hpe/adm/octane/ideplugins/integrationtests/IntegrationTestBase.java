@@ -731,7 +731,11 @@ public abstract class IntegrationTestBase {
     }
 
     protected boolean compareEntities(EntityModel entity1, EntityModel entity2) {
-        return (entity1.getValue("id").getValue().toString().equals(entity2.getValue(Constants.ID).getValue().toString()));
+        if((entity1.getValue("id").getValue().toString().equals(entity2.getValue(Constants.ID).getValue().toString())) 
+                && entity1.getValue("type").getValue().toString().equals(entity2.getValue(Constants.TYPE).getValue().toString())) {
+            return true;
+        }
+        return false;
     }
 
     protected EntityModel findRequirementById(long id) {
