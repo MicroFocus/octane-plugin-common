@@ -68,7 +68,8 @@ public enum Entity {
     
     PRODUCT_AREA("product_areas", "product_area"),
     
-    TAXONOMY_ITEM_NODE("taxonomy_item_nodes", "taxonomy_item_node");
+    TAXONOMY_NODE("taxonomy_nodes", "taxonomy_node"),
+    TAXONOMY_ITEM_NODE(TAXONOMY_NODE, "taxonomy_item_node");
     
     //This is the name of the entity passed to the sdk, used for the rest, call, usually plural
     private String apiEntityName;
