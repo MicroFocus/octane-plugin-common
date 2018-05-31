@@ -53,8 +53,9 @@ public class EntitySearchService {
     private HttpClientProvider httpClientProvider;
 
     public Collection<EntityModel> searchGlobal(String queryString, int limit, Entity... entity) {
-        final String escapedQueryString = StringEscapeUtils.escapeJavaScript(queryString);
-
+        queryString = StringEscapeUtils.escapeJavaScript(queryString);
+        //javascript style escapes quote ' with \\' we need to reverse this side effect
+        String escapedQueryString = queryString.replace("\\'", "'");
         Map<Entity, Collection<EntityModel>> result = new ConcurrentHashMap<>();
 
         // Doing the httpClientProvider.geOctaneHttpClient() will make the login execute outside of the parallel threads
