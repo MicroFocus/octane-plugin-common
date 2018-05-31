@@ -102,7 +102,7 @@
         <dependency>
             <groupId>com.hpe.adm.nga.sdk.extension</groupId>
             <artifactId>sdk-extension-src</artifactId>
-            <version>12.55.17-SNAPSHOT</version>
+            <version>12.55.32-SNAPSHOT</version>
         </dependency>
         <dependency>
             <groupId>org.jsoup</groupId>
