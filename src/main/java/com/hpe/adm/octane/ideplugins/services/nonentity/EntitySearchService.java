@@ -13,23 +13,10 @@
 
 package com.hpe.adm.octane.ideplugins.services.nonentity;
 
-import java.net.MalformedURLException;
-import java.net.URL;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collection;
-import java.util.Map;
-import java.util.concurrent.ConcurrentHashMap;
-import java.util.stream.Collectors;
-
-import org.apache.commons.lang.StringEscapeUtils;
-import org.apache.commons.lang.StringUtils;
-import org.apache.http.client.utils.URIBuilder;
-import org.json.JSONArray;
-import org.json.JSONObject;
-
 import com.google.inject.Inject;
+import com.hpe.adm.nga.sdk.exception.OctaneException;
 import com.hpe.adm.nga.sdk.model.EntityModel;
+import com.hpe.adm.nga.sdk.model.LongFieldModel;
 import com.hpe.adm.nga.sdk.model.StringFieldModel;
 import com.hpe.adm.nga.sdk.network.OctaneHttpClient;
 import com.hpe.adm.nga.sdk.network.OctaneHttpRequest;
@@ -40,8 +27,23 @@ import com.hpe.adm.octane.ideplugins.services.connection.HttpClientProvider;
 import com.hpe.adm.octane.ideplugins.services.exception.ServiceRuntimeException;
 import com.hpe.adm.octane.ideplugins.services.filtering.Entity;
 import com.hpe.adm.octane.ideplugins.services.filtering.PredefinedEntityComparator;
+import org.apache.commons.lang.StringEscapeUtils;
+import org.apache.commons.lang.StringUtils;
+import org.apache.http.client.utils.URIBuilder;
+import org.json.JSONArray;
+import org.json.JSONObject;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import java.net.MalformedURLException;
+import java.net.URL;
+import java.util.*;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.stream.Collectors;
 
 public class EntitySearchService {
+
+    private static final Logger logger = LoggerFactory.getLogger(EntitySearchService.class.getName());
 
     private static final String JSON_DATA_NAME = "data";
     private static final String GLOBAL_TEXT_SEARCH_RESULT_TAG = "global_text_search_result";
@@ -123,6 +125,18 @@ public class EntitySearchService {
             }
 
         } catch (Exception ex) {
+            //Team edition makes some of the entity types unreadable
+            //todo: metadata based approach currently doesn't seem possible, should be done in the future
+            if(ex instanceof OctaneException) {
+                OctaneException octaneException = (OctaneException) ex;
+                LongFieldModel httpErrorCode = (LongFieldModel) octaneException.getError().getValue("http_status_code");
+
+                if(httpErrorCode != null && httpErrorCode.getValue() == 403L){
+                    logger.warn("403 when searching " + entity + ", but exception was ignored: " + ex);
+                    return Collections.emptyList();
+                }
+            }
+
             throw new ServiceRuntimeException(ex);
         }
     }
