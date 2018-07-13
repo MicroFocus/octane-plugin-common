@@ -43,7 +43,7 @@ public class ImageService {
     private static Runnable resetLwssoCookie = () -> lwssoCookie = null;
 
 
-    private File saveImageToTempFile(String pictureLink) {
+    private File saveImageToTempFile(String pictureLink) throws Exception {
 
         String tmpPath = System.getProperty("java.io.tmpdir");
         File tmpDir = new File(tmpPath);
@@ -76,7 +76,7 @@ public class ImageService {
      * @param pictureLink - src link to the image from server
      * @return
      */
-    private HttpResponse downloadImage(String pictureLink, int tryCount) {
+    private HttpResponse downloadImage(String pictureLink, int tryCount) throws Exception {
         if (lwssoCookie == null) {
             lwssoCookie = clientLoginCookieProvider.get();
         }
@@ -96,13 +96,13 @@ public class ImageService {
                 return downloadImage(pictureLink, --tryCount);
             } else {
                 logger.error(e.getMessage());
-                return null;
+                throw new Exception("Failed to load image from octane");
             }
         }
         return httpResponse;
     }
 
-    public String downloadPictures(String descriptionField) {
+    public String downloadPictures(String descriptionField) throws Exception{
 
         //Reset cookie in case connection settings change
         if(!connectionSettingsProvider.hasChangeHandler(resetLwssoCookie)) {
