@@ -13,9 +13,6 @@
 
 package com.hpe.adm.octane.ideplugins.services.di;
 
-import java.util.concurrent.locks.Lock;
-import java.util.concurrent.locks.ReentrantLock;
-
 import com.google.common.base.Supplier;
 import com.google.common.base.Suppliers;
 import com.google.inject.AbstractModule;
