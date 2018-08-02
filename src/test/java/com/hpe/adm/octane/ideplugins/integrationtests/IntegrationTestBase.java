@@ -13,39 +13,13 @@
 
 package com.hpe.adm.octane.ideplugins.integrationtests;
 
-import static org.junit.Assert.fail;
-
-import java.lang.annotation.Annotation;
-import java.time.LocalDateTime;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.HashSet;
-import java.util.LinkedHashSet;
-import java.util.List;
-import java.util.Set;
-import java.util.UUID;
-import java.util.stream.Collectors;
-import java.util.stream.Stream;
-
-import org.apache.commons.lang.StringEscapeUtils;
-import org.json.JSONArray;
-import org.json.JSONObject;
-import org.junit.After;
-import org.junit.Before;
-
 import com.google.inject.Guice;
 import com.google.inject.Inject;
 import com.google.inject.Injector;
 import com.hpe.adm.nga.sdk.Octane;
 import com.hpe.adm.nga.sdk.authentication.SimpleUserAuthentication;
 import com.hpe.adm.nga.sdk.exception.OctaneException;
-import com.hpe.adm.nga.sdk.model.EntityModel;
-import com.hpe.adm.nga.sdk.model.FieldModel;
-import com.hpe.adm.nga.sdk.model.MultiReferenceFieldModel;
-import com.hpe.adm.nga.sdk.model.ReferenceFieldModel;
-import com.hpe.adm.nga.sdk.model.StringFieldModel;
+import com.hpe.adm.nga.sdk.model.*;
 import com.hpe.adm.nga.sdk.network.OctaneHttpClient;
 import com.hpe.adm.nga.sdk.network.OctaneHttpRequest;
 import com.hpe.adm.nga.sdk.network.OctaneHttpResponse;
@@ -53,11 +27,7 @@ import com.hpe.adm.nga.sdk.network.google.GoogleHttpClient;
 import com.hpe.adm.nga.sdk.query.Query;
 import com.hpe.adm.nga.sdk.query.QueryMethod;
 import com.hpe.adm.octane.ideplugins.Constants;
-import com.hpe.adm.octane.ideplugins.integrationtests.util.Entities;
-import com.hpe.adm.octane.ideplugins.integrationtests.util.EntityGenerator;
-import com.hpe.adm.octane.ideplugins.integrationtests.util.PropertyUtil;
-import com.hpe.adm.octane.ideplugins.integrationtests.util.User;
-import com.hpe.adm.octane.ideplugins.integrationtests.util.WorkSpace;
+import com.hpe.adm.octane.ideplugins.integrationtests.util.*;
 import com.hpe.adm.octane.ideplugins.services.EntityService;
 import com.hpe.adm.octane.ideplugins.services.connection.ConnectionSettings;
 import com.hpe.adm.octane.ideplugins.services.connection.ConnectionSettingsProvider;
@@ -69,6 +39,19 @@ import com.hpe.adm.octane.ideplugins.services.nonentity.EntitySearchService;
 import com.hpe.adm.octane.ideplugins.services.nonentity.OctaneVersionService;
 import com.hpe.adm.octane.ideplugins.services.util.ClientType;
 import com.hpe.adm.octane.ideplugins.services.util.OctaneVersion;
+import org.apache.commons.lang.StringEscapeUtils;
+import org.json.JSONArray;
+import org.json.JSONObject;
+import org.junit.After;
+import org.junit.Before;
+
+import java.lang.annotation.Annotation;
+import java.time.LocalDateTime;
+import java.util.*;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
+
+import static org.junit.Assert.fail;
 
 /**
  * Enables the use of the {@link Inject} annotation
