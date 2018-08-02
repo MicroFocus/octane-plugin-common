@@ -13,10 +13,10 @@
 
 package com.hpe.adm.octane.ideplugins.services.model;
 
-import java.util.Set;
-
 import com.hpe.adm.nga.sdk.model.EntityModel;
 import com.hpe.adm.nga.sdk.model.FieldModel;
+
+import java.util.Set;
 
 @SuppressWarnings("rawtypes")
 public class ReadOnlyEntityModel extends EntityModel {

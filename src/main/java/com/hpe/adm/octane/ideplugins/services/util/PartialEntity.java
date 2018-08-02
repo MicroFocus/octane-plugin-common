@@ -15,12 +15,13 @@ package com.hpe.adm.octane.ideplugins.services.util;
 
 
 import com.hpe.adm.nga.sdk.model.EntityModel;
+import com.hpe.adm.nga.sdk.model.StringFieldModel;
 import com.hpe.adm.octane.ideplugins.services.filtering.Entity;
 import org.json.JSONObject;
 
 public class PartialEntity extends EntityTypeIdPair {
 
-    String entityName;
+    private String entityName;
 
     public PartialEntity(EntityModel entityModel){
         super(
@@ -43,6 +44,20 @@ public class PartialEntity extends EntityTypeIdPair {
         this.entityName = entityName;
     }
 
+    public static EntityModel toEntityModel(PartialEntity partialEntity){
+        EntityModel entityModel = new EntityModel();
+
+        entityModel.setValue(new StringFieldModel("id", String.valueOf(partialEntity.getEntityId())));
+
+        entityModel.setValue(new StringFieldModel("type", String.valueOf(partialEntity.getEntityType().getTypeName())));
+
+        if(partialEntity.getEntityType().isSubtype()) {
+            entityModel.setValue(new StringFieldModel("subtype", String.valueOf(partialEntity.getEntityType().getSubtypeName())));
+        }
+
+        return entityModel;
+    }
+
     public static JSONObject toJsonObject(PartialEntity partialEntity){
         JSONObject jsonObject = EntityTypeIdPair.toJsonObject(partialEntity);
         jsonObject.put("entityName", partialEntity.getEntityName());
@@ -55,11 +70,9 @@ public class PartialEntity extends EntityTypeIdPair {
         EntityTypeIdPair entityTypeIdPair = EntityTypeIdPair.fromJsonObject(jsonObject);
         String entityName = jsonObject.getString("entityName");
 
-        PartialEntity partialEntity = new PartialEntity(
+        return new PartialEntity(
                 entityTypeIdPair.getEntityId(),
                 entityName,
                 entityTypeIdPair.getEntityType());
-
-        return partialEntity;
     }
 }
