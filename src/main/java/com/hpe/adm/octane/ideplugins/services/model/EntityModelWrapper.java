@@ -13,13 +13,13 @@
 
 package com.hpe.adm.octane.ideplugins.services.model;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Set;
-
 import com.hpe.adm.nga.sdk.model.EntityModel;
 import com.hpe.adm.nga.sdk.model.FieldModel;
 import com.hpe.adm.octane.ideplugins.services.filtering.Entity;
+
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Set;
 
 @SuppressWarnings("rawtypes")
 public class EntityModelWrapper {

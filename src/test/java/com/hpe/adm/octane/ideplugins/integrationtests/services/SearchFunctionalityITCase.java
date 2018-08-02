@@ -1,18 +1,17 @@
 package com.hpe.adm.octane.ideplugins.integrationtests.services;
 
+import com.hpe.adm.nga.sdk.model.EntityModel;
+import com.hpe.adm.nga.sdk.model.StringFieldModel;
+import com.hpe.adm.octane.ideplugins.integrationtests.IntegrationTestBase;
+import com.hpe.adm.octane.ideplugins.services.filtering.Entity;
+import org.junit.Assert;
+import org.junit.Test;
+
 import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
-
-import org.junit.Assert;
-import org.junit.Test;
-
-import com.hpe.adm.nga.sdk.model.EntityModel;
-import com.hpe.adm.nga.sdk.model.StringFieldModel;
-import com.hpe.adm.octane.ideplugins.integrationtests.IntegrationTestBase;
-import com.hpe.adm.octane.ideplugins.services.filtering.Entity;
 
 public class SearchFunctionalityITCase extends IntegrationTestBase {
 
