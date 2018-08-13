@@ -20,7 +20,6 @@ import com.google.inject.Guice;
 import com.google.inject.Injector;
 import com.google.inject.Provides;
 import com.hpe.adm.nga.sdk.Octane;
-import com.hpe.adm.nga.sdk.authentication.SimpleUserAuthentication;
 import com.hpe.adm.nga.sdk.extension.OctaneExtensionUtil;
 import com.hpe.adm.nga.sdk.network.OctaneHttpClient;
 import com.hpe.adm.nga.sdk.network.google.GoogleHttpClient;
@@ -86,8 +85,7 @@ public class ServiceModule extends AbstractModule {
         return () -> {
             ConnectionSettings currentConnectionSettings = connectionSettingsProvider.getConnectionSettings();
             if (!currentConnectionSettings.equals(octaneProviderPreviousConnectionSettings) || octane == null) {
-                octane = new Octane.Builder(new SimpleUserAuthentication(currentConnectionSettings.getUserName(),
-                        currentConnectionSettings.getPassword(), CLIENT_TYPE.name()))
+                octane = new Octane.Builder(currentConnectionSettings.getAuthentication())
                                 .Server(currentConnectionSettings.getBaseUrl())
                                 .sharedSpace(currentConnectionSettings.getSharedSpaceId())
                                 .workSpace(currentConnectionSettings.getWorkspaceId())
@@ -108,13 +106,7 @@ public class ServiceModule extends AbstractModule {
                 GoogleHttpClient httpClient = new GoogleHttpClient(currentConnectionSettings.getBaseUrl());
                 httpClientPreviousConnectionSettings = currentConnectionSettings;
 
-                SimpleUserAuthentication userAuthentication =
-                        new SimpleUserAuthentication(
-                                currentConnectionSettings.getUserName(),
-                                currentConnectionSettings.getPassword(),
-                                CLIENT_TYPE.name());
-
-                httpClient.authenticate(userAuthentication);
+                httpClient.authenticate(currentConnectionSettings.getAuthentication());
                 
                 //Do not set the field until authenticate is done, otherwise you get multithreading issues
                 ServiceModule.this.octaneHttpClient = httpClient;

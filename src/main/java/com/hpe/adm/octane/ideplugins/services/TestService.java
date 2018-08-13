@@ -18,11 +18,9 @@ import com.google.api.client.http.HttpRequest;
 import com.google.api.client.http.HttpTransport;
 import com.google.api.client.http.javanet.NetHttpTransport;
 import com.hpe.adm.nga.sdk.Octane;
-import com.hpe.adm.nga.sdk.authentication.SimpleUserAuthentication;
 import com.hpe.adm.nga.sdk.query.Query;
 import com.hpe.adm.nga.sdk.query.QueryMethod;
 import com.hpe.adm.octane.ideplugins.services.connection.ConnectionSettings;
-import com.hpe.adm.octane.ideplugins.services.di.ServiceModule;
 import com.hpe.adm.octane.ideplugins.services.exception.ServiceException;
 import com.hpe.adm.octane.ideplugins.services.filtering.Entity;
 
@@ -33,14 +31,11 @@ import com.hpe.adm.octane.ideplugins.services.filtering.Entity;
 public class TestService {
 
     public Octane getOctane(ConnectionSettings connectionSettings){
-        Octane octane = new Octane.Builder(new SimpleUserAuthentication(connectionSettings.getUserName(),
-                connectionSettings.getPassword(), ServiceModule.CLIENT_TYPE.name()))
+        return new Octane.Builder(connectionSettings.getAuthentication())
                 .Server(connectionSettings.getBaseUrl())
                 .sharedSpace(connectionSettings.getSharedSpaceId())
                 .workSpace(connectionSettings.getWorkspaceId())
                 .build();
-
-        return octane;
     }
 
     private void testHttpConnection(ConnectionSettings connectionSettings) throws ServiceException {

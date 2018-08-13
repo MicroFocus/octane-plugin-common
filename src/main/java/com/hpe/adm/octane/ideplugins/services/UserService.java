@@ -15,17 +15,10 @@ package com.hpe.adm.octane.ideplugins.services;
 
 import com.google.inject.Inject;
 import com.hpe.adm.nga.sdk.Octane;
-import com.hpe.adm.nga.sdk.entities.EntityList;
 import com.hpe.adm.nga.sdk.model.EntityModel;
-import com.hpe.adm.nga.sdk.query.Query;
-import com.hpe.adm.nga.sdk.query.QueryMethod;
 import com.hpe.adm.octane.ideplugins.services.connection.ConnectionSettings;
 import com.hpe.adm.octane.ideplugins.services.connection.ConnectionSettingsProvider;
 import com.hpe.adm.octane.ideplugins.services.connection.OctaneProvider;
-import com.hpe.adm.octane.ideplugins.services.exception.ServiceRuntimeException;
-import com.hpe.adm.octane.ideplugins.services.filtering.Entity;
-
-import java.util.Collection;
 
 public class UserService {
 
@@ -42,6 +35,10 @@ public class UserService {
         @Override
         public void run() {
             Octane octane = octaneProvider.getOctane();
+
+            currentUserEntityModel = octane.entityList("current_user").at("").get().execute();
+
+            /*
             String currentUser = connectionSettingsProvider.getConnectionSettings().getUserName();
 
             EntityList entityList = octane.entityList(Entity.WORKSPACE_USER.getApiEntityName());
@@ -55,6 +52,7 @@ public class UserService {
             } else {
                 currentUserEntityModel = entityModels.iterator().next();
             }
+            */
         }
     };
 

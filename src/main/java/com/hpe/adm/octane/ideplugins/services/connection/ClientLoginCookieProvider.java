@@ -17,7 +17,6 @@ import com.google.api.client.http.*;
 import com.google.api.client.http.javanet.NetHttpTransport;
 import com.google.inject.Inject;
 import com.google.inject.Provider;
-import com.hpe.adm.nga.sdk.authentication.SimpleUserAuthentication;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -48,8 +47,8 @@ public class ClientLoginCookieProvider implements Provider<HttpCookie>{
         HttpRequest httpRequest;
         HttpTransport HTTP_TRANSPORT = new NetHttpTransport();
         HttpRequestFactory requestFactory = HTTP_TRANSPORT.createRequestFactory();
-        SimpleUserAuthentication authentication = new SimpleUserAuthentication(connectionSettings.getUserName(), connectionSettings.getPassword());
-        ByteArrayContent content = ByteArrayContent.fromString("application/json", authentication.getAuthenticationString());
+
+        ByteArrayContent content = ByteArrayContent.fromString("application/json", connectionSettings.getAuthentication().getAuthenticationString());
 
         HttpResponse httpResponse;
         try {

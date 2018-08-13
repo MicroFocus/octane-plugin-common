@@ -13,6 +13,7 @@
 
 package com.hpe.adm.octane.ideplugins.services.util;
 
+import com.hpe.adm.nga.sdk.authentication.SimpleUserAuthentication;
 import com.hpe.adm.octane.ideplugins.services.connection.ConnectionSettings;
 import com.hpe.adm.octane.ideplugins.services.exception.ServiceException;
 import com.hpe.adm.octane.ideplugins.services.exception.ServiceRuntimeException;
@@ -83,9 +84,8 @@ public class UrlParser {
 
         }
 
-        connectionSettings.setUserName(userName);
-        connectionSettings.setPassword(password);
-
+        SimpleUserAuthentication authentication = new SimpleUserAuthentication(userName, password);
+        connectionSettings.setAuthentication(authentication);
         return connectionSettings;
     }
 

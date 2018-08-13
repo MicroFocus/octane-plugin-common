@@ -32,9 +32,6 @@ public class UrlParserUTCase {
     private static Long   expectedSharedSpaceId = 1001L;
     private static Long   expectedWorkspaceId = 1002L;
 
-    private static String username = "username";
-    private static String password = "password";
-
     @Test
     public void testUrlParser(){
 
@@ -49,8 +46,6 @@ public class UrlParserUTCase {
         assertEquals(connectionSettings.getBaseUrl(), expectedBase);
         assertEquals(connectionSettings.getSharedSpaceId(), expectedSharedSpaceId);
         assertEquals(connectionSettings.getWorkspaceId(), expectedWorkspaceId);
-        assertEquals(connectionSettings.getUserName(), username);
-        assertEquals(connectionSettings.getPassword(), password);
 
         //Test removing the hash
         String urlWithoutHash = UrlParser.removeHash(octaneUrlWithPortAndHash);
@@ -59,7 +54,6 @@ public class UrlParserUTCase {
         //Test rebuilding the url from the base, reuse the parsed connection settings
         String rebuiltUrl = UrlParser.createUrlFromConnectionSettings(connectionSettings);
         assertEquals(octaneUrlWithPort, rebuiltUrl);
-
 
     }
 
