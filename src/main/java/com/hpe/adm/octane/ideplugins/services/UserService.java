@@ -14,16 +14,21 @@
 package com.hpe.adm.octane.ideplugins.services;
 
 import com.google.inject.Inject;
-import com.hpe.adm.nga.sdk.Octane;
 import com.hpe.adm.nga.sdk.model.EntityModel;
+import com.hpe.adm.nga.sdk.model.ModelParser;
+import com.hpe.adm.nga.sdk.network.OctaneHttpClient;
+import com.hpe.adm.nga.sdk.network.OctaneHttpRequest;
+import com.hpe.adm.nga.sdk.network.OctaneHttpResponse;
 import com.hpe.adm.octane.ideplugins.services.connection.ConnectionSettings;
 import com.hpe.adm.octane.ideplugins.services.connection.ConnectionSettingsProvider;
-import com.hpe.adm.octane.ideplugins.services.connection.OctaneProvider;
+import com.hpe.adm.octane.ideplugins.services.connection.HttpClientProvider;
+import com.hpe.adm.octane.ideplugins.services.exception.ServiceRuntimeException;
+import org.json.JSONObject;
 
 public class UserService {
 
     @Inject
-    private OctaneProvider octaneProvider;
+    private HttpClientProvider httpClientProvider;
 
     @Inject
     private ConnectionSettingsProvider connectionSettingsProvider;
@@ -34,25 +39,17 @@ public class UserService {
     private Runnable getCurrentUserRunnable = new Runnable() {
         @Override
         public void run() {
-            Octane octane = octaneProvider.getOctane();
+            ConnectionSettings connectionSettings = connectionSettingsProvider.getConnectionSettings();
+            OctaneHttpClient httpClient = httpClientProvider.getOctaneHttpClient();
+            OctaneHttpRequest request = new OctaneHttpRequest.GetOctaneHttpRequest(connectionSettings.getBaseUrl() + "/api/current_user/");
+            OctaneHttpResponse response = httpClient.execute(request);
+            String json = response.getContent();
 
-            currentUserEntityModel = octane.entityList("current_user").at("").get().execute();
-
-            /*
-            String currentUser = connectionSettingsProvider.getConnectionSettings().getUserName();
-
-            EntityList entityList = octane.entityList(Entity.WORKSPACE_USER.getApiEntityName());
-            Collection<EntityModel> entityModels =
-                    entityList.get().query(
-                             Query.statement("name", QueryMethod.EqualTo, currentUser).build())
-                            .execute();
-
-            if(entityModels.size()!=1){
-                throw new ServiceRuntimeException("Failed to retrieve logged in user id");
+            if (response.isSuccessStatusCode() && (json != null && !json.isEmpty())) {
+                currentUserEntityModel = ModelParser.getInstance().getEntityModel(new JSONObject(json));
             } else {
-                currentUserEntityModel = entityModels.iterator().next();
+                throw new ServiceRuntimeException("Failed to fetch current logged on user");
             }
-            */
         }
     };
 
