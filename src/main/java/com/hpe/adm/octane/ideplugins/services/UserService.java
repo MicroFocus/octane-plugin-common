@@ -16,6 +16,7 @@ package com.hpe.adm.octane.ideplugins.services;
 import com.google.inject.Inject;
 import com.hpe.adm.nga.sdk.model.EntityModel;
 import com.hpe.adm.nga.sdk.model.ModelParser;
+import com.hpe.adm.nga.sdk.model.StringFieldModel;
 import com.hpe.adm.nga.sdk.network.OctaneHttpClient;
 import com.hpe.adm.nga.sdk.network.OctaneHttpRequest;
 import com.hpe.adm.nga.sdk.network.OctaneHttpResponse;
@@ -47,11 +48,19 @@ public class UserService {
 
             if (response.isSuccessStatusCode() && (json != null && !json.isEmpty())) {
                 currentUserEntityModel = ModelParser.getInstance().getEntityModel(new JSONObject(json));
+                currentUserEntityModel = convertSiteUserToWorkspaceUser(currentUserEntityModel);
             } else {
                 throw new ServiceRuntimeException("Failed to fetch current logged on user");
             }
         }
     };
+
+    private EntityModel convertSiteUserToWorkspaceUser(EntityModel siteUser) {
+        if("site_user".equals(siteUser.getValue("type").getValue())){
+            siteUser.setValue(new StringFieldModel("type", "workspace_user"));
+        }
+        return siteUser;
+    }
 
 
     /**

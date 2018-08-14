@@ -28,6 +28,7 @@ public class ConnectionSettings {
         this.baseUrl = baseUrl;
         this.sharedSpaceId = sharedSpaceId;
         this.workspaceId = workspaceId;
+        this.authentication = authentication;
     }
 
     public String getBaseUrl() {
@@ -83,6 +84,6 @@ public class ConnectionSettings {
                 connectionSettings.getBaseUrl(),
                 connectionSettings.getSharedSpaceId(),
                 connectionSettings.getWorkspaceId(),
-                connectionSettings.getAuthentication()); //TODO
+                connectionSettings.getAuthentication()); //TODO: BAD BAD DOES NOT COPY
     }
 }

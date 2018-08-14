@@ -32,7 +32,7 @@ public class GherkinTestDownloadITCase extends IntegrationTestBase {
 
         OctaneHttpRequest updateScriptRequest = new OctaneHttpRequest.PutOctaneHttpRequest(putUrl, OctaneHttpRequest.JSON_CONTENT_TYPE, script.toString());
         try {
-            httpClient.execute(updateScriptRequest);
+            httpClientProvider.getOctaneHttpClient().execute(updateScriptRequest);
         } catch (Exception e) {
             fail(e.toString());
         }
@@ -52,7 +52,7 @@ public class GherkinTestDownloadITCase extends IntegrationTestBase {
 
         OctaneHttpResponse response = null;
         try {
-            response = httpClient.execute(updateScriptRequest);
+            response = httpClientProvider.getOctaneHttpClient().execute(updateScriptRequest);
         } catch (Exception e) {
             fail(e.toString());
         }

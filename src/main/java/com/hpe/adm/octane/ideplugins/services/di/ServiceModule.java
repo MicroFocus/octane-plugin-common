@@ -44,10 +44,7 @@ public class ServiceModule extends AbstractModule {
     protected final Supplier<Injector> injectorSupplier;
 
     private Octane octane;
-    private ConnectionSettings octaneProviderPreviousConnectionSettings = new ConnectionSettings();
-
     private OctaneHttpClient octaneHttpClient;
-    private ConnectionSettings httpClientPreviousConnectionSettings = new ConnectionSettings();
 
     public ServiceModule(ConnectionSettingsProvider connectionSettingsProvider) {
         this.connectionSettingsProvider = connectionSettingsProvider;
@@ -84,30 +81,25 @@ public class ServiceModule extends AbstractModule {
     public OctaneProvider getOctane() {
         return () -> {
             ConnectionSettings currentConnectionSettings = connectionSettingsProvider.getConnectionSettings();
-            if (!currentConnectionSettings.equals(octaneProviderPreviousConnectionSettings) || octane == null) {
+            if (octane == null) {
                 octane = new Octane.Builder(currentConnectionSettings.getAuthentication())
                                 .Server(currentConnectionSettings.getBaseUrl())
                                 .sharedSpace(currentConnectionSettings.getSharedSpaceId())
                                 .workSpace(currentConnectionSettings.getWorkspaceId())
                                 .build();
-
-                octaneProviderPreviousConnectionSettings = currentConnectionSettings;
             }
             return octane;
         };
     }
 
     @Provides
-    public HttpClientProvider geOctaneHttpClient() {
+    public HttpClientProvider getOctaneHttpClient() {
         return () -> {
             ConnectionSettings currentConnectionSettings = connectionSettingsProvider.getConnectionSettings();
 
-            if (!currentConnectionSettings.equals(httpClientPreviousConnectionSettings) || null == octaneHttpClient) {
+            if (octaneHttpClient == null) {
                 GoogleHttpClient httpClient = new GoogleHttpClient(currentConnectionSettings.getBaseUrl());
-                httpClientPreviousConnectionSettings = currentConnectionSettings;
-
                 httpClient.authenticate(currentConnectionSettings.getAuthentication());
-                
                 //Do not set the field until authenticate is done, otherwise you get multithreading issues
                 ServiceModule.this.octaneHttpClient = httpClient;
             }

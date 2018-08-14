@@ -31,6 +31,7 @@ import com.hpe.adm.octane.ideplugins.services.EntityService;
 import com.hpe.adm.octane.ideplugins.services.UserService;
 import com.hpe.adm.octane.ideplugins.services.connection.ConnectionSettings;
 import com.hpe.adm.octane.ideplugins.services.connection.ConnectionSettingsProvider;
+import com.hpe.adm.octane.ideplugins.services.connection.HttpClientProvider;
 import com.hpe.adm.octane.ideplugins.services.connection.OctaneProvider;
 import com.hpe.adm.octane.ideplugins.services.di.ServiceModule;
 import com.hpe.adm.octane.ideplugins.services.filtering.Entity;
@@ -67,10 +68,10 @@ public abstract class IntegrationTestBase {
     protected UserService userService;
 
     @Inject
-    protected OctaneHttpClient httpClient;
+    protected HttpClientProvider httpClientProvider;
 
     @Inject
-    protected Octane octane;
+    protected OctaneProvider octaneProvider;
 
     static final Set<Entity> searchEntityTypes = new LinkedHashSet<>(Arrays.asList(
             Entity.EPIC,
@@ -102,6 +103,10 @@ public abstract class IntegrationTestBase {
             throw new RuntimeException(Constants.Errors.CONNECTION_SETTINGS_RETRIEVE_ERROR);
         }
 
+        serviceModule = new ServiceModule(connectionSettingsProvider);
+        Injector injector = Guice.createInjector(serviceModule);
+        injector.injectMembers(this);
+
         Annotation[] annotations = this.getClass().getDeclaredAnnotations();
 
         WorkSpace workSpaceAnnotation = getAnnotation(annotations, WorkSpace.class);
@@ -117,14 +122,10 @@ public abstract class IntegrationTestBase {
             connectionSettingsProvider.setConnectionSettings(connectionSettings);
         }
 
-        serviceModule = new ServiceModule(connectionSettingsProvider);
         User userAnnotation = getAnnotation(annotations, User.class);
         if (userAnnotation != null && userAnnotation.create()) {
             createNewUser(userAnnotation.firstName(), userAnnotation.lastName());
         }
-
-        Injector injector = Guice.createInjector(serviceModule);
-        injector.injectMembers(this);
 
         entityGenerator = new EntityGenerator(injector.getInstance(OctaneProvider.class));
         Entities entities = getAnnotation(annotations, Entities.class);
@@ -221,7 +222,7 @@ public abstract class IntegrationTestBase {
 
         OctaneHttpResponse response = null;
         try {
-            response = httpClient.execute(getAllWorkspacesRequest);
+            response = httpClientProvider.getOctaneHttpClient().execute(getAllWorkspacesRequest);
         } catch (Exception e) {
             fail(e.toString());
         }
@@ -310,9 +311,8 @@ public abstract class IntegrationTestBase {
      */
     protected EntityModel getCurrentUser() {
         OctaneProvider octaneProvider = serviceModule.getOctane();
-
-
         Octane octane = octaneProvider.getOctane();
+
         List<EntityModel> users = new ArrayList<>(octane.entityList(Constants.WORKSPACE_ENITY_NAME).get().execute());
 
         for (EntityModel user : users) {
@@ -410,7 +410,7 @@ public abstract class IntegrationTestBase {
                 dataSet.toString());
 
         try {
-            httpClient.execute(postNewReleaseRequest);
+            httpClientProvider.getOctaneHttpClient().execute(postNewReleaseRequest);
         } catch (Exception e) {
             // logger.error("Error while trying to get the response when
             // creating a new release!");
@@ -687,9 +687,9 @@ public abstract class IntegrationTestBase {
         }
         if (workspaceEntities.size() > 0) {
             if (testItemsQuery != null)
-                octane.entityList(Entity.TEST.getApiEntityName()).delete().query(testItemsQuery.build()).execute();
+                octaneProvider.getOctane().entityList(Entity.TEST.getApiEntityName()).delete().query(testItemsQuery.build()).execute();
             if (workItemsQuery != null)
-                octane.entityList(Entity.WORK_ITEM.getApiEntityName()).delete().query(workItemsQuery.build()).execute();
+                octaneProvider.getOctane().entityList(Entity.WORK_ITEM.getApiEntityName()).delete().query(workItemsQuery.build()).execute();
         }
     }
 

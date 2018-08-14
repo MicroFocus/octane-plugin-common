@@ -38,7 +38,7 @@ public class CommitMessageService {
 
     public boolean validateCommitMessage(String commitMessage, Entity entityType, long entityId) {
         ConnectionSettings connectionSettings = connectionSettingsProvider.getConnectionSettings();
-        OctaneHttpClient httpClient = httpClientProvider.geOctaneHttpClient();
+        OctaneHttpClient httpClient = httpClientProvider.getOctaneHttpClient();
         if (null != httpClient) {
             try {
 
@@ -79,7 +79,7 @@ public class CommitMessageService {
 
         List<String> commitPatterns = new ArrayList<>();
         ConnectionSettings connectionSettings = connectionSettingsProvider.getConnectionSettings();
-        OctaneHttpClient httpClient = httpClientProvider.geOctaneHttpClient();
+        OctaneHttpClient httpClient = httpClientProvider.getOctaneHttpClient();
         if (null != httpClient) {
                 OctaneHttpRequest request = new OctaneHttpRequest.GetOctaneHttpRequest(connectionSettings.getBaseUrl() + "/api/shared_spaces/" + connectionSettings.getSharedSpaceId() +
                         "/workspaces/" + connectionSettings.getWorkspaceId() + "/scm_commit_patterns");
