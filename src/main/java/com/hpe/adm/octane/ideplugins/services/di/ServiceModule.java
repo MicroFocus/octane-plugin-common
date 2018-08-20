@@ -20,6 +20,8 @@ import com.google.inject.Guice;
 import com.google.inject.Injector;
 import com.google.inject.Provides;
 import com.hpe.adm.nga.sdk.Octane;
+import com.hpe.adm.nga.sdk.OctaneClassFactory;
+import com.hpe.adm.nga.sdk.extension.ExtendedOctaneClassFactory;
 import com.hpe.adm.nga.sdk.extension.OctaneExtensionUtil;
 import com.hpe.adm.nga.sdk.network.OctaneHttpClient;
 import com.hpe.adm.nga.sdk.network.google.GoogleHttpClient;
@@ -27,6 +29,7 @@ import com.hpe.adm.octane.ideplugins.services.connection.ConnectionSettings;
 import com.hpe.adm.octane.ideplugins.services.connection.ConnectionSettingsProvider;
 import com.hpe.adm.octane.ideplugins.services.connection.HttpClientProvider;
 import com.hpe.adm.octane.ideplugins.services.connection.OctaneProvider;
+import com.hpe.adm.octane.ideplugins.services.connection.sso.SsoLoginGoogleHttpClient;
 import com.hpe.adm.octane.ideplugins.services.mywork.MyWorkService;
 import com.hpe.adm.octane.ideplugins.services.mywork.MyWorkServiceProxyFactory;
 import com.hpe.adm.octane.ideplugins.services.util.ClientType;
@@ -49,6 +52,10 @@ public class ServiceModule extends AbstractModule {
     public ServiceModule(ConnectionSettingsProvider connectionSettingsProvider) {
         this.connectionSettingsProvider = connectionSettingsProvider;
         injectorSupplier = Suppliers.memoize(() -> Guice.createInjector(this));
+
+        System.getProperties().setProperty(
+                OctaneClassFactory.OCTANE_CLASS_FACTORY_CLASS_NAME,
+                SsoLoginGoogleHttpClient.class.getCanonicalName());
 
         OctaneExtensionUtil.enable();
 
