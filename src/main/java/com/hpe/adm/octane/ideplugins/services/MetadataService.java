@@ -126,9 +126,9 @@ public class MetadataService {
         } catch (URISyntaxException e) {
             throw new ServiceRuntimeException(e);
         }
-        response = httpClient.execute(request);
         List<FieldMetadata> fields;
         if (!visibleFieldsCache.containsKey(entityType)) {
+            response = httpClient.execute(request);
             fields = (List<FieldMetadata>) getFieldMetadataFromJSON(response.getContent());
             visibleFieldsCache.put(entityType, fields);
         } else {
