@@ -11,13 +11,14 @@
  * limitations under the License.
  */
 
-package com.hpe.adm.octane.ideplugins.services.connection.sso;
+package com.hpe.adm.octane.ideplugins.services.connection;
 
 import com.hpe.adm.nga.sdk.OctaneClassFactory;
 import com.hpe.adm.nga.sdk.entities.EntityList;
 import com.hpe.adm.nga.sdk.entities.TypedEntityList;
 import com.hpe.adm.nga.sdk.extension.entities.ExtendedEntityList;
 import com.hpe.adm.nga.sdk.network.OctaneHttpClient;
+import com.hpe.adm.octane.ideplugins.services.connection.sso.SsoLoginGoogleHttpClient;
 
 import java.net.Proxy;
 
