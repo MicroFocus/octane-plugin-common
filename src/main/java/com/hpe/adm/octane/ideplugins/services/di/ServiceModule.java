@@ -21,18 +21,15 @@ import com.google.inject.Injector;
 import com.google.inject.Provides;
 import com.hpe.adm.nga.sdk.Octane;
 import com.hpe.adm.nga.sdk.OctaneClassFactory;
-import com.hpe.adm.nga.sdk.extension.ExtendedOctaneClassFactory;
-import com.hpe.adm.nga.sdk.extension.OctaneExtensionUtil;
 import com.hpe.adm.nga.sdk.network.OctaneHttpClient;
-import com.hpe.adm.nga.sdk.network.google.GoogleHttpClient;
-import com.hpe.adm.octane.ideplugins.services.connection.ConnectionSettings;
-import com.hpe.adm.octane.ideplugins.services.connection.ConnectionSettingsProvider;
-import com.hpe.adm.octane.ideplugins.services.connection.HttpClientProvider;
-import com.hpe.adm.octane.ideplugins.services.connection.OctaneProvider;
+import com.hpe.adm.octane.ideplugins.services.connection.*;
 import com.hpe.adm.octane.ideplugins.services.connection.sso.SsoLoginGoogleHttpClient;
 import com.hpe.adm.octane.ideplugins.services.mywork.MyWorkService;
 import com.hpe.adm.octane.ideplugins.services.mywork.MyWorkServiceProxyFactory;
 import com.hpe.adm.octane.ideplugins.services.util.ClientType;
+
+import java.util.concurrent.locks.Lock;
+import java.util.concurrent.locks.ReentrantLock;
 
 public class ServiceModule extends AbstractModule {
 
@@ -49,15 +46,12 @@ public class ServiceModule extends AbstractModule {
     private Octane octane;
     private OctaneHttpClient octaneHttpClient;
 
+    private SsoLoginGoogleHttpClient.SsoTokenPollingStartedHandler ssoTokenPollingStartedHandler;
+    private SsoLoginGoogleHttpClient.SsoTokenPollingCompleteHandler ssoTokenPollingCompleteHandler;
+
     public ServiceModule(ConnectionSettingsProvider connectionSettingsProvider) {
         this.connectionSettingsProvider = connectionSettingsProvider;
         injectorSupplier = Suppliers.memoize(() -> Guice.createInjector(this));
-
-        System.getProperties().setProperty(
-                OctaneClassFactory.OCTANE_CLASS_FACTORY_CLASS_NAME,
-                SsoLoginGoogleHttpClient.class.getCanonicalName());
-
-        OctaneExtensionUtil.enable();
 
         //Reset in case of connection settings change
         connectionSettingsProvider.addChangeHandler(()->{
@@ -84,16 +78,24 @@ public class ServiceModule extends AbstractModule {
         return backwardsCompatibleMyWorkServiceProvider.getMyWorkService();
     }
 
+    private final Lock _mutex = new ReentrantLock(true);
+
     @Provides
     public OctaneProvider getOctane() {
         return () -> {
             ConnectionSettings currentConnectionSettings = connectionSettingsProvider.getConnectionSettings();
             if (octane == null) {
-                octane = new Octane.Builder(currentConnectionSettings.getAuthentication())
-                                .Server(currentConnectionSettings.getBaseUrl())
-                                .sharedSpace(currentConnectionSettings.getSharedSpaceId())
-                                .workSpace(currentConnectionSettings.getWorkspaceId())
-                                .build();
+
+                //Will not auth
+
+                _mutex.lock();
+
+                octane = new CustomOctane(getOctaneHttpClient().getOctaneHttpClient(),
+                        currentConnectionSettings.getBaseUrl(),
+                        currentConnectionSettings.getSharedSpaceId().toString(),
+                        currentConnectionSettings.getWorkspaceId());
+
+                _mutex.unlock();
             }
             return octane;
         };
@@ -105,14 +107,27 @@ public class ServiceModule extends AbstractModule {
             ConnectionSettings currentConnectionSettings = connectionSettingsProvider.getConnectionSettings();
 
             if (octaneHttpClient == null) {
-                GoogleHttpClient httpClient = new GoogleHttpClient(currentConnectionSettings.getBaseUrl());
+                SsoLoginGoogleHttpClient httpClient = new SsoLoginGoogleHttpClient(currentConnectionSettings.getBaseUrl());
+                httpClient.setSsoTokenPollingStartedHandler(ssoTokenPollingStartedHandler);
+                httpClient.setSsoTokenPollingCompleteHandler(ssoTokenPollingCompleteHandler);
+
+                _mutex.lock();
                 httpClient.authenticate(currentConnectionSettings.getAuthentication());
-                //Do not set the field until authenticate is done, otherwise you get multithreading issues
+                _mutex.unlock();
+
                 ServiceModule.this.octaneHttpClient = httpClient;
             }
 
             return octaneHttpClient;
         };
+    }
+
+    public void setSsoTokenPollingStartedHandler(SsoLoginGoogleHttpClient.SsoTokenPollingStartedHandler ssoTokenPollingStartedHandler) {
+        this.ssoTokenPollingStartedHandler = ssoTokenPollingStartedHandler;
+    }
+
+    public void setSsoTokenPollingCompleteHandler(SsoLoginGoogleHttpClient.SsoTokenPollingCompleteHandler ssoTokenPollingCompleteHandler) {
+        this.ssoTokenPollingCompleteHandler = ssoTokenPollingCompleteHandler;
     }
 
 }

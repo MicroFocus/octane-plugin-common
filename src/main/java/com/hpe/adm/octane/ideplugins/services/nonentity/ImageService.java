@@ -17,8 +17,9 @@ import com.google.api.client.http.*;
 import com.google.api.client.http.javanet.NetHttpTransport;
 import com.google.api.client.util.IOUtils;
 import com.google.inject.Inject;
-import com.hpe.adm.octane.ideplugins.services.connection.ClientLoginCookieProvider;
 import com.hpe.adm.octane.ideplugins.services.connection.ConnectionSettingsProvider;
+import com.hpe.adm.octane.ideplugins.services.connection.HttpClientProvider;
+import com.hpe.adm.octane.ideplugins.services.connection.sso.SsoLoginGoogleHttpClient;
 import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
@@ -31,17 +32,13 @@ import java.net.HttpCookie;
 
 public class ImageService {
 
-    private final Logger logger = LoggerFactory.getLogger(ImageService.class.getClass());
-
-    @Inject
-    private ClientLoginCookieProvider clientLoginCookieProvider;
+    private final Logger logger = LoggerFactory.getLogger(ImageService.class);
 
     @Inject
     private ConnectionSettingsProvider connectionSettingsProvider;
 
-    private static HttpCookie lwssoCookie;
-    private static Runnable resetLwssoCookie = () -> lwssoCookie = null;
-
+    @Inject
+    private HttpClientProvider httpClientProvider;
 
     private File saveImageToTempFile(String pictureLink) throws Exception {
 
@@ -77,22 +74,20 @@ public class ImageService {
      * @return
      */
     private HttpResponse downloadImage(String pictureLink, int tryCount) throws Exception {
-        if (lwssoCookie == null) {
-            lwssoCookie = clientLoginCookieProvider.get();
-        }
 
         HttpResponse httpResponse;
         HttpTransport HTTP_TRANSPORT = new NetHttpTransport();
         HttpRequestFactory requestFactory = HTTP_TRANSPORT.createRequestFactory();
         try {
             HttpRequest httpRequest = requestFactory.buildGetRequest(new GenericUrl(pictureLink));
+            HttpCookie lwssoCookie = ((SsoLoginGoogleHttpClient) httpClientProvider.getOctaneHttpClient()).getSessionHttpCookie();
             httpRequest.getHeaders().setCookie(lwssoCookie.toString());
             httpResponse = httpRequest.execute();
         } catch (IOException e) {
             if(e instanceof HttpResponseException && ((HttpResponseException)e).getStatusCode() == 401 && tryCount > 0) {
                 //means that the cookie expired
                 logger.error("Cookie expired, retrying: " + e.getMessage());
-                lwssoCookie = clientLoginCookieProvider.get();
+                // lwssoCookie = clientLoginCookieProvider.get(); TODO: andras
                 return downloadImage(pictureLink, --tryCount);
             } else {
                 logger.error(e.getMessage());
@@ -104,10 +99,6 @@ public class ImageService {
 
     public String downloadPictures(String descriptionField) throws Exception{
 
-        //Reset cookie in case connection settings change
-        if(!connectionSettingsProvider.hasChangeHandler(resetLwssoCookie)) {
-            connectionSettingsProvider.addChangeHandler(resetLwssoCookie);
-        }
 
         //todo check if the image hasnt been swapped meanwhile (new image with the same name uploaded) (*check size, byte with byte, delete with every relog)
         String baseUrl = connectionSettingsProvider.getConnectionSettings().getBaseUrl();

@@ -13,8 +13,9 @@
 
 package com.hpe.adm.octane.ideplugins.services.util;
 
-import com.hpe.adm.nga.sdk.authentication.SimpleUserAuthentication;
 import com.hpe.adm.octane.ideplugins.services.connection.ConnectionSettings;
+import com.hpe.adm.octane.ideplugins.services.connection.UserAuthentication;
+import com.hpe.adm.octane.ideplugins.services.di.ServiceModule;
 import com.hpe.adm.octane.ideplugins.services.exception.ServiceException;
 import com.hpe.adm.octane.ideplugins.services.exception.ServiceRuntimeException;
 import com.hpe.adm.octane.ideplugins.services.filtering.Entity;
@@ -84,7 +85,7 @@ public class UrlParser {
 
         }
 
-        SimpleUserAuthentication authentication = new SimpleUserAuthentication(userName, password);
+        UserAuthentication authentication = new UserAuthentication(userName, password, ServiceModule.CLIENT_TYPE.name());
         connectionSettings.setAuthentication(authentication);
         return connectionSettings;
     }

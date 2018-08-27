@@ -27,7 +27,10 @@ import java.net.HttpCookie;
 import java.util.List;
 import java.util.Optional;
 
-
+/**
+ * TODO: Andras, remove this
+ */
+@Deprecated
 public class ClientLoginCookieProvider implements Provider<HttpCookie>{
 
     private final Logger logger = LoggerFactory.getLogger(MethodHandles.lookup().lookupClass());
