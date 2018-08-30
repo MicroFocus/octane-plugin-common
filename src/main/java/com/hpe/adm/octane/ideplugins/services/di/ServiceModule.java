@@ -21,15 +21,20 @@ import com.google.inject.Injector;
 import com.google.inject.Provides;
 import com.hpe.adm.nga.sdk.Octane;
 import com.hpe.adm.nga.sdk.OctaneClassFactory;
+import com.hpe.adm.nga.sdk.extension.network.google.InterceptorGoogleHttpClient;
 import com.hpe.adm.nga.sdk.network.OctaneHttpClient;
+import com.hpe.adm.nga.sdk.network.google.GoogleHttpClient;
 import com.hpe.adm.octane.ideplugins.services.connection.*;
 import com.hpe.adm.octane.ideplugins.services.connection.sso.SsoLoginGoogleHttpClient;
+import com.hpe.adm.octane.ideplugins.services.exception.ServiceRuntimeException;
 import com.hpe.adm.octane.ideplugins.services.mywork.MyWorkService;
 import com.hpe.adm.octane.ideplugins.services.mywork.MyWorkServiceProxyFactory;
 import com.hpe.adm.octane.ideplugins.services.util.ClientType;
 
 import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantLock;
+
+import static com.hpe.adm.octane.ideplugins.services.connection.sso.SsoLoginGoogleHttpClient.*;
 
 public class ServiceModule extends AbstractModule {
 
@@ -46,17 +51,25 @@ public class ServiceModule extends AbstractModule {
     private Octane octane;
     private OctaneHttpClient octaneHttpClient;
 
-    private SsoLoginGoogleHttpClient.SsoTokenPollingStartedHandler ssoTokenPollingStartedHandler;
-    private SsoLoginGoogleHttpClient.SsoTokenPollingCompleteHandler ssoTokenPollingCompleteHandler;
+    private SsoTokenPollingStartedHandler ssoTokenPollingStartedHandler;
+    private SsoTokenPollingCompleteHandler ssoTokenPollingCompleteHandler;
+    private SsoTokenPollingInProgressHandler ssoTokenPollingInProgressHandler;
 
     public ServiceModule(ConnectionSettingsProvider connectionSettingsProvider) {
+        this(connectionSettingsProvider, null, null, null);
+    }
+
+    public ServiceModule(ConnectionSettingsProvider connectionSettingsProvider, SsoTokenPollingStartedHandler ssoTokenPollingStartedHandler,  SsoTokenPollingInProgressHandler ssoTokenPollingInProgressHandler, SsoTokenPollingCompleteHandler ssoTokenPollingCompleteHandler) {
         this.connectionSettingsProvider = connectionSettingsProvider;
+        this.ssoTokenPollingStartedHandler = ssoTokenPollingStartedHandler;
+        this.ssoTokenPollingCompleteHandler = ssoTokenPollingCompleteHandler;
+        this.ssoTokenPollingInProgressHandler = ssoTokenPollingInProgressHandler;
         injectorSupplier = Suppliers.memoize(() -> Guice.createInjector(this));
 
         //Reset in case of connection settings change
-        connectionSettingsProvider.addChangeHandler(()->{
-            octane = null;
+        connectionSettingsProvider.addChangeHandler(() -> {
             octaneHttpClient = null;
+            octane = null;
         });
     }
 
@@ -86,16 +99,17 @@ public class ServiceModule extends AbstractModule {
             ConnectionSettings currentConnectionSettings = connectionSettingsProvider.getConnectionSettings();
             if (octane == null) {
 
-                //Will not auth
-
                 _mutex.lock();
 
-                octane = new CustomOctane(getOctaneHttpClient().getOctaneHttpClient(),
-                        currentConnectionSettings.getBaseUrl(),
-                        currentConnectionSettings.getSharedSpaceId().toString(),
-                        currentConnectionSettings.getWorkspaceId());
+                //Will not auth
+                octane = new Octane.Builder(currentConnectionSettings.getAuthentication(), getOctaneHttpClient().getOctaneHttpClient())
+                        .Server(currentConnectionSettings.getBaseUrl())
+                        .workSpace(currentConnectionSettings.getWorkspaceId())
+                        .sharedSpace(currentConnectionSettings.getSharedSpaceId())
+                        .build();
 
                 _mutex.unlock();
+
             }
             return octane;
         };
@@ -109,25 +123,22 @@ public class ServiceModule extends AbstractModule {
             if (octaneHttpClient == null) {
                 SsoLoginGoogleHttpClient httpClient = new SsoLoginGoogleHttpClient(currentConnectionSettings.getBaseUrl());
                 httpClient.setSsoTokenPollingStartedHandler(ssoTokenPollingStartedHandler);
+                httpClient.setSsoTokenPollingInProgressHandler(ssoTokenPollingInProgressHandler);
                 httpClient.setSsoTokenPollingCompleteHandler(ssoTokenPollingCompleteHandler);
 
                 _mutex.lock();
-                httpClient.authenticate(currentConnectionSettings.getAuthentication());
+                boolean authResult = httpClient.authenticate(currentConnectionSettings.getAuthentication());
                 _mutex.unlock();
+
+                if(!authResult) {
+                    throw new ServiceRuntimeException("Failed to authenticate to Octane");
+                }
 
                 ServiceModule.this.octaneHttpClient = httpClient;
             }
 
             return octaneHttpClient;
         };
-    }
-
-    public void setSsoTokenPollingStartedHandler(SsoLoginGoogleHttpClient.SsoTokenPollingStartedHandler ssoTokenPollingStartedHandler) {
-        this.ssoTokenPollingStartedHandler = ssoTokenPollingStartedHandler;
-    }
-
-    public void setSsoTokenPollingCompleteHandler(SsoLoginGoogleHttpClient.SsoTokenPollingCompleteHandler ssoTokenPollingCompleteHandler) {
-        this.ssoTokenPollingCompleteHandler = ssoTokenPollingCompleteHandler;
     }
 
 }

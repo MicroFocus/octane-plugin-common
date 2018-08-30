@@ -15,6 +15,8 @@ package com.hpe.adm.octane.ideplugins.services.connection;
 
 import com.hpe.adm.nga.sdk.authentication.Authentication;
 
+import java.util.Objects;
+
 public class ConnectionSettings {
 
     private String baseUrl;
@@ -24,6 +26,7 @@ public class ConnectionSettings {
 
     public ConnectionSettings() {
     }
+
     public ConnectionSettings(String baseUrl, Long sharedSpaceId, Long workspaceId, Authentication authentication) {
         this.baseUrl = baseUrl;
         this.sharedSpaceId = sharedSpaceId;
@@ -72,6 +75,22 @@ public class ConnectionSettings {
 
     private boolean isStringEmpty(String str){
         return str == null || str.trim().length() == 0;
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+        ConnectionSettings that = (ConnectionSettings) o;
+        return Objects.equals(baseUrl, that.baseUrl) &&
+                Objects.equals(sharedSpaceId, that.sharedSpaceId) &&
+                Objects.equals(workspaceId, that.workspaceId) &&
+                Objects.equals(authentication.getClass(), that.authentication.getClass());
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(baseUrl, sharedSpaceId, workspaceId, authentication);
     }
 
     /**
