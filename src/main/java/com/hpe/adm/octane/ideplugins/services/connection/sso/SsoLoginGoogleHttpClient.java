@@ -1,23 +1,44 @@
 package com.hpe.adm.octane.ideplugins.services.connection.sso;
 
-import com.google.api.client.http.*;
-import com.google.api.client.http.javanet.NetHttpTransport;
-import com.hpe.adm.nga.sdk.authentication.Authentication;
-import com.hpe.adm.nga.sdk.exception.OctaneException;
-import com.hpe.adm.nga.sdk.exception.OctanePartialException;
-import com.hpe.adm.nga.sdk.model.*;
-import com.hpe.adm.nga.sdk.network.OctaneHttpRequest;
-import com.hpe.adm.nga.sdk.network.OctaneHttpResponse;
-import com.hpe.adm.nga.sdk.network.google.GoogleHttpClient;
+import java.io.ByteArrayOutputStream;
+import java.io.IOException;
+import java.net.HttpCookie;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Date;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Optional;
+
 import org.json.JSONObject;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.io.ByteArrayOutputStream;
-import java.io.IOException;
-import java.net.HttpCookie;
-import java.util.*;
-
+import com.google.api.client.http.ByteArrayContent;
+import com.google.api.client.http.FileContent;
+import com.google.api.client.http.GenericUrl;
+import com.google.api.client.http.HttpContent;
+import com.google.api.client.http.HttpHeaders;
+import com.google.api.client.http.HttpRequest;
+import com.google.api.client.http.HttpResponse;
+import com.google.api.client.http.HttpResponseException;
+import com.google.api.client.http.HttpStatusCodes;
+import com.google.api.client.http.HttpTransport;
+import com.google.api.client.http.InputStreamContent;
+import com.google.api.client.http.MultipartContent;
+import com.google.api.client.http.javanet.NetHttpTransport;
+import com.hpe.adm.nga.sdk.authentication.Authentication;
+import com.hpe.adm.nga.sdk.exception.OctaneException;
+import com.hpe.adm.nga.sdk.exception.OctanePartialException;
+import com.hpe.adm.nga.sdk.model.EntityModel;
+import com.hpe.adm.nga.sdk.model.ErrorModel;
+import com.hpe.adm.nga.sdk.model.LongFieldModel;
+import com.hpe.adm.nga.sdk.model.ModelParser;
+import com.hpe.adm.nga.sdk.model.StringFieldModel;
+import com.hpe.adm.nga.sdk.network.OctaneHttpRequest;
+import com.hpe.adm.nga.sdk.network.OctaneHttpResponse;
+import com.hpe.adm.nga.sdk.network.google.GoogleHttpClient;
 
 @SuppressWarnings("ALL")
 public class SsoLoginGoogleHttpClient extends GoogleHttpClient {
@@ -40,7 +61,9 @@ public class SsoLoginGoogleHttpClient extends GoogleHttpClient {
 
     public class PollingStatus {
         public long timeoutTimeStamp;
-        public Boolean shouldPoll = true; //needs to be an object to be able to modify it while it's being passed as a parameter
+        public Boolean shouldPoll = true; // needs to be an object to be able to
+                                          // modify it while it's being passed
+                                          // as a parameter
     }
 
     public interface SsoTokenPollingStartedHandler {
@@ -62,7 +85,7 @@ public class SsoLoginGoogleHttpClient extends GoogleHttpClient {
     public SsoLoginGoogleHttpClient(String urlDomain) {
         super(urlDomain);
 
-        //Have to reinit
+        // Have to reinit
         requestInitializer = request -> {
             request.setResponseInterceptor(response -> {
                 // retrieve new LWSSO in response if any
@@ -112,7 +135,7 @@ public class SsoLoginGoogleHttpClient extends GoogleHttpClient {
 
         if (authentication instanceof SsoAuthentication) {
 
-            //do not authenticate if lwssoValue is true
+            // do not authenticate if lwssoValue is true
             if (!lwssoValue.isEmpty()) {
                 return true;
             }
@@ -121,7 +144,7 @@ public class SsoLoginGoogleHttpClient extends GoogleHttpClient {
                 HttpRequest identifierRequest = requestFactory.buildGetRequest(new GenericUrl(urlDomain + "/authentication/grant_tool_token"));
                 JSONObject identifierResponse = new JSONObject(identifierRequest.execute().parseAsString());
 
-                if(ssoTokenPollingStartedHandler != null) {
+                if (ssoTokenPollingStartedHandler != null) {
                     ssoTokenPollingStartedHandler.pollingStarted(identifierResponse.getString("authentication_url"));
                 }
 
@@ -132,26 +155,28 @@ public class SsoLoginGoogleHttpClient extends GoogleHttpClient {
 
                 long pollingTimeoutTimestamp = new Date().getTime() + this.pollingTimeoutMillis;
 
-                while(pollingTimeoutTimestamp > new Date().getTime()) {
+                while (pollingTimeoutTimestamp > new Date().getTime()) {
 
-                    if(ssoTokenPollingInProgressHandler != null) {
+                    if (ssoTokenPollingInProgressHandler != null) {
                         PollingStatus pollingStatus = new PollingStatus();
                         pollingStatus.timeoutTimeStamp = pollingTimeoutTimestamp;
 
                         ssoTokenPollingInProgressHandler.polling(pollingStatus);
 
-                        if(pollingStatus.shouldPoll.equals(Boolean.FALSE)) {
+                        if (pollingStatus.shouldPoll.equals(Boolean.FALSE)) {
                             break;
                         }
                     }
 
                     try {
-                        HttpRequest pollRequest = requestFactory.buildPostRequest(new GenericUrl(urlDomain + "/authentication/grant_tool_token"), identifierRequestContent);
+                        HttpRequest pollRequest = requestFactory.buildPostRequest(new GenericUrl(urlDomain + "/authentication/grant_tool_token"),
+                                identifierRequestContent);
                         pollResponse = new JSONObject(pollRequest.execute().parseAsString());
                     } catch (Exception ex) {
                         logger.debug("Polling for grant_tool_token");
                         try {
-                            Thread.sleep(1000L); //Do not DOS the server, not cool
+                            Thread.sleep(1000L); // Do not DOS the server, not
+                                                 // cool
                         } catch (InterruptedException e) {
                             continue;
                         }
@@ -162,7 +187,7 @@ public class SsoLoginGoogleHttpClient extends GoogleHttpClient {
                     lwssoValue = pollResponse.getString("access_token");
                     sessionCookieName = pollResponse.getString("cookie_name");
 
-                    if(ssoTokenPollingCompleteHandler != null) {
+                    if (ssoTokenPollingCompleteHandler != null) {
                         ssoTokenPollingCompleteHandler.pollingComplete();
                     }
 
@@ -192,11 +217,16 @@ public class SsoLoginGoogleHttpClient extends GoogleHttpClient {
     }
 
     /**
-     * This method can be used internally to retry the request in case of auth token timeout
-     * Careful, this method calls itself recursively to retry the request
+     * This method can be used internally to retry the request in case of auth
+     * token timeout Careful, this method calls itself recursively to retry the
+     * request
      *
-     * @param octaneHttpRequest abstract request, has to be converted into a specific implementation of http request
-     * @param retryCount        number of times the method should retry the request if it encounters an HttpResponseException
+     * @param octaneHttpRequest
+     *            abstract request, has to be converted into a specific
+     *            implementation of http request
+     * @param retryCount
+     *            number of times the method should retry the request if it
+     *            encounters an HttpResponseException
      * @return OctaneHttpResponse
      */
     private OctaneHttpResponse execute(OctaneHttpRequest octaneHttpRequest, int retryCount) {
@@ -217,8 +247,8 @@ public class SsoLoginGoogleHttpClient extends GoogleHttpClient {
 
         } catch (RuntimeException exception) {
 
-            //Return cached response
-            if(exception.getCause() instanceof HttpResponseException) {
+            // Return cached response
+            if (exception.getCause() instanceof HttpResponseException) {
                 HttpResponseException httpResponseException = (HttpResponseException) exception.getCause();
                 final int statusCode = httpResponseException.getStatusCode();
                 if (statusCode == HttpStatusCodes.STATUS_CODE_NOT_MODIFIED) {
@@ -226,16 +256,17 @@ public class SsoLoginGoogleHttpClient extends GoogleHttpClient {
                 }
             }
 
-            //Handle session timeout exception
-            if(retryCount > 0 && exception instanceof OctaneException) {
+            // Handle session timeout exception
+            if (retryCount > 0 && exception instanceof OctaneException) {
                 OctaneException octaneException = (OctaneException) exception;
                 StringFieldModel errorCodeFieldModel = (StringFieldModel) octaneException.getError().getValue("errorCode");
 
-                //Handle session timeout
-                if (errorCodeFieldModel != null && ERROR_CODE_TOKEN_EXPIRED.equals(errorCodeFieldModel.getValue()) && lastUsedAuthentication != null) {
+                // Handle session timeout
+                if (errorCodeFieldModel != null && ERROR_CODE_TOKEN_EXPIRED.equals(errorCodeFieldModel.getValue())
+                        && lastUsedAuthentication != null) {
                     logger.debug("Auth token expired, trying to re-authenticate");
                     try {
-                        lwssoValue = ""; //force re-auth
+                        lwssoValue = ""; // force re-auth
                         authenticate(lastUsedAuthentication);
                     } catch (OctaneException ex) {
                         logger.debug("Exception while retrying authentication: {}", ex.getMessage());
@@ -254,7 +285,8 @@ public class SsoLoginGoogleHttpClient extends GoogleHttpClient {
 
         final HttpContent content = httpRequest.getContent();
 
-        // Make sure you don't log any http content send to the login rest api, since you don't want credentials in the logs
+        // Make sure you don't log any http content send to the login rest api,
+        // since you don't want credentials in the logs
         if (content != null && logger.isDebugEnabled() && !httpRequest.getUrl().toString().contains(OAUTH_AUTH_URL)) {
             logHttpContent(content);
         }
@@ -271,18 +303,19 @@ public class SsoLoginGoogleHttpClient extends GoogleHttpClient {
     }
 
     private static RuntimeException wrapException(Exception exception) {
-        if(exception instanceof HttpResponseException) {
+        if (exception instanceof HttpResponseException) {
 
             HttpResponseException httpResponseException = (HttpResponseException) exception;
-            logger.debug(LOGGER_RESPONSE_FORMAT, httpResponseException.getStatusCode(), httpResponseException.getStatusMessage(), httpResponseException.getHeaders().toString());
+            logger.debug(LOGGER_RESPONSE_FORMAT, httpResponseException.getStatusCode(), httpResponseException.getStatusMessage(),
+                    httpResponseException.getHeaders().toString());
 
             List<String> exceptionContentList = new ArrayList<>();
             exceptionContentList.add(httpResponseException.getStatusMessage());
             exceptionContentList.add(httpResponseException.getContent());
 
-            for(String exceptionContent : exceptionContentList) {
+            for (String exceptionContent : exceptionContentList) {
                 try {
-                    if(ModelParser.getInstance().hasErrorModels(exceptionContent)) {
+                    if (ModelParser.getInstance().hasErrorModels(exceptionContent)) {
                         Collection<ErrorModel> errorModels = ModelParser.getInstance().getErrorModels(exceptionContent);
                         Collection<EntityModel> entities = ModelParser.getInstance().getEntities(exceptionContent);
                         return new OctanePartialException(errorModels, entities);
@@ -291,19 +324,22 @@ public class SsoLoginGoogleHttpClient extends GoogleHttpClient {
                         errorModel.setValue(new LongFieldModel("http_status_code", (long) httpResponseException.getStatusCode()));
                         return new OctaneException(errorModel);
                     }
-                } catch (Exception ignored) {}
+                } catch (Exception ignored) {
+                }
             }
         }
 
-        //In case nothing in exception is parsable
+        // In case nothing in exception is parsable
         return new RuntimeException(exception);
     }
 
     /**
-     * Util method to debug log {@link HttpContent}. This method will avoid logging {@link InputStreamContent}, since
-     * reading from the stream will probably make it unusable when the actual request is sent
+     * Util method to debug log {@link HttpContent}. This method will avoid
+     * logging {@link InputStreamContent}, since reading from the stream will
+     * probably make it unusable when the actual request is sent
      *
-     * @param content {@link HttpContent}
+     * @param content
+     *            {@link HttpContent}
      */
     private static void logHttpContent(HttpContent content) {
         if (content instanceof MultipartContent) {
@@ -331,7 +367,8 @@ public class SsoLoginGoogleHttpClient extends GoogleHttpClient {
     /**
      * Retrieve new cookie from set-cookie header
      *
-     * @param headers The headers containing the cookie
+     * @param headers
+     *            The headers containing the cookie
      * @return true if LWSSO cookie is renewed
      */
     private boolean updateLWSSOCookieValue(HttpHeaders headers) {
@@ -341,14 +378,19 @@ public class SsoLoginGoogleHttpClient extends GoogleHttpClient {
             return false;
         }
 
-        /* Following code failed to parse set-cookie to get LWSSO cookie due to cookie version, check RFC 2965
-        String strCookies = strHPSSOCookieCsrf1.toString();
-        List<HttpCookie> Cookies = java.net.HttpCookie.parse(strCookies.substring(1, strCookies.length()-1));
-        lwssoValue = Cookies.stream().filter(a -> a.getName().equals(LWSSO_COOKIE_KEY)).findFirst().get().getValue();*/
+        /*
+         * Following code failed to parse set-cookie to get LWSSO cookie due to
+         * cookie version, check RFC 2965 String strCookies =
+         * strHPSSOCookieCsrf1.toString(); List<HttpCookie> Cookies =
+         * java.net.HttpCookie.parse(strCookies.substring(1,
+         * strCookies.length()-1)); lwssoValue = Cookies.stream().filter(a ->
+         * a.getName().equals(LWSSO_COOKIE_KEY)).findFirst().get().getValue();
+         */
         for (String strCookie : strHPSSOCookieCsrf1) {
             List<HttpCookie> cookies;
             try {
-                // Sadly the server seems to send back empty cookies for some reason
+                // Sadly the server seems to send back empty cookies for some
+                // reason
                 cookies = HttpCookie.parse(strCookie);
             } catch (Exception ex) {
                 logger.error("Failed to parse HPSSOCookieCsrf: " + ex.getMessage());
@@ -359,7 +401,8 @@ public class SsoLoginGoogleHttpClient extends GoogleHttpClient {
                 lwssoValue = lwssoCookie.get().getValue();
                 renewed = true;
             } else {
-                cookies.stream().filter(cookie -> cookie.getName().equals(OCTANE_USER_COOKIE_KEY)).findAny().ifPresent(cookie -> octaneUserValue = cookie.getValue());
+                cookies.stream().filter(cookie -> cookie.getName().equals(OCTANE_USER_COOKIE_KEY)).findAny()
+                        .ifPresent(cookie -> octaneUserValue = cookie.getValue());
             }
         }
 

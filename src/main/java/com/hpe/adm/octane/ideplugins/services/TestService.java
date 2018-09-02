@@ -21,16 +21,17 @@ import com.hpe.adm.nga.sdk.Octane;
 import com.hpe.adm.nga.sdk.query.Query;
 import com.hpe.adm.nga.sdk.query.QueryMethod;
 import com.hpe.adm.octane.ideplugins.services.connection.ConnectionSettings;
+import com.hpe.adm.octane.ideplugins.services.connection.sso.SsoAuthentication;
 import com.hpe.adm.octane.ideplugins.services.exception.ServiceException;
 import com.hpe.adm.octane.ideplugins.services.filtering.Entity;
 
 /**
- * Does not rely on the Octane from the DI,
- * instead is used to validate connections settings before modifying them
+ * Does not rely on the Octane from the DI, instead is used to validate
+ * connections settings before modifying them
  */
 public class TestService {
 
-    public Octane getOctane(ConnectionSettings connectionSettings){
+    public Octane getOctane(ConnectionSettings connectionSettings) {
         return new Octane.Builder(connectionSettings.getAuthentication())
                 .Server(connectionSettings.getBaseUrl())
                 .sharedSpace(connectionSettings.getSharedSpaceId())
@@ -38,13 +39,15 @@ public class TestService {
                 .build();
     }
 
-    private void testHttpConnection(ConnectionSettings connectionSettings) throws ServiceException {
+    public void testHttpConnection(ConnectionSettings connectionSettings) throws ServiceException {
         try {
             HttpTransport HTTP_TRANSPORT = new NetHttpTransport();
-            HttpRequest httpRequest = HTTP_TRANSPORT.createRequestFactory().buildGetRequest(new GenericUrl(connectionSettings.getBaseUrl() + "/admin/server/version"));
+            HttpRequest httpRequest = HTTP_TRANSPORT.createRequestFactory()
+                    .buildGetRequest(new GenericUrl(connectionSettings.getBaseUrl() + "/admin/server/version"));
             int statusCode = httpRequest.execute().getStatusCode();
             if (httpRequest.execute().getStatusCode() >= 300) {
-                throw new ServiceException("HTTP connection to url: " + connectionSettings.getBaseUrl() + " failed: http response code: + " + statusCode);
+                throw new ServiceException(
+                        "HTTP connection to url: " + connectionSettings.getBaseUrl() + " failed: http response code: + " + statusCode);
             }
         } catch (Exception e) {
             throw new ServiceException("HTTP connection to url: " + connectionSettings.getBaseUrl() + " failed: " + e.getMessage());
@@ -54,17 +57,22 @@ public class TestService {
     /**
      * Attempts to connect to given url, basic validations should be done first
      * Check if the current connection settings are valid
-     * @param connectionSettings instance of {@link ConnectionSettings} to test
-     * @throws ServiceException on connection error
+     * 
+     * @param connectionSettings
+     *            instance of {@link ConnectionSettings} to test
+     * @throws ServiceException
+     *             on connection error
      */
     public void testConnection(ConnectionSettings connectionSettings) throws ServiceException {
-        //Try basic http connection first
+        // Try basic http connection first
         testHttpConnection(connectionSettings);
 
-        Query query =  Query.statement("subtype", QueryMethod.EqualTo, Entity.WORK_ITEM_ROOT.getSubtypeName()).build();
+        if (!(connectionSettings.getAuthentication() instanceof SsoAuthentication)) {
+            Query query = Query.statement("subtype", QueryMethod.EqualTo, Entity.WORK_ITEM_ROOT.getSubtypeName()).build();
 
-        //Try to fetch the backlog root
-        getOctane(connectionSettings).entityList(Entity.WORK_ITEM_ROOT.getApiEntityName()).get().query(query).execute();
+            // Try to fetch the backlog root
+            getOctane(connectionSettings).entityList(Entity.WORK_ITEM_ROOT.getApiEntityName()).get().query(query).execute();
+        }
     }
 
 }

@@ -13,6 +13,9 @@
 
 package com.hpe.adm.octane.ideplugins.services.di;
 
+import java.util.concurrent.locks.Lock;
+import java.util.concurrent.locks.ReentrantLock;
+
 import com.google.common.base.Supplier;
 import com.google.common.base.Suppliers;
 import com.google.inject.AbstractModule;
@@ -20,27 +23,25 @@ import com.google.inject.Guice;
 import com.google.inject.Injector;
 import com.google.inject.Provides;
 import com.hpe.adm.nga.sdk.Octane;
-import com.hpe.adm.nga.sdk.OctaneClassFactory;
-import com.hpe.adm.nga.sdk.extension.network.google.InterceptorGoogleHttpClient;
 import com.hpe.adm.nga.sdk.network.OctaneHttpClient;
-import com.hpe.adm.nga.sdk.network.google.GoogleHttpClient;
-import com.hpe.adm.octane.ideplugins.services.connection.*;
+import com.hpe.adm.octane.ideplugins.services.connection.ConnectionSettings;
+import com.hpe.adm.octane.ideplugins.services.connection.ConnectionSettingsProvider;
+import com.hpe.adm.octane.ideplugins.services.connection.HttpClientProvider;
+import com.hpe.adm.octane.ideplugins.services.connection.OctaneProvider;
 import com.hpe.adm.octane.ideplugins.services.connection.sso.SsoLoginGoogleHttpClient;
+import com.hpe.adm.octane.ideplugins.services.connection.sso.SsoLoginGoogleHttpClient.SsoTokenPollingCompleteHandler;
+import com.hpe.adm.octane.ideplugins.services.connection.sso.SsoLoginGoogleHttpClient.SsoTokenPollingInProgressHandler;
+import com.hpe.adm.octane.ideplugins.services.connection.sso.SsoLoginGoogleHttpClient.SsoTokenPollingStartedHandler;
 import com.hpe.adm.octane.ideplugins.services.exception.ServiceRuntimeException;
 import com.hpe.adm.octane.ideplugins.services.mywork.MyWorkService;
 import com.hpe.adm.octane.ideplugins.services.mywork.MyWorkServiceProxyFactory;
 import com.hpe.adm.octane.ideplugins.services.util.ClientType;
 
-import java.util.concurrent.locks.Lock;
-import java.util.concurrent.locks.ReentrantLock;
-
-import static com.hpe.adm.octane.ideplugins.services.connection.sso.SsoLoginGoogleHttpClient.*;
-
 public class ServiceModule extends AbstractModule {
 
     /**
-     * Client type header to be used by all rest calls by the SDK
-     * Changing the client type might restrict/permit access to certain server API
+     * Client type header to be used by all rest calls by the SDK Changing the
+     * client type might restrict/permit access to certain server API
      */
     public static final ClientType CLIENT_TYPE = ClientType.HPE_REST_API_TECH_PREVIEW;
 
@@ -59,14 +60,15 @@ public class ServiceModule extends AbstractModule {
         this(connectionSettingsProvider, null, null, null);
     }
 
-    public ServiceModule(ConnectionSettingsProvider connectionSettingsProvider, SsoTokenPollingStartedHandler ssoTokenPollingStartedHandler,  SsoTokenPollingInProgressHandler ssoTokenPollingInProgressHandler, SsoTokenPollingCompleteHandler ssoTokenPollingCompleteHandler) {
+    public ServiceModule(ConnectionSettingsProvider connectionSettingsProvider, SsoTokenPollingStartedHandler ssoTokenPollingStartedHandler,
+            SsoTokenPollingInProgressHandler ssoTokenPollingInProgressHandler, SsoTokenPollingCompleteHandler ssoTokenPollingCompleteHandler) {
         this.connectionSettingsProvider = connectionSettingsProvider;
         this.ssoTokenPollingStartedHandler = ssoTokenPollingStartedHandler;
         this.ssoTokenPollingCompleteHandler = ssoTokenPollingCompleteHandler;
         this.ssoTokenPollingInProgressHandler = ssoTokenPollingInProgressHandler;
         injectorSupplier = Suppliers.memoize(() -> Guice.createInjector(this));
 
-        //Reset in case of connection settings change
+        // Reset in case of connection settings change
         connectionSettingsProvider.addChangeHandler(() -> {
             octaneHttpClient = null;
             octane = null;
@@ -84,8 +86,7 @@ public class ServiceModule extends AbstractModule {
 
     @Provides
     public MyWorkService getMyWorkService() {
-        MyWorkServiceProxyFactory backwardsCompatibleMyWorkServiceProvider
-                = new MyWorkServiceProxyFactory();
+        MyWorkServiceProxyFactory backwardsCompatibleMyWorkServiceProvider = new MyWorkServiceProxyFactory();
         injectorSupplier.get().injectMembers(backwardsCompatibleMyWorkServiceProvider);
 
         return backwardsCompatibleMyWorkServiceProvider.getMyWorkService();
@@ -101,7 +102,7 @@ public class ServiceModule extends AbstractModule {
 
                 _mutex.lock();
 
-                //Will not auth
+                // Will not auth
                 octane = new Octane.Builder(currentConnectionSettings.getAuthentication(), getOctaneHttpClient().getOctaneHttpClient())
                         .Server(currentConnectionSettings.getBaseUrl())
                         .workSpace(currentConnectionSettings.getWorkspaceId())
@@ -130,7 +131,7 @@ public class ServiceModule extends AbstractModule {
                 boolean authResult = httpClient.authenticate(currentConnectionSettings.getAuthentication());
                 _mutex.unlock();
 
-                if(!authResult) {
+                if (!authResult) {
                     throw new ServiceRuntimeException("Failed to authenticate to Octane");
                 }
 
