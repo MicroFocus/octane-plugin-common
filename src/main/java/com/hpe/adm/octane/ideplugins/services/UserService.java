@@ -13,23 +13,31 @@
 
 package com.hpe.adm.octane.ideplugins.services;
 
+import org.json.JSONObject;
+
 import com.google.inject.Inject;
+import com.hpe.adm.nga.sdk.entities.OctaneCollection;
 import com.hpe.adm.nga.sdk.model.EntityModel;
 import com.hpe.adm.nga.sdk.model.ModelParser;
-import com.hpe.adm.nga.sdk.model.StringFieldModel;
 import com.hpe.adm.nga.sdk.network.OctaneHttpClient;
 import com.hpe.adm.nga.sdk.network.OctaneHttpRequest;
 import com.hpe.adm.nga.sdk.network.OctaneHttpResponse;
+import com.hpe.adm.nga.sdk.query.Query;
+import com.hpe.adm.nga.sdk.query.QueryMethod;
 import com.hpe.adm.octane.ideplugins.services.connection.ConnectionSettings;
 import com.hpe.adm.octane.ideplugins.services.connection.ConnectionSettingsProvider;
 import com.hpe.adm.octane.ideplugins.services.connection.HttpClientProvider;
+import com.hpe.adm.octane.ideplugins.services.connection.OctaneProvider;
 import com.hpe.adm.octane.ideplugins.services.exception.ServiceRuntimeException;
-import org.json.JSONObject;
+import com.hpe.adm.octane.ideplugins.services.filtering.Entity;
 
 public class UserService {
 
     @Inject
     private HttpClientProvider httpClientProvider;
+
+    @Inject
+    private OctaneProvider octaneProvider;
 
     @Inject
     private ConnectionSettingsProvider connectionSettingsProvider;
@@ -55,25 +63,44 @@ public class UserService {
         }
     };
 
+    /**
+     * TODO: you need workspace user ID, need to fix next push server side, or
+     * rewrite the whole code to use the name instead of the ID
+     * 
+     * @param siteUser
+     * @return
+     */
     private EntityModel convertSiteUserToWorkspaceUser(EntityModel siteUser) {
-        if("site_user".equals(siteUser.getValue("type").getValue())){
-            siteUser.setValue(new StringFieldModel("type", "workspace_user"));
+
+        OctaneCollection<EntityModel> result = octaneProvider
+                .getOctane()
+                .entityList(Entity.WORKSPACE_USER.getApiEntityName())
+                .get()
+                .query(Query
+                        .statement("name", QueryMethod.EqualTo, siteUser.getValue("name").getValue().toString())
+                        .build())
+                .execute();
+
+        if (result.size() != 1) {
+            throw new ServiceRuntimeException("Failed to get current logged in worksapce user");
         }
-        return siteUser;
+
+        return result.iterator().next();
     }
 
-
     /**
-     * Well this is horrible, this method is needed because cross filtering work item owner by name does not work
+     * Well this is horrible, this method is needed because cross filtering work
+     * item owner by name does not work
+     * 
      * @return id of the current user from the service context
      */
-    public Long getCurrentUserId(){
+    public Long getCurrentUserId() {
         EntityModel user = getCurrentUser();
         return Long.parseLong(user.getValue("id").getValue().toString());
     }
 
-    public EntityModel getCurrentUser(){
-        if(currentUserEntityModel == null || (!lastConnectionSettings.equals(connectionSettingsProvider.getConnectionSettings()))){
+    public EntityModel getCurrentUser() {
+        if (currentUserEntityModel == null || (!lastConnectionSettings.equals(connectionSettingsProvider.getConnectionSettings()))) {
             getCurrentUserRunnable.run();
             lastConnectionSettings = connectionSettingsProvider.getConnectionSettings();
         }
