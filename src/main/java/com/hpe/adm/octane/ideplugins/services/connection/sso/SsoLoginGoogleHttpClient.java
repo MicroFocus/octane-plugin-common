@@ -64,6 +64,7 @@ public class SsoLoginGoogleHttpClient implements OctaneHttpClient {
 	private static final String HTTP_MULTIPART_PART1_DISPOSITION_ENTITY_VALUE = "entity";
 	private static final String HTTP_MULTIPART_PART2_DISPOSITION_FORMAT = "form-data; name=\"content\"; filename=\"%s\"";
 	private static final String ERROR_CODE_TOKEN_EXPIRED = "VALIDATION_TOKEN_EXPIRED_IDLE_TIME_OUT";
+	private static final String ERROR_CODE_GLOBAL_TOKEN_EXPIRED = "VALIDATION_TOKEN_EXPIRED_GLOBAL_TIME_OUT";
 	private static final String DEFAULT_OCTANE_SESSION_COOKIE_NAME = "LWSSO_COOKIE_KEY";
 
 	private static final int HTTP_REQUEST_RETRY_COUNT = 1;
@@ -162,6 +163,12 @@ public class SsoLoginGoogleHttpClient implements OctaneHttpClient {
 		}
 
 		try {
+
+			//Reset these so they are not sent to grant_tool_token
+			sessionCookieName = "";
+			lwssoValue = "";
+			octaneUserValue = "";
+			
 			HttpRequest identifierRequest = requestFactory.buildGetRequest(new GenericUrl(urlDomain + "/authentication/grant_tool_token"));
 			JSONObject identifierResponse = new JSONObject(identifierRequest.execute().parseAsString());
 
@@ -172,7 +179,7 @@ public class SsoLoginGoogleHttpClient implements OctaneHttpClient {
 			JSONObject identifierRequestJson = new JSONObject();
 			identifierRequestJson.put("identifier", identifierResponse.getString("identifier"));
 			ByteArrayContent identifierRequestContent = ByteArrayContent.fromString("application/json", identifierRequestJson.toString());
-			JSONObject pollResponse;
+			JSONObject pollResponseJson;
 
 			long pollingTimeoutTimestamp = new Date().getTime() + this.pollingTimeoutMillis;
 
@@ -192,20 +199,26 @@ public class SsoLoginGoogleHttpClient implements OctaneHttpClient {
 				try {
 					HttpRequest pollRequest = requestFactory.buildPostRequest(new GenericUrl(urlDomain + "/authentication/grant_tool_token"),
 							identifierRequestContent);
-					pollResponse = new JSONObject(pollRequest.execute().parseAsString());
+					logger.debug(LOGGER_REQUEST_FORMAT, pollRequest.getRequestMethod(), pollRequest.getUrl().toString(), pollRequest.getHeaders().toString());
+					
+					HttpResponse pollResponse = pollRequest.execute();					
+					logger.debug(LOGGER_RESPONSE_FORMAT, pollResponse.getStatusCode(), pollResponse.getStatusMessage(), pollResponse.getHeaders().toString());
+					
+					logHttpContent(pollRequest.getContent());
+
+					pollResponseJson = new JSONObject(pollRequest.execute().parseAsString());
+					
 				} catch (Exception ex) {
-					logger.debug("Polling for grant_tool_token, value: " + lwssoValue + " " + " obj id: " + this.toString());
 					try {
-						Thread.sleep(1000L); // Do not DOS the server, not
-						// cool
+						Thread.sleep(1000L); // Do not DOS the server, not cool
 					} catch (InterruptedException e) {
 						continue;
 					}
 					continue;
 				}
 
-				lwssoValue = pollResponse.getString("access_token");
-				sessionCookieName = pollResponse.getString("cookie_name");
+				lwssoValue = pollResponseJson.getString("access_token");
+				sessionCookieName = pollResponseJson.getString("cookie_name");
 				logger.debug("session token set: " + lwssoValue);
 				logger.debug("cookie name set: " + sessionCookieName);
 
@@ -347,7 +360,10 @@ public class SsoLoginGoogleHttpClient implements OctaneHttpClient {
 				StringFieldModel errorCodeFieldModel = (StringFieldModel) octaneException.getError().getValue("errorCode");
 
 				//Handle session timeout
-				if (errorCodeFieldModel != null && ERROR_CODE_TOKEN_EXPIRED.equals(errorCodeFieldModel.getValue()) && lastUsedAuthentication != null) {
+				if (errorCodeFieldModel != null && 
+					(ERROR_CODE_TOKEN_EXPIRED.equals(errorCodeFieldModel.getValue()) || ERROR_CODE_GLOBAL_TOKEN_EXPIRED.equals(errorCodeFieldModel.getValue())) && 
+					lastUsedAuthentication != null) {
+					
 					logger.debug("Auth token expired, trying to re-authenticate");
 					try {
 						if(lastUsedAuthentication instanceof SsoAuthentication) {
