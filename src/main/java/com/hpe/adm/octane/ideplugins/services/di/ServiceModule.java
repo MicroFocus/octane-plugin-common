@@ -13,8 +13,8 @@
 
 package com.hpe.adm.octane.ideplugins.services.di;
 
-import java.util.concurrent.locks.Lock;
-import java.util.concurrent.locks.ReentrantLock;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import com.google.common.base.Supplier;
 import com.google.common.base.Suppliers;
@@ -29,9 +29,9 @@ import com.hpe.adm.octane.ideplugins.services.connection.ConnectionSettingsProvi
 import com.hpe.adm.octane.ideplugins.services.connection.HttpClientProvider;
 import com.hpe.adm.octane.ideplugins.services.connection.OctaneProvider;
 import com.hpe.adm.octane.ideplugins.services.connection.sso.SsoLoginGoogleHttpClient;
-import com.hpe.adm.octane.ideplugins.services.connection.sso.SsoLoginGoogleHttpClient.SsoTokenPollingCompleteHandler;
-import com.hpe.adm.octane.ideplugins.services.connection.sso.SsoLoginGoogleHttpClient.SsoTokenPollingInProgressHandler;
-import com.hpe.adm.octane.ideplugins.services.connection.sso.SsoLoginGoogleHttpClient.SsoTokenPollingStartedHandler;
+import com.hpe.adm.octane.ideplugins.services.connection.sso.SsoTokenPollingCompleteHandler;
+import com.hpe.adm.octane.ideplugins.services.connection.sso.SsoTokenPollingInProgressHandler;
+import com.hpe.adm.octane.ideplugins.services.connection.sso.SsoTokenPollingStartedHandler;
 import com.hpe.adm.octane.ideplugins.services.exception.ServiceRuntimeException;
 import com.hpe.adm.octane.ideplugins.services.mywork.MyWorkService;
 import com.hpe.adm.octane.ideplugins.services.mywork.MyWorkServiceProxyFactory;
@@ -39,6 +39,8 @@ import com.hpe.adm.octane.ideplugins.services.util.ClientType;
 
 public class ServiceModule extends AbstractModule {
 
+    private static final Logger logger = LoggerFactory.getLogger(ServiceModule.class.getName());
+	
     /**
      * Client type header to be used by all rest calls by the SDK Changing the
      * client type might restrict/permit access to certain server API
@@ -62,6 +64,7 @@ public class ServiceModule extends AbstractModule {
 
     public ServiceModule(ConnectionSettingsProvider connectionSettingsProvider, SsoTokenPollingStartedHandler ssoTokenPollingStartedHandler,
             SsoTokenPollingInProgressHandler ssoTokenPollingInProgressHandler, SsoTokenPollingCompleteHandler ssoTokenPollingCompleteHandler) {
+    	
         this.connectionSettingsProvider = connectionSettingsProvider;
         this.ssoTokenPollingStartedHandler = ssoTokenPollingStartedHandler;
         this.ssoTokenPollingCompleteHandler = ssoTokenPollingCompleteHandler;
@@ -70,6 +73,7 @@ public class ServiceModule extends AbstractModule {
 
         // Reset in case of connection settings change
         connectionSettingsProvider.addChangeHandler(() -> {
+        	logger.debug("Reseting octaneHttpClient and octane, connection settings changed");
             octaneHttpClient = null;
             octane = null;
         });
@@ -92,15 +96,11 @@ public class ServiceModule extends AbstractModule {
         return backwardsCompatibleMyWorkServiceProvider.getMyWorkService();
     }
 
-    private final Lock _mutex = new ReentrantLock(true);
-
     @Provides
     public OctaneProvider getOctane() {
         return () -> {
             ConnectionSettings currentConnectionSettings = connectionSettingsProvider.getConnectionSettings();
             if (octane == null) {
-
-                _mutex.lock();
 
                 // Will not auth
                 octane = new Octane.Builder(currentConnectionSettings.getAuthentication(), getOctaneHttpClient().getOctaneHttpClient())
@@ -108,8 +108,6 @@ public class ServiceModule extends AbstractModule {
                         .workSpace(currentConnectionSettings.getWorkspaceId())
                         .sharedSpace(currentConnectionSettings.getSharedSpaceId())
                         .build();
-
-                _mutex.unlock();
 
             }
             return octane;
@@ -121,21 +119,26 @@ public class ServiceModule extends AbstractModule {
         return () -> {
             ConnectionSettings currentConnectionSettings = connectionSettingsProvider.getConnectionSettings();
 
-            if (octaneHttpClient == null) {
-                SsoLoginGoogleHttpClient httpClient = new SsoLoginGoogleHttpClient(currentConnectionSettings.getBaseUrl());
-                httpClient.setSsoTokenPollingStartedHandler(ssoTokenPollingStartedHandler);
-                httpClient.setSsoTokenPollingInProgressHandler(ssoTokenPollingInProgressHandler);
-                httpClient.setSsoTokenPollingCompleteHandler(ssoTokenPollingCompleteHandler);
-
-                _mutex.lock();
-                boolean authResult = httpClient.authenticate(currentConnectionSettings.getAuthentication());
-                _mutex.unlock();
-
-                if (!authResult) {
-                    throw new ServiceRuntimeException("Failed to authenticate to Octane");
-                }
-
-                ServiceModule.this.octaneHttpClient = httpClient;
+            // authenticate and assigning the value to octaneHttpClient needs to be thread safe
+            // because of the null check below
+            synchronized(this) {
+	            if (octaneHttpClient == null) {
+	            	
+	            	logger.debug("creating http client pampam");
+	            	
+	                SsoLoginGoogleHttpClient httpClient = new SsoLoginGoogleHttpClient(currentConnectionSettings.getBaseUrl());
+	                httpClient.setSsoTokenPollingStartedHandler(ssoTokenPollingStartedHandler);
+	                httpClient.setSsoTokenPollingInProgressHandler(ssoTokenPollingInProgressHandler);
+	                httpClient.setSsoTokenPollingCompleteHandler(ssoTokenPollingCompleteHandler);
+	
+	                boolean authResult = httpClient.authenticate(currentConnectionSettings.getAuthentication());
+	                
+	                if (!authResult) {
+	                    throw new ServiceRuntimeException("Failed to authenticate to Octane");
+	                }
+	
+	                ServiceModule.this.octaneHttpClient = httpClient;
+	            }
             }
 
             return octaneHttpClient;
