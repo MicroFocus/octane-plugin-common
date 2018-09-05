@@ -16,15 +16,22 @@ import com.hpe.adm.octane.ideplugins.services.util.ClientType;
 import org.apache.velocity.runtime.resource.loader.ClasspathResourceLoader;
 import org.json.JSONArray;
 import org.json.JSONObject;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
+import java.lang.invoke.MethodHandles;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Map;
 
 public class EntityLabelService {
+
+    private final Logger logger = LoggerFactory.getLogger(MethodHandles.lookup().lookupClass());
+
+
     private static final String ENTITY_TYPE = "entity_type";
     private static final String ENTITY_NAME = "name";
     private static final String ENTITY_INITIALS = "initials";
@@ -58,20 +65,20 @@ public class EntityLabelService {
         Map<String, EntityModel> entityLabelMetadatas = getDefaultEntityLabels();
         try {
             response = octaneHttpClient.execute(getOctaneHttpRequest);
-            Map<String, EntityModel> entityMetadataFromServer = getEntityMetadataFromJSON(response.getContent());
-            Arrays.stream(usefulEntityLabelsFromServer).forEach(s -> {
-                EntityModel em = entityMetadataFromServer.get(s);
-                if (em != null) {
-                    entityLabelMetadatas.remove(s);
-                    entityLabelMetadatas.put(s, em);
-                }
-            });
         } catch (Exception e) {
-            //trouble retrieving the entity label metadata, fall back to defaults
-            return entityLabelMetadatas;
+            logger.warn(e.getMessage());
         }
 
-        return getEntityMetadataFromJSON(response.getContent());
+        Map<String, EntityModel> entityMetadataFromServer = getEntityMetadataFromJSON(response.getContent());
+        Arrays.stream(usefulEntityLabelsFromServer).forEach(s -> {
+            EntityModel em = entityMetadataFromServer.get(s);
+            if (em != null) {
+                entityLabelMetadatas.remove(s);
+                entityLabelMetadatas.put(s, em);
+            }
+        });
+
+        return entityLabelMetadatas;
     }
 
     public Map<String, EntityModel> getDefaultEntityLabels() {
