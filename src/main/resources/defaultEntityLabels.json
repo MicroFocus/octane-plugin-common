@@ -1,0 +1,91 @@
+{
+  "version": 1,
+  "data": [
+    {
+      "entity_type": "defect",
+      "name": "Defect",
+      "initials": "D",
+      "language": "lang.en"
+    },
+    {
+      "entity_type": "story",
+      "name": "User Story",
+      "initials": "US",
+      "language": "lang.en"
+    },
+    {
+      "entity_type": "quality_story",
+      "name": "Quality Story",
+      "initials": "QS",
+      "language": "lang.en"
+    },
+    {
+      "entity_type": "feature",
+      "name": "Feature",
+      "initials": "F",
+      "language": "lang.en"
+    },
+    {
+      "entity_type": "epic",
+      "name": "Epic",
+      "initials": "E",
+      "language": "lang.en"
+    },
+    {
+      "entity_type": "task",
+      "name": "Task",
+      "initials": "T",
+      "language": "lang.en"
+    },
+    {
+      "entity_type": "test_manual",
+      "name": "Manual Test",
+      "initials": "MT",
+      "language": "lang.en"
+    },
+    {
+      "entity_type": "gherkin_test",
+      "name": "Gherkin Test",
+      "initials": "GT",
+      "language": "lang.en"
+    },
+    {
+      "entity_type": "test_suite",
+      "name": "Test Suite",
+      "initials": "TS",
+      "language": "lang.en"
+    },
+    {
+      "entity_type": "run_manual",
+      "name": "Manual Run",
+      "initials": "MR",
+      "language": "lang.en"
+    },
+    {
+      "entity_type": "run_suite",
+      "name": "Test Suite Run",
+      "initials": "SR",
+      "language": "lang.en"
+    },
+    {
+      "entity_type": "test_automated",
+      "name": "Automated Test",
+      "initials": "AT",
+      "language": "lang.en"
+    },
+    {
+      "entity_type": "comment",
+      "name": "Comment",
+      "initials": "C",
+      "language": "lang.en"
+    },
+    {
+      "entity_type": " requirement",
+      "name": "Requirement",
+      "initials": "R",
+      "language": "lang.en"
+    }
+  ]
+}
+
+

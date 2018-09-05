@@ -1,6 +1,7 @@
 package com.hpe.adm.octane.ideplugins.integrationtests.services;
 
 import com.google.inject.Inject;
+import com.hpe.adm.nga.sdk.model.EntityModel;
 import com.hpe.adm.octane.ideplugins.integrationtests.IntegrationTestBase;
 import com.hpe.adm.octane.ideplugins.services.EntityLabelService;
 import org.junit.Test;
@@ -14,7 +15,7 @@ public class EntityLabeServiceITCase extends IntegrationTestBase {
 
     @Test
     public void testGetEntityLabelDetails() {
-        Map<String, String> entityMap =  entityLabelService.getEntityLabelDetails();
-        System.out.println(entityMap.size());
+        Map<String, EntityModel> entityLabelList = entityLabelService.getEntityLabelDetails();
+        System.out.println(entityLabelList.size());
     }
 }
