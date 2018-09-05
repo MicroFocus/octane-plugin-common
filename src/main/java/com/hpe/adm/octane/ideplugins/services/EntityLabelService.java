@@ -7,17 +7,20 @@ import com.hpe.adm.nga.sdk.model.StringFieldModel;
 import com.hpe.adm.nga.sdk.network.OctaneHttpClient;
 import com.hpe.adm.nga.sdk.network.OctaneHttpRequest;
 import com.hpe.adm.nga.sdk.network.OctaneHttpResponse;
-import com.hpe.adm.nga.sdk.network.google.GoogleHttpClient;
 import com.hpe.adm.octane.ideplugins.services.connection.ConnectionSettingsProvider;
 import com.hpe.adm.octane.ideplugins.services.connection.HttpClientProvider;
-import com.hpe.adm.octane.ideplugins.services.connection.OctaneProvider;
 import com.hpe.adm.octane.ideplugins.services.util.ClientType;
 import org.json.JSONArray;
 import org.json.JSONObject;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.List;
 
 public class EntityLabelService {
+    private final String ENTITY_TYPE = "entity_type";
+    private final String ENTITY_NAME = "name";
+    private final String ENTITY_INITIALS = "initials";
 
     @Inject
     private HttpClientProvider httpClientProvider;
@@ -53,11 +56,12 @@ public class EntityLabelService {
         JSONArray entityLabelJSONObjects = shellObject.getJSONArray("data");
         for(Object entityLabelObject : entityLabelJSONObjects){
             if(entityLabelObject instanceof JSONObject) {
+                //we are supporting only english
                 if(((JSONObject) entityLabelObject).get("language").equals("lang.en")) {
                     EntityModel em = new EntityModel();
-                    em.setValue(new StringFieldModel("entity_type", ((JSONObject) entityLabelObject).getString("entity_type")));
-                    em.setValue(new StringFieldModel("name", ((JSONObject) entityLabelObject).getString("name")));
-                    em.setValue((new StringFieldModel("initials", ((JSONObject) entityLabelObject).getString("initials"))));
+                    em.setValue(new StringFieldModel(ENTITY_TYPE, ((JSONObject) entityLabelObject).getString(ENTITY_TYPE)));
+                    em.setValue(new StringFieldModel(ENTITY_NAME, ((JSONObject) entityLabelObject).getString(ENTITY_NAME)));
+                    em.setValue((new StringFieldModel(ENTITY_INITIALS, ((JSONObject) entityLabelObject).getString(ENTITY_INITIALS))));
                     entityLabelList.add(em);
                 }
             }
