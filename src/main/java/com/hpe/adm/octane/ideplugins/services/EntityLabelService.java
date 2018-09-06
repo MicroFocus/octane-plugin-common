@@ -36,14 +36,13 @@ public class EntityLabelService {
     private static final String ENTITY_NAME = "name";
     private static final String ENTITY_INITIALS = "initials";
 
-    /**
-     * Used for versioning entity labels json
-     */
     private static final long CURRENT_ENTITY_LABELS_JSON_VERSION = 1;
 
     private static final String DEFAULT_ENTITY_LABELS_FILE_NAME = "defaultEntityLabels.json";
 
     private String[] usefulEntityLabelsFromServer = new String[]{"defect", "story", "quality_story", "feature", "epic", "requirement"};
+
+    private Map<String, EntityModel> defaultEntityLabels;
 
     @Inject
     private HttpClientProvider httpClientProvider;
@@ -82,13 +81,17 @@ public class EntityLabelService {
     }
 
     public Map<String, EntityModel> getDefaultEntityLabels() {
-        try {
-            ClasspathResourceLoader cprl = new ClasspathResourceLoader();
-            InputStream input = cprl.getResourceStream(DEFAULT_ENTITY_LABELS_FILE_NAME);
-            String jsonString = CharStreams.toString(new InputStreamReader(input, Charsets.UTF_8));
-            return entityLabelsFromJson(jsonString);
-        } catch (IOException e) {
-            throw new ServiceRuntimeException("Failed to parse " + DEFAULT_ENTITY_LABELS_FILE_NAME + " file ", e);
+        if(defaultEntityLabels == null) {
+            try {
+                ClasspathResourceLoader cprl = new ClasspathResourceLoader();
+                InputStream input = cprl.getResourceStream(DEFAULT_ENTITY_LABELS_FILE_NAME);
+                String jsonString = CharStreams.toString(new InputStreamReader(input, Charsets.UTF_8));
+                return entityLabelsFromJson(jsonString);
+            } catch (IOException e) {
+                throw new ServiceRuntimeException("Failed to parse " + DEFAULT_ENTITY_LABELS_FILE_NAME + " file ", e);
+            }
+        } else {
+            return defaultEntityLabels;
         }
     }
 
