@@ -42,7 +42,7 @@ import java.util.stream.IntStream;
 import static com.hpe.adm.octane.ideplugins.services.util.Util.createQueryForMultipleValues;
 
 public class MetadataService {
-    
+
     /**
      * For backwards compatibility, check if this field exists
      */
@@ -58,17 +58,15 @@ public class MetadataService {
 
     private Map<Entity, Collection<FieldMetadata>> fieldsCache;
 
-    private Map<Entity, Collection<FieldMetadata>> visibleFieldsCache;
-    
     public FieldMetadata getMetadata(Entity entityType, String fieldName) {
         Collection<FieldMetadata> allFieldMetadata = getFields(entityType);
-        
-        Optional<FieldMetadata> singleFieldMetadata = 
-            allFieldMetadata
-                .stream()
-                .filter(metadata -> fieldName.equals(metadata.getName()))
-                .findFirst();
-        
+
+        Optional<FieldMetadata> singleFieldMetadata =
+                allFieldMetadata
+                        .stream()
+                        .filter(metadata -> fieldName.equals(metadata.getName()))
+                        .findFirst();
+
         if(!singleFieldMetadata.isPresent()) {
             throw new ServiceRuntimeException("Cannot find metadata for field " + fieldName + ", entity " + entityType);
         } else {
@@ -106,11 +104,6 @@ public class MetadataService {
     }
 
     public Collection<FieldMetadata> getVisibleFields(Entity entityType){
-        if (visibleFieldsCache == null) {
-            visibleFieldsCache = new ConcurrentHashMap<>();
-            connectionSettingsProvider.addChangeHandler(() -> visibleFieldsCache.clear());
-        }
-
         ConnectionSettings connectionSettings = connectionSettingsProvider.getConnectionSettings();
         OctaneHttpClient httpClient = httpClientProvider.geOctaneHttpClient();
         if (null == httpClient) {
@@ -127,16 +120,12 @@ public class MetadataService {
             throw new ServiceRuntimeException(e);
         }
         List<FieldMetadata> fields;
-        if (!visibleFieldsCache.containsKey(entityType)) {
-            response = httpClient.execute(request);
-            fields = (List<FieldMetadata>) getFieldMetadataFromJSON(response.getContent());
-            visibleFieldsCache.put(entityType, fields);
-        } else {
-            fields = (List<FieldMetadata>) visibleFieldsCache.get(entityType);
-        }
+
+        response = httpClient.execute(request);
+        fields = (List<FieldMetadata>) getFieldMetadataFromJSON(response.getContent());
         return fields;
     }
-    
+
     private Collection<FieldMetadata> getFieldMetadataFromJSON(String fieldsJSON){
         JSONTokener tokener = new JSONTokener(fieldsJSON);
         JSONObject jsonObj = new JSONObject(tokener);
@@ -149,7 +138,7 @@ public class MetadataService {
         });
         return fieldsMetadata;
     }
-    
+
     /**
      * Check if server configured in connection settings has client lock stamp supports
      * It checks if FIELD_CLIENT_LOCK_STAMP exists in the field metadata
