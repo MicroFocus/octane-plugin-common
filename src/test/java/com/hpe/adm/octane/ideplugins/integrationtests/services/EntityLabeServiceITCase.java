@@ -33,11 +33,11 @@ public class EntityLabeServiceITCase extends IntegrationTestBase {
 
     @Test
     public void testGetEntityLabelDetails() {
-        Map<String, EntityModel> entityLabelList = entityLabelService.getEntityLabelDetails();
+        Map<String, EntityModel> entityLabelMap = entityLabelService.getEntityLabelDetails();
 
         AtomicBoolean areEntityTypesCovered = new AtomicBoolean(true);
         Arrays.stream(entityTypes).forEach(e -> {
-            if(entityLabelList.get(e) == null)
+            if (entityLabelMap.get(e) == null)
                 areEntityTypesCovered.set(false);
         });
 

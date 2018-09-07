@@ -35,12 +35,13 @@ public class EntityLabelService {
     private static final String ENTITY_TYPE = "entity_type";
     private static final String ENTITY_NAME = "name";
     private static final String ENTITY_INITIALS = "initials";
+    private static final String ENTITY_NAME_PLURAL_CAPITALIZED = "plural_capitalized";
 
     private static final long CURRENT_ENTITY_LABELS_JSON_VERSION = 1;
 
     private static final String DEFAULT_ENTITY_LABELS_FILE_NAME = "defaultEntityLabels.json";
 
-    private String[] usefulEntityLabelsFromServer = new String[]{"defect", "story", "quality_story", "feature", "epic", "requirement"};
+    private String[] usefulEntityLabelsFromServer = new String[]{"defect", "story", "quality_story", "feature", "epic", "requirement_root"};
 
     private Map<String, EntityModel> defaultEntityLabels;
 
@@ -71,6 +72,10 @@ public class EntityLabelService {
         Map<String, EntityModel> entityMetadataFromServer = getEntityMetadataFromJSON(response.getContent());
         Arrays.stream(usefulEntityLabelsFromServer).forEach(s -> {
             EntityModel em = entityMetadataFromServer.get(s);
+            // hardcoded translation because of mismatch between Entity.Requirements and entity type given by the response
+            if (s.equals("requirement_root")) {
+                s = "requirement";
+            }
             if (em != null) {
                 entityLabelMetadatas.remove(s);
                 entityLabelMetadatas.put(s, em);
@@ -80,8 +85,8 @@ public class EntityLabelService {
         return entityLabelMetadatas;
     }
 
-    public Map<String, EntityModel> getDefaultEntityLabels() {
-        if(defaultEntityLabels == null) {
+    private Map<String, EntityModel> getDefaultEntityLabels() {
+        if (defaultEntityLabels == null) {
             try {
                 ClasspathResourceLoader cprl = new ClasspathResourceLoader();
                 InputStream input = cprl.getResourceStream(DEFAULT_ENTITY_LABELS_FILE_NAME);
@@ -127,6 +132,7 @@ public class EntityLabelService {
                     em.setValue(new StringFieldModel(ENTITY_TYPE, ((JSONObject) entityLabelObject).getString(ENTITY_TYPE)));
                     em.setValue(new StringFieldModel(ENTITY_NAME, ((JSONObject) entityLabelObject).getString(ENTITY_NAME)));
                     em.setValue((new StringFieldModel(ENTITY_INITIALS, ((JSONObject) entityLabelObject).getString(ENTITY_INITIALS))));
+                    em.setValue((new StringFieldModel(ENTITY_NAME_PLURAL_CAPITALIZED, ((JSONObject) entityLabelObject).getString(ENTITY_NAME_PLURAL_CAPITALIZED))));
                     entityLabelMetadataMap.put(((JSONObject) entityLabelObject).getString(ENTITY_TYPE), em);
                 }
             }
