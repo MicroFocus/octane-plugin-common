@@ -21,7 +21,7 @@ import com.hpe.adm.nga.sdk.Octane;
 import com.hpe.adm.nga.sdk.query.Query;
 import com.hpe.adm.nga.sdk.query.QueryMethod;
 import com.hpe.adm.octane.ideplugins.services.connection.ConnectionSettings;
-import com.hpe.adm.octane.ideplugins.services.connection.sso.SsoAuthentication;
+import com.hpe.adm.octane.ideplugins.services.connection.granttoken.GrantTokenAuthentication;
 import com.hpe.adm.octane.ideplugins.services.exception.ServiceException;
 import com.hpe.adm.octane.ideplugins.services.filtering.Entity;
 
@@ -67,7 +67,7 @@ public class TestService {
         // Try basic http connection first
         testHttpConnection(connectionSettings);
 
-        if (!(connectionSettings.getAuthentication() instanceof SsoAuthentication)) {
+        if (!(connectionSettings.getAuthentication() instanceof GrantTokenAuthentication)) {
             Query query = Query.statement("subtype", QueryMethod.EqualTo, Entity.WORK_ITEM_ROOT.getSubtypeName()).build();
 
             // Try to fetch the backlog root

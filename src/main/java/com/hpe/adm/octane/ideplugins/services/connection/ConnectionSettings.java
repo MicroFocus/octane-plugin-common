@@ -16,7 +16,7 @@ package com.hpe.adm.octane.ideplugins.services.connection;
 import java.util.Objects;
 
 import com.hpe.adm.nga.sdk.authentication.Authentication;
-import com.hpe.adm.octane.ideplugins.services.connection.sso.SsoAuthentication;
+import com.hpe.adm.octane.ideplugins.services.connection.granttoken.GrantTokenAuthentication;
 
 public class ConnectionSettings {
 
@@ -79,7 +79,7 @@ public class ConnectionSettings {
     }
 
     /**
-     * Settings which both have {@link SsoAuthentication} will never be equal,
+     * Settings which both have {@link GrantTokenAuthentication} will never be equal,
      * since the crendentials cannot be predetermined
      */
     @Override
@@ -95,7 +95,7 @@ public class ConnectionSettings {
                 Objects.equals(workspaceId, that.workspaceId) &&
                 Objects.equals(authentication.getClass(), that.authentication.getClass()) &&
                 Objects.equals(authentication.getAuthenticationString(), that.authentication.getAuthenticationString()) &&
-                !authentication.getClass().equals(SsoAuthentication.class);
+                !authentication.getClass().equals(GrantTokenAuthentication.class);
 
     }
 

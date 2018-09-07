@@ -27,11 +27,11 @@ import com.hpe.adm.nga.sdk.network.OctaneHttpClient;
 import com.hpe.adm.octane.ideplugins.services.connection.ConnectionSettings;
 import com.hpe.adm.octane.ideplugins.services.connection.ConnectionSettingsProvider;
 import com.hpe.adm.octane.ideplugins.services.connection.HttpClientProvider;
+import com.hpe.adm.octane.ideplugins.services.connection.IdePluginsOctaneHttpClient;
 import com.hpe.adm.octane.ideplugins.services.connection.OctaneProvider;
-import com.hpe.adm.octane.ideplugins.services.connection.sso.SsoLoginGoogleHttpClient;
-import com.hpe.adm.octane.ideplugins.services.connection.sso.SsoTokenPollingCompleteHandler;
-import com.hpe.adm.octane.ideplugins.services.connection.sso.SsoTokenPollingInProgressHandler;
-import com.hpe.adm.octane.ideplugins.services.connection.sso.SsoTokenPollingStartedHandler;
+import com.hpe.adm.octane.ideplugins.services.connection.granttoken.TokenPollingCompleteHandler;
+import com.hpe.adm.octane.ideplugins.services.connection.granttoken.TokenPollingInProgressHandler;
+import com.hpe.adm.octane.ideplugins.services.connection.granttoken.TokenPollingStartedHandler;
 import com.hpe.adm.octane.ideplugins.services.exception.ServiceRuntimeException;
 import com.hpe.adm.octane.ideplugins.services.mywork.MyWorkService;
 import com.hpe.adm.octane.ideplugins.services.mywork.MyWorkServiceProxyFactory;
@@ -54,21 +54,23 @@ public class ServiceModule extends AbstractModule {
     private Octane octane;
     private OctaneHttpClient octaneHttpClient;
 
-    private SsoTokenPollingStartedHandler ssoTokenPollingStartedHandler;
-    private SsoTokenPollingCompleteHandler ssoTokenPollingCompleteHandler;
-    private SsoTokenPollingInProgressHandler ssoTokenPollingInProgressHandler;
+    private TokenPollingStartedHandler tokenPollingStartedHandler;
+    private TokenPollingCompleteHandler tokenPollingCompleteHandler;
+    private TokenPollingInProgressHandler tokenPollingInProgressHandler;
 
     public ServiceModule(ConnectionSettingsProvider connectionSettingsProvider) {
         this(connectionSettingsProvider, null, null, null);
     }
 
-    public ServiceModule(ConnectionSettingsProvider connectionSettingsProvider, SsoTokenPollingStartedHandler ssoTokenPollingStartedHandler,
-            SsoTokenPollingInProgressHandler ssoTokenPollingInProgressHandler, SsoTokenPollingCompleteHandler ssoTokenPollingCompleteHandler) {
+    public ServiceModule(ConnectionSettingsProvider connectionSettingsProvider, 
+    		TokenPollingStartedHandler tokenPollingStartedHandler,
+            TokenPollingInProgressHandler tokenPollingInProgressHandler, 
+            TokenPollingCompleteHandler tokenPollingCompleteHandler) {
     	
         this.connectionSettingsProvider = connectionSettingsProvider;
-        this.ssoTokenPollingStartedHandler = ssoTokenPollingStartedHandler;
-        this.ssoTokenPollingCompleteHandler = ssoTokenPollingCompleteHandler;
-        this.ssoTokenPollingInProgressHandler = ssoTokenPollingInProgressHandler;
+        this.tokenPollingStartedHandler = tokenPollingStartedHandler;
+        this.tokenPollingCompleteHandler = tokenPollingCompleteHandler;
+        this.tokenPollingInProgressHandler = tokenPollingInProgressHandler;
         injectorSupplier = Suppliers.memoize(() -> Guice.createInjector(this));
 
         // Reset in case of connection settings change
@@ -126,10 +128,10 @@ public class ServiceModule extends AbstractModule {
 	            	
 	            	logger.debug("creating http client pampam");
 	            	
-	                SsoLoginGoogleHttpClient httpClient = new SsoLoginGoogleHttpClient(currentConnectionSettings.getBaseUrl());
-	                httpClient.setSsoTokenPollingStartedHandler(ssoTokenPollingStartedHandler);
-	                httpClient.setSsoTokenPollingInProgressHandler(ssoTokenPollingInProgressHandler);
-	                httpClient.setSsoTokenPollingCompleteHandler(ssoTokenPollingCompleteHandler);
+	                IdePluginsOctaneHttpClient httpClient = new IdePluginsOctaneHttpClient(currentConnectionSettings.getBaseUrl());
+	                httpClient.setSsoTokenPollingStartedHandler(tokenPollingStartedHandler);
+	                httpClient.setSsoTokenPollingInProgressHandler(tokenPollingInProgressHandler);
+	                httpClient.setSsoTokenPollingCompleteHandler(tokenPollingCompleteHandler);
 	
 	                boolean authResult = httpClient.authenticate(currentConnectionSettings.getAuthentication());
 	                

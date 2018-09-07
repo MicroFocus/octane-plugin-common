@@ -1,4 +1,4 @@
-package com.hpe.adm.octane.ideplugins.services.connection.sso;
+package com.hpe.adm.octane.ideplugins.services.connection;
 
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
@@ -48,10 +48,16 @@ import com.hpe.adm.nga.sdk.model.StringFieldModel;
 import com.hpe.adm.nga.sdk.network.OctaneHttpClient;
 import com.hpe.adm.nga.sdk.network.OctaneHttpRequest;
 import com.hpe.adm.nga.sdk.network.OctaneHttpResponse;
+import com.hpe.adm.octane.ideplugins.services.connection.granttoken.GrantTokenAuthentication;
+import com.hpe.adm.octane.ideplugins.services.connection.granttoken.TokenPollingCompleteHandler;
+import com.hpe.adm.octane.ideplugins.services.connection.granttoken.TokenPollingCompletedStatus;
+import com.hpe.adm.octane.ideplugins.services.connection.granttoken.TokenPollingInProgressHandler;
+import com.hpe.adm.octane.ideplugins.services.connection.granttoken.TokenPollingStartedHandler;
+import com.hpe.adm.octane.ideplugins.services.connection.granttoken.TokenPollingStatus;
 
-public class SsoLoginGoogleHttpClient implements OctaneHttpClient {
+public class IdePluginsOctaneHttpClient implements OctaneHttpClient {
 
-	private static final Logger logger = LoggerFactory.getLogger(SsoLoginGoogleHttpClient.class.getName());
+	private static final Logger logger = LoggerFactory.getLogger(IdePluginsOctaneHttpClient.class.getName());
 
 	private static final String LOGGER_REQUEST_FORMAT = "Request: {} - {} - {}";
 	private static final String LOGGER_RESPONSE_FORMAT = "Response: {} - {} - {}";
@@ -76,17 +82,17 @@ public class SsoLoginGoogleHttpClient implements OctaneHttpClient {
 	private final Map<OctaneHttpRequest, OctaneHttpResponse> cachedRequestToResponse = new HashMap<>();
 	private final Map<OctaneHttpRequest, String> requestToEtagMap = new HashMap<>();
 
-	private long pollingTimeoutMillis = 1000 * 60;
+	private long pollingTimeoutMillis = 1000 * 30;
 	private String sessionCookieName = DEFAULT_OCTANE_SESSION_COOKIE_NAME;
 	private String lwssoValue = "";
 	private final Lock authenticationLock = new ReentrantLock(true);
 	private HttpRequestInitializer requestInitializer;
 
-	private SsoTokenPollingStartedHandler ssoTokenPollingStartedHandler;
-	private SsoTokenPollingCompleteHandler ssoTokenPollingCompleteHandler;
-	private SsoTokenPollingInProgressHandler ssoTokenPollingInProgressHandler;
+	private TokenPollingStartedHandler tokenPollingStartedHandler;
+	private TokenPollingCompleteHandler tokenPollingCompleteHandler;
+	private TokenPollingInProgressHandler tokenPollingInProgressHandler;
 
-	public SsoLoginGoogleHttpClient(String urlDomain) {
+	public IdePluginsOctaneHttpClient(String urlDomain) {
 		this.urlDomain = urlDomain;
 
 		requestInitializer = request -> {
@@ -130,8 +136,8 @@ public class SsoLoginGoogleHttpClient implements OctaneHttpClient {
 		lastUsedAuthentication = authentication;
 		
 		try {
-			if (authentication instanceof SsoAuthentication) {
-				return ssoAuthenticate(authentication);
+			if (authentication instanceof GrantTokenAuthentication) {
+				return grantTokenAuthenticate(authentication);
 			} else {
 				return octaneAuthenticate(authentication);
 			}			
@@ -155,7 +161,7 @@ public class SsoLoginGoogleHttpClient implements OctaneHttpClient {
 		}
 	}
 	
-	private boolean ssoAuthenticate(Authentication authentication) {		
+	private boolean grantTokenAuthenticate(Authentication authentication) {		
 		// do not authenticate if lwssoValue is not empty
 		if (!lwssoValue.isEmpty()) {
 			logger.debug("Skipping authentication, lwssoValue already set");
@@ -172,8 +178,8 @@ public class SsoLoginGoogleHttpClient implements OctaneHttpClient {
 			HttpRequest identifierRequest = requestFactory.buildGetRequest(new GenericUrl(urlDomain + "/authentication/grant_tool_token"));
 			JSONObject identifierResponse = new JSONObject(identifierRequest.execute().parseAsString());
 
-			if (ssoTokenPollingStartedHandler != null) {
-				ssoTokenPollingStartedHandler.pollingStarted(identifierResponse.getString("authentication_url"));
+			if (tokenPollingStartedHandler != null) {
+				tokenPollingStartedHandler.pollingStarted(identifierResponse.getString("authentication_url"));
 			}
 
 			JSONObject identifierRequestJson = new JSONObject();
@@ -185,13 +191,11 @@ public class SsoLoginGoogleHttpClient implements OctaneHttpClient {
 
 			while (pollingTimeoutTimestamp > new Date().getTime()) {
 
-				if (ssoTokenPollingInProgressHandler != null) {
-					PollingStatus pollingStatus = new PollingStatus();
+				if (tokenPollingInProgressHandler != null) {
+					TokenPollingStatus pollingStatus = new TokenPollingStatus();
 					pollingStatus.timeoutTimeStamp = pollingTimeoutTimestamp;
-
-					ssoTokenPollingInProgressHandler.polling(pollingStatus);
-
-					if (pollingStatus.shouldPoll.equals(Boolean.FALSE)) {
+					pollingStatus = tokenPollingInProgressHandler.polling(pollingStatus);
+					if (pollingStatus.shouldPoll == false) {
 						break;
 					}
 				}
@@ -222,15 +226,30 @@ public class SsoLoginGoogleHttpClient implements OctaneHttpClient {
 				logger.debug("session token set: " + lwssoValue);
 				logger.debug("cookie name set: " + sessionCookieName);
 
-				if (ssoTokenPollingCompleteHandler != null) {
-					ssoTokenPollingCompleteHandler.pollingComplete();
+				if (tokenPollingCompleteHandler != null) {
+					TokenPollingCompletedStatus pollingCompletedStatus = new TokenPollingCompletedStatus();
+					pollingCompletedStatus.result = TokenPollingCompletedStatus.Result.SUCCESS;
+					tokenPollingCompleteHandler.pollingComplete(pollingCompletedStatus);
 				}
 
 				return true;
 			}
 
 		} catch (IOException ex) {
+			if (tokenPollingCompleteHandler != null) {
+				TokenPollingCompletedStatus pollingCompletedStatus = new TokenPollingCompletedStatus();
+				pollingCompletedStatus.result = TokenPollingCompletedStatus.Result.FAIL;
+				pollingCompletedStatus.exception = ex;
+				tokenPollingCompleteHandler.pollingComplete(pollingCompletedStatus);
+			}
+
 			logger.error("Failed to get grant_tool_token: " + ex);
+		}
+		
+		if (tokenPollingCompleteHandler != null) {
+			TokenPollingCompletedStatus pollingCompletedStatus = new TokenPollingCompletedStatus();
+			pollingCompletedStatus.result = TokenPollingCompletedStatus.Result.TIMEOUT;
+			tokenPollingCompleteHandler.pollingComplete(pollingCompletedStatus);
 		}
 
 		return false;		
@@ -366,7 +385,7 @@ public class SsoLoginGoogleHttpClient implements OctaneHttpClient {
 					
 					logger.debug("Auth token expired, trying to re-authenticate");
 					try {
-						if(lastUsedAuthentication instanceof SsoAuthentication) {
+						if(lastUsedAuthentication instanceof GrantTokenAuthentication) {
 							lwssoValue = ""; //clear it to force re-auth
 						}
 						authenticate(lastUsedAuthentication);
@@ -581,16 +600,16 @@ public class SsoLoginGoogleHttpClient implements OctaneHttpClient {
 		}
 	}
 
-	public void setSsoTokenPollingStartedHandler(SsoTokenPollingStartedHandler ssoTokenPollingStartedHandler) {
-		this.ssoTokenPollingStartedHandler = ssoTokenPollingStartedHandler;
+	public void setSsoTokenPollingStartedHandler(TokenPollingStartedHandler tokenPollingStartedHandler) {
+		this.tokenPollingStartedHandler = tokenPollingStartedHandler;
 	}
 
-	public void setSsoTokenPollingCompleteHandler(SsoTokenPollingCompleteHandler ssoTokenPollingCompleteHandler) {
-		this.ssoTokenPollingCompleteHandler = ssoTokenPollingCompleteHandler;
+	public void setSsoTokenPollingCompleteHandler(TokenPollingCompleteHandler tokenPollingCompleteHandler) {
+		this.tokenPollingCompleteHandler = tokenPollingCompleteHandler;
 	}
 
-	public void setSsoTokenPollingInProgressHandler(SsoTokenPollingInProgressHandler ssoTokenPollingInProgressHandler) {
-		this.ssoTokenPollingInProgressHandler = ssoTokenPollingInProgressHandler;
+	public void setSsoTokenPollingInProgressHandler(TokenPollingInProgressHandler tokenPollingInProgressHandler) {
+		this.tokenPollingInProgressHandler = tokenPollingInProgressHandler;
 	}
 
 }

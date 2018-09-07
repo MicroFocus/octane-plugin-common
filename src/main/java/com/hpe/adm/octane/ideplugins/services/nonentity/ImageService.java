@@ -13,13 +13,13 @@
 
 package com.hpe.adm.octane.ideplugins.services.nonentity;
 
-import com.google.api.client.http.*;
-import com.google.api.client.http.javanet.NetHttpTransport;
-import com.google.api.client.util.IOUtils;
-import com.google.inject.Inject;
-import com.hpe.adm.octane.ideplugins.services.connection.ConnectionSettingsProvider;
-import com.hpe.adm.octane.ideplugins.services.connection.HttpClientProvider;
-import com.hpe.adm.octane.ideplugins.services.connection.sso.SsoLoginGoogleHttpClient;
+import java.io.File;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.OutputStream;
+import java.net.HttpCookie;
+
 import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
@@ -27,8 +27,18 @@ import org.jsoup.select.Elements;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.io.*;
-import java.net.HttpCookie;
+import com.google.api.client.http.GenericUrl;
+import com.google.api.client.http.HttpRequest;
+import com.google.api.client.http.HttpRequestFactory;
+import com.google.api.client.http.HttpResponse;
+import com.google.api.client.http.HttpResponseException;
+import com.google.api.client.http.HttpTransport;
+import com.google.api.client.http.javanet.NetHttpTransport;
+import com.google.api.client.util.IOUtils;
+import com.google.inject.Inject;
+import com.hpe.adm.octane.ideplugins.services.connection.ConnectionSettingsProvider;
+import com.hpe.adm.octane.ideplugins.services.connection.HttpClientProvider;
+import com.hpe.adm.octane.ideplugins.services.connection.IdePluginsOctaneHttpClient;
 
 public class ImageService {
 
@@ -80,7 +90,7 @@ public class ImageService {
         HttpRequestFactory requestFactory = HTTP_TRANSPORT.createRequestFactory();
         try {
             HttpRequest httpRequest = requestFactory.buildGetRequest(new GenericUrl(pictureLink));
-            HttpCookie lwssoCookie = ((SsoLoginGoogleHttpClient) httpClientProvider.getOctaneHttpClient()).getSessionHttpCookie();
+            HttpCookie lwssoCookie = ((IdePluginsOctaneHttpClient) httpClientProvider.getOctaneHttpClient()).getSessionHttpCookie();
             httpRequest.getHeaders().setCookie(lwssoCookie.toString());
             httpResponse = httpRequest.execute();
         } catch (IOException e) {
