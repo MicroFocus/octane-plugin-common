@@ -37,8 +37,6 @@ public class EntityLabelService {
     private static final String ENTITY_INITIALS = "initials";
     private static final String ENTITY_NAME_PLURAL_CAPITALIZED = "plural_capitalized";
 
-    private static final long CURRENT_ENTITY_LABELS_JSON_VERSION = 1;
-
     private static final String DEFAULT_ENTITY_LABELS_FILE_NAME = "defaultEntityLabels.json";
 
     private String[] usefulEntityLabelsFromServer = new String[]{"defect", "story", "quality_story", "feature", "epic", "requirement_root"};
@@ -91,31 +89,12 @@ public class EntityLabelService {
                 ClasspathResourceLoader cprl = new ClasspathResourceLoader();
                 InputStream input = cprl.getResourceStream(DEFAULT_ENTITY_LABELS_FILE_NAME);
                 String jsonString = CharStreams.toString(new InputStreamReader(input, Charsets.UTF_8));
-                return entityLabelsFromJson(jsonString);
+                return getEntityMetadataFromJSON(jsonString);
             } catch (IOException e) {
                 throw new ServiceRuntimeException("Failed to parse " + DEFAULT_ENTITY_LABELS_FILE_NAME + " file ", e);
             }
         } else {
             return defaultEntityLabels;
-        }
-    }
-
-    /**
-     * Util method for converting an entity labels json to a java object Reads
-     * based on version tag in json object, current is
-     * CURRENT_ENTITY_LABELS_JSON_VERSION
-     *
-     * @param jsonString json containing label metadata for entities
-     * @return Collection containing {@link EntityModel}s
-     */
-    public Map<String, EntityModel> entityLabelsFromJson(String jsonString) {
-        JSONObject jsonObject = new JSONObject(jsonString);
-        long jsonVersion = jsonObject.getLong("version");
-
-        if (CURRENT_ENTITY_LABELS_JSON_VERSION == jsonVersion) {
-            return getEntityMetadataFromJSON(jsonString);
-        } else {
-            throw new ServiceRuntimeException("Fields json version usupported, cannot parse");
         }
     }
 
