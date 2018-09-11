@@ -9,7 +9,6 @@ import org.junit.Test;
 
 import java.util.Arrays;
 import java.util.Map;
-import java.util.concurrent.atomic.AtomicBoolean;
 
 public class EntityLabeServiceITCase extends IntegrationTestBase {
 
@@ -34,13 +33,7 @@ public class EntityLabeServiceITCase extends IntegrationTestBase {
     @Test
     public void testGetEntityLabelDetails() {
         Map<String, EntityModel> entityLabelMap = entityLabelService.getEntityLabelDetails();
-
-        AtomicBoolean areEntityTypesCovered = new AtomicBoolean(true);
-        Arrays.stream(entityTypes).forEach(e -> {
-            if (entityLabelMap.get(e) == null)
-                areEntityTypesCovered.set(false);
-        });
-
-        Assert.assertTrue(areEntityTypesCovered.get());
+        boolean areEntityTypesCovered = Arrays.stream(entityTypes).allMatch(e -> entityLabelMap.get(e) != null);
+        Assert.assertTrue(areEntityTypesCovered);
     }
 }
