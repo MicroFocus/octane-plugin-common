@@ -73,27 +73,34 @@ public class EntityLabelService {
         octaneHttpClient.authenticate(new SimpleUserAuthentication(connectionSettingsProvider.getConnectionSettings().getUserName(),
                 connectionSettingsProvider.getConnectionSettings().getPassword(), ClientType.HPE_MQM_UI.name()));
         OctaneHttpResponse response = null;
-        Map<String, EntityModel> entityLabelMetadatas = getDefaultEntityLabels();
+
         try {
             response = octaneHttpClient.execute(getOctaneHttpRequest);
+            Map<String, EntityModel> entityMetadataFromServer = getEntityMetadataFromJSON(response.getContent());
+            Map<String, EntityModel> entityLabelMetadatas = getDefaultEntityLabels();
+            Arrays.stream(usefulEntityLabelsFromServer).forEach(s -> {
+                EntityModel em = entityMetadataFromServer.get(s);
+                // hardcoded translation because of mismatch between Entity.Requirements and entity type given by the response
+                if (s.equals("requirement_root") && em != null) {
+                    entityLabelMetadatas.remove(s);
+                    s = "requirement";
+                    entityLabelMetadatas.put(s, em);
+                }
+            });
+            return entityLabelMetadatas;
+
         } catch (Exception e) {
             logger.warn(e.getMessage());
-        }
-
-        Map<String, EntityModel> entityMetadataFromServer = getEntityMetadataFromJSON(response.getContent());
-        Arrays.stream(usefulEntityLabelsFromServer).forEach(s -> {
-            EntityModel em = entityMetadataFromServer.get(s);
+            Map<String, EntityModel> entityLabelMetadatas = getDefaultEntityLabels();
+            String requirementEntityName = "requirement_root";
+            EntityModel em = entityLabelMetadatas.get(requirementEntityName);
             // hardcoded translation because of mismatch between Entity.Requirements and entity type given by the response
-            if (s.equals("requirement_root")) {
-                s = "requirement";
-            }
-            if (em != null) {
-                entityLabelMetadatas.remove(s);
-                entityLabelMetadatas.put(s, em);
-            }
-        });
+            String translatedRequirementName = "requirement";
+            entityLabelMetadatas.remove(requirementEntityName);
+            entityLabelMetadatas.put(translatedRequirementName, em);
 
-        return entityLabelMetadatas;
+            return entityLabelMetadatas;
+        }
     }
 
     private Map<String, EntityModel> getDefaultEntityLabels() {
