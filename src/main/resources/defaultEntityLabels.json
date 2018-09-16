@@ -1,0 +1,105 @@
+{
+
+  "data": [
+    {
+      "entity_type": "defect",
+      "name": "Defect",
+      "plural_capitalized": "Defects",
+      "initials": "D",
+      "language": "lang.en"
+    },
+    {
+      "entity_type": "story",
+      "name": "User Story",
+      "plural_capitalized": "User Stories",
+      "initials": "US",
+      "language": "lang.en"
+    },
+    {
+      "entity_type": "quality_story",
+      "name": "Quality Story",
+      "plural_capitalized": "Quality Stories",
+      "initials": "QS",
+      "language": "lang.en"
+    },
+    {
+      "entity_type": "feature",
+      "name": "Feature",
+      "plural_capitalized": "Features",
+      "initials": "F",
+      "language": "lang.en"
+    },
+    {
+      "entity_type": "epic",
+      "name": "Epic",
+      "plural_capitalized": "Epics",
+      "initials": "E",
+      "language": "lang.en"
+    },
+    {
+      "entity_type": "task",
+      "name": "Task",
+      "plural_capitalized": "Tasks",
+      "initials": "T",
+      "language": "lang.en"
+    },
+    {
+      "entity_type": "test_manual",
+      "name": "Manual Test",
+      "plural_capitalized": "Manual Tests",
+      "initials": "MT",
+      "language": "lang.en"
+    },
+    {
+      "entity_type": "gherkin_test",
+      "name": "Gherkin Test",
+      "plural_capitalized": "Gherkin Tests",
+      "initials": "GT",
+      "language": "lang.en"
+    },
+    {
+      "entity_type": "test_suite",
+      "name": "Test Suite",
+      "plural_capitalized": "Test Suites",
+      "initials": "TS",
+      "language": "lang.en"
+    },
+    {
+      "entity_type": "run_manual",
+      "name": "Manual Run",
+      "plural_capitalized": "Manual Runs",
+      "initials": "MR",
+      "language": "lang.en"
+    },
+    {
+      "entity_type": "run_suite",
+      "name": "Test Suite Run",
+      "plural_capitalized": "Test Suite Runs",
+      "initials": "SR",
+      "language": "lang.en"
+    },
+    {
+      "entity_type": "test_automated",
+      "name": "Automated Test",
+      "plural_capitalized": "Automated Tests",
+      "initials": "AT",
+      "language": "lang.en"
+    },
+    {
+      "entity_type": "comment",
+      "name": "Comment",
+      "plural_capitalized": "Comments",
+      "initials": "C",
+      "language": "lang.en"
+    },
+    {
+      "entity_type": "requirement_root",
+      "name": "Requirement",
+      "plural_capitalized": "Requirements",
+      "initials": "R",
+      "language": "lang.en"
+    }
+  ]
+}
+
+
