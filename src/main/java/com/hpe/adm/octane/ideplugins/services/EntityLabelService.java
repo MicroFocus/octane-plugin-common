@@ -63,24 +63,26 @@ public class EntityLabelService {
     private ConnectionSettingsProvider connectionSettingsProvider;
 
     public Map<String, EntityModel> getEntityLabelDetails() {
+
         String getUrl = connectionSettingsProvider.getConnectionSettings().getBaseUrl() + "/api/shared_spaces/" +
                 connectionSettingsProvider.getConnectionSettings().getSharedSpaceId() + "/workspaces/" +
                 connectionSettingsProvider.getConnectionSettings().getWorkspaceId() + "/entity_labels";
 
         OctaneHttpRequest getOctaneHttpRequest = new OctaneHttpRequest.GetOctaneHttpRequest(getUrl);
+        OctaneHttpClient octaneHttpClient = httpClientProvider.getOctaneHttpClient();
 
-        OctaneHttpClient octaneHttpClient = httpClientProvider.geOctaneHttpClient();
-        octaneHttpClient.authenticate(new SimpleUserAuthentication(connectionSettingsProvider.getConnectionSettings().getUserName(),
-                connectionSettingsProvider.getConnectionSettings().getPassword(), ClientType.HPE_MQM_UI.name()));
         OctaneHttpResponse response = null;
+
         Map<String, EntityModel> entityLabelMetadatas = getDefaultEntityLabels();
+
         try {
             response = octaneHttpClient.execute(getOctaneHttpRequest);
         } catch (Exception e) {
             logger.warn(e.getMessage());
+            //TODO: TB
         }
 
-        Map<String, EntityModel> entityMetadataFromServer = getEntityMetadataFromJSON(response.getContent());
+        Map<String, EntityModel> entityMetadataFromServer = getEntityMetadataFromJSON(response.getContent()); //TODO: TB
         Arrays.stream(usefulEntityLabelsFromServer).forEach(s -> {
             EntityModel em = entityMetadataFromServer.get(s);
             // hardcoded translation because of mismatch between Entity.Requirements and entity type given by the response
