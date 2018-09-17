@@ -73,34 +73,31 @@ public class EntityLabelService {
         octaneHttpClient.authenticate(new SimpleUserAuthentication(connectionSettingsProvider.getConnectionSettings().getUserName(),
                 connectionSettingsProvider.getConnectionSettings().getPassword(), ClientType.HPE_MQM_UI.name()));
         OctaneHttpResponse response = null;
-
+        Map<String, EntityModel> entityMetadataFromServer;
         try {
             response = octaneHttpClient.execute(getOctaneHttpRequest);
-            Map<String, EntityModel> entityMetadataFromServer = getEntityMetadataFromJSON(response.getContent());
-            Map<String, EntityModel> entityLabelMetadatas = getDefaultEntityLabels();
-            Arrays.stream(usefulEntityLabelsFromServer).forEach(s -> {
-                EntityModel em = entityMetadataFromServer.get(s);
-                // hardcoded translation because of mismatch between Entity.Requirements and entity type given by the response
-                if (s.equals("requirement_root") && em != null) {
-                    entityLabelMetadatas.remove(s);
-                    s = "requirement";
-                    entityLabelMetadatas.put(s, em);
-                }
-            });
-            return entityLabelMetadatas;
+            entityMetadataFromServer = getEntityMetadataFromJSON(response.getContent());
 
         } catch (Exception e) {
             logger.warn(e.getMessage());
-            Map<String, EntityModel> entityLabelMetadatas = getDefaultEntityLabels();
-            String requirementEntityName = "requirement_root";
-            EntityModel em = entityLabelMetadatas.get(requirementEntityName);
-            // hardcoded translation because of mismatch between Entity.Requirements and entity type given by the response
-            String translatedRequirementName = "requirement";
-            entityLabelMetadatas.remove(requirementEntityName);
-            entityLabelMetadatas.put(translatedRequirementName, em);
-
-            return entityLabelMetadatas;
+            entityMetadataFromServer = getDefaultEntityLabels();
         }
+
+        //variable used in lambda needs to be final or effectively final(must have value assigned only once)
+        Map<String, EntityModel> entityLabelMetadataResolved = entityMetadataFromServer;
+
+        Map<String, EntityModel> entityLabelMetadatas = getDefaultEntityLabels();
+
+        Arrays.stream(usefulEntityLabelsFromServer).forEach(string -> {
+            EntityModel em = entityLabelMetadataResolved.get(string);
+            // hardcoded translation because of mismatch between Entity.Requirements and entity type given by the response
+            if (string.equals("requirement_root") && em != null) {
+                entityLabelMetadatas.remove(string);
+                string = "requirement";
+            }
+            entityLabelMetadatas.put(string, em);
+        });
+        return entityLabelMetadatas;
     }
 
     private Map<String, EntityModel> getDefaultEntityLabels() {
