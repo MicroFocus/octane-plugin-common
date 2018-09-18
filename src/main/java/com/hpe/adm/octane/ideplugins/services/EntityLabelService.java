@@ -73,26 +73,30 @@ public class EntityLabelService {
         octaneHttpClient.authenticate(new SimpleUserAuthentication(connectionSettingsProvider.getConnectionSettings().getUserName(),
                 connectionSettingsProvider.getConnectionSettings().getPassword(), ClientType.HPE_MQM_UI.name()));
         OctaneHttpResponse response = null;
-        Map<String, EntityModel> entityLabelMetadatas = getDefaultEntityLabels();
+        Map<String, EntityModel> entityMetadataFromServer;
         try {
             response = octaneHttpClient.execute(getOctaneHttpRequest);
+            entityMetadataFromServer = getEntityMetadataFromJSON(response.getContent());
+
         } catch (Exception e) {
             logger.warn(e.getMessage());
+            entityMetadataFromServer = getDefaultEntityLabels();
         }
 
-        Map<String, EntityModel> entityMetadataFromServer = getEntityMetadataFromJSON(response.getContent());
-        Arrays.stream(usefulEntityLabelsFromServer).forEach(s -> {
-            EntityModel em = entityMetadataFromServer.get(s);
-            // hardcoded translation because of mismatch between Entity.Requirements and entity type given by the response
-            if (s.equals("requirement_root")) {
-                s = "requirement";
-            }
-            if (em != null) {
-                entityLabelMetadatas.remove(s);
-                entityLabelMetadatas.put(s, em);
-            }
-        });
+        //variable used in lambda needs to be final or effectively final(must have value assigned only once)
+        Map<String, EntityModel> entityLabelMetadataResolved = entityMetadataFromServer;
 
+        Map<String, EntityModel> entityLabelMetadatas = getDefaultEntityLabels();
+
+        Arrays.stream(usefulEntityLabelsFromServer).forEach(string -> {
+            EntityModel em = entityLabelMetadataResolved.get(string);
+            // hardcoded translation because of mismatch between Entity.Requirements and entity type given by the response
+            if (string.equals("requirement_root") && em != null) {
+                entityLabelMetadatas.remove(string);
+                string = "requirement";
+            }
+            entityLabelMetadatas.put(string, em);
+        });
         return entityLabelMetadatas;
     }
 

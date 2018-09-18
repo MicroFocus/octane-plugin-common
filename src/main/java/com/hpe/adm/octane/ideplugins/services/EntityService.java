@@ -110,9 +110,9 @@ public class EntityService {
                     expandFields.add(
                             relationFieldName + "{" +
                                     expand.get(relationFieldName)
-                            .stream()
-                            .collect(Collectors.joining(","))
-                            + "}");
+                                            .stream()
+                                            .collect(Collectors.joining(","))
+                                    + "}");
                 });
             }
 
@@ -138,7 +138,7 @@ public class EntityService {
             getRequest = getRequest.limit(limit);
         }
 
-        if(orderByField != null && orderByAsc != null){
+        if (orderByField != null && orderByAsc != null) {
             getRequest = getRequest.addOrderBy(orderByField, orderByAsc);
         } else {
             getRequest = getRequest.addOrderBy("id", true);
@@ -178,19 +178,19 @@ public class EntityService {
      * @return a map with the result entities organized by entity type
      */
     public Map<Entity, Collection<EntityModel>> concurrentFindEntities(Map<Entity, Query.QueryBuilder> filterCriteria,
-            Map<Entity, Set<String>> fieldListMap) {
+                                                                       Map<Entity, Set<String>> fieldListMap) {
         Map<Entity, Collection<EntityModel>> resultMap = new ConcurrentHashMap<>();
 
         // TODO, known subtypes should be under same rest call
         filterCriteria
-        .keySet()
-        .parallelStream()
-        .forEach(
-                entityType -> resultMap.put(entityType,
-                        findEntities(
-                                entityType.getApiEntityName(),
-                                filterCriteria.get(entityType),
-                                fieldListMap.get(entityType))));
+                .keySet()
+                .parallelStream()
+                .forEach(
+                        entityType -> resultMap.put(entityType,
+                                findEntities(
+                                        entityType.getApiEntityName(),
+                                        filterCriteria.get(entityType),
+                                        fieldListMap.get(entityType))));
 
         return resultMap;
     }
@@ -210,6 +210,11 @@ public class EntityService {
                 .at(entityId.toString())
                 .get();
 
+        //we dont have client lock stamp in versions before FENER Push 4, hence we should remove the field
+        if (OctaneVersion.compare(versionService.getOctaneVersion(), OctaneVersion.Operation.LOWER, OctaneVersion.FENER_P4)) {
+            fields.remove("client_lock_stamp");
+        }
+
         if (fields != null && fields.size() != 0) {
             get = get.addFields(fields.toArray(new String[]{}));
         }
@@ -217,7 +222,7 @@ public class EntityService {
         EntityModel retrivedEntity = get.execute();
 
         //Make sure subtype is always set
-        if(entityType.isSubtype()) {
+        if (entityType.isSubtype()) {
             retrivedEntity.setValue(new StringFieldModel("subtype", entityType.getSubtypeName()));
         }
 
@@ -267,9 +272,9 @@ public class EntityService {
 
 
     /**
-     * @deprecated <br> use {@link #updateEntity(EntityModel)}
      * @param entityModel base entity model
-     * @param nextPhase entity representing the new phase
+     * @param nextPhase   entity representing the new phase
+     * @deprecated <br> use {@link #updateEntity(EntityModel)}
      */
     @SuppressWarnings("rawtypes")
     @Deprecated
@@ -290,14 +295,14 @@ public class EntityService {
     public void updateEntity(EntityModel entityModel) {
         String entityId = getUiDataFromModel(entityModel.getValue("id"));
         Entity entityType = Entity.getEntityType(entityModel);
-        
+
         //SDK fix, client lock stamp field needs to always be sent if it's present, 
         //currently the sdk does not consider this field as "always dirty"
-        if(entityModel.getValue(MetadataService.FIELD_CLIENT_LOCK_STAMP) != null) {
+        if (entityModel.getValue(MetadataService.FIELD_CLIENT_LOCK_STAMP) != null) {
             //manually mark it as dirty
             entityModel.setValue(entityModel.getValue(MetadataService.FIELD_CLIENT_LOCK_STAMP));
         }
-        
+
         EntityList entityList = octaneProvider.getOctane().entityList(entityType.getApiEntityName());
         entityList.at(entityId).update().entity(entityModel).execute();
     }
@@ -318,7 +323,7 @@ public class EntityService {
                 URI uri = UrlParser.createEntityWebURI(
                         connectionSettingsProvider.getConnectionSettings(),
                         entityType == Entity.COMMENT ? ownerEntityType : entityType,
-                                entityType == Entity.COMMENT ? ownerEntityId : entityId);
+                        entityType == Entity.COMMENT ? ownerEntityId : entityId);
                 desktop.browse(uri);
             } catch (Exception ex) {
                 ex.printStackTrace();
