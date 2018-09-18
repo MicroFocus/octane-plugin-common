@@ -24,40 +24,57 @@ import com.hpe.adm.octane.ideplugins.services.connection.ConnectionSettings;
 import com.hpe.adm.octane.ideplugins.services.connection.ConnectionSettingsProvider;
 import com.hpe.adm.octane.ideplugins.services.connection.HttpClientProvider;
 import com.hpe.adm.octane.ideplugins.services.filtering.Entity;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
-import java.io.IOException;
+import java.lang.invoke.MethodHandles;
 import java.net.URLEncoder;
 import java.util.ArrayList;
 import java.util.List;
 
 public class CommitMessageService {
+
+    private final Logger logger = LoggerFactory.getLogger(MethodHandles.lookup().lookupClass());
+
     @Inject
     protected ConnectionSettingsProvider connectionSettingsProvider;
     @Inject
     protected HttpClientProvider httpClientProvider;
 
     public boolean validateCommitMessage(String commitMessage, Entity entityType, long entityId) {
+
         ConnectionSettings connectionSettings = connectionSettingsProvider.getConnectionSettings();
         OctaneHttpClient httpClient = httpClientProvider.geOctaneHttpClient();
+
         if (null != httpClient) {
             try {
+                String url = connectionSettings.getBaseUrl() +
+                        "/internal-api/shared_spaces/" + connectionSettings.getSharedSpaceId() +
+                        "/workspaces/" + connectionSettings.getWorkspaceId() +
+                        "/ali/validateCommitPattern?comment=" + URLEncoder.encode(commitMessage, "UTF-8");
 
-                OctaneHttpRequest request = new OctaneHttpRequest.GetOctaneHttpRequest(
-                        connectionSettings.getBaseUrl() + "/internal-api/shared_spaces/" + connectionSettings.getSharedSpaceId() + "/workspaces/" + connectionSettings.getWorkspaceId() + "/ali/validateCommitPattern?comment=" + URLEncoder.encode(commitMessage, "UTF-8"));
+                OctaneHttpRequest request = new OctaneHttpRequest.GetOctaneHttpRequest(url);
                 OctaneHttpResponse response = httpClient.execute(request);
                 String jsonString = response.getContent();
 
-                JsonArray matchedIdsArray = new JsonParser().parse(jsonString).getAsJsonObject().get(entityType.getSubtypeName())
-                        .getAsJsonArray();
+                JsonArray matchedIdsArray =
+                        new JsonParser()
+                                .parse(jsonString)
+                                .getAsJsonObject()
+                                .get(entityType.getSubtypeName())
+                                .getAsJsonArray();
+
                 for (JsonElement element : matchedIdsArray) {
                     if (element.getAsLong() == entityId) {
                         return true;
                     }
                 }
-            } catch (IOException e) {
-                e.printStackTrace();
+
+            } catch (Exception e) {
+                logger.error("Failed to validate commit pattern, assuming it's invalid: " + e);
             }
         }
+
         return false;
     }
 
