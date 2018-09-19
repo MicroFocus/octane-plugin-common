@@ -71,7 +71,7 @@ public class EntityLabelService {
 
         OctaneHttpClient octaneHttpClient = httpClientProvider.geOctaneHttpClient();
         octaneHttpClient.authenticate(new SimpleUserAuthentication(connectionSettingsProvider.getConnectionSettings().getUserName(),
-                connectionSettingsProvider.getConnectionSettings().getPassword(), ClientType.HPE_MQM_UI.name()));
+                connectionSettingsProvider.getConnectionSettings().getPassword(), ClientType.HPE_REST_API_TECH_PREVIEW.name()));
         OctaneHttpResponse response = null;
         Map<String, EntityModel> entityMetadataFromServer;
         try {
