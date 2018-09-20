@@ -63,6 +63,15 @@ public class EntityLabelService {
     private ConnectionSettingsProvider connectionSettingsProvider;
 
     public Map<String, EntityModel> getEntityLabelDetails() {
+
+        if(connectionSettingsProvider.getConnectionSettings().isEmpty()) {
+            defaultEntityLabels = getDefaultEntityLabels();
+            EntityModel em = defaultEntityLabels.get("requirement_root");
+            defaultEntityLabels.remove("requirement_root");
+            defaultEntityLabels.put("requirement", em);
+            return getDefaultEntityLabels();
+        }
+
         String getUrl = connectionSettingsProvider.getConnectionSettings().getBaseUrl() + "/api/shared_spaces/" +
                 connectionSettingsProvider.getConnectionSettings().getSharedSpaceId() + "/workspaces/" +
                 connectionSettingsProvider.getConnectionSettings().getWorkspaceId() + "/entity_labels";
@@ -106,13 +115,13 @@ public class EntityLabelService {
                 ClasspathResourceLoader cprl = new ClasspathResourceLoader();
                 InputStream input = cprl.getResourceStream(DEFAULT_ENTITY_LABELS_FILE_NAME);
                 String jsonString = CharStreams.toString(new InputStreamReader(input, Charsets.UTF_8));
-                return getEntityMetadataFromJSON(jsonString);
+                defaultEntityLabels = getEntityMetadataFromJSON(jsonString);
             } catch (IOException e) {
                 throw new ServiceRuntimeException("Failed to parse " + DEFAULT_ENTITY_LABELS_FILE_NAME + " file ", e);
             }
-        } else {
-            return defaultEntityLabels;
         }
+
+        return defaultEntityLabels;
     }
 
     private Map<String, EntityModel> getEntityMetadataFromJSON(String jsonString) {
