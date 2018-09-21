@@ -64,12 +64,12 @@ public class EntityLabelService {
 
     public Map<String, EntityModel> getEntityLabelDetails() {
 
-        if(connectionSettingsProvider.getConnectionSettings().isEmpty()) {
-            defaultEntityLabels = getDefaultEntityLabels();
-            EntityModel em = defaultEntityLabels.get("requirement_root");
-            defaultEntityLabels.remove("requirement_root");
-            defaultEntityLabels.put("requirement", em);
-            return getDefaultEntityLabels();
+        if (connectionSettingsProvider.getConnectionSettings().isEmpty()) {
+            Map<String, EntityModel> entityLabels = getDefaultEntityLabels();
+            EntityModel em = entityLabels.get("requirement_root");
+            entityLabels.remove("requirement_root");
+            entityLabels.put("requirement", em);
+            return entityLabels;
         }
 
         String getUrl = connectionSettingsProvider.getConnectionSettings().getBaseUrl() + "/api/shared_spaces/" +
@@ -120,8 +120,8 @@ public class EntityLabelService {
                 throw new ServiceRuntimeException("Failed to parse " + DEFAULT_ENTITY_LABELS_FILE_NAME + " file ", e);
             }
         }
-
-        return defaultEntityLabels;
+        //return a new hashmap because we dont want to overwrite the defaults
+        return new HashMap<>(defaultEntityLabels);
     }
 
     private Map<String, EntityModel> getEntityMetadataFromJSON(String jsonString) {
