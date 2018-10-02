@@ -13,12 +13,17 @@
 
 package com.hpe.adm.octane.ideplugins.services.connection;
 
-import java.util.Objects;
-
 import com.hpe.adm.nga.sdk.authentication.Authentication;
 import com.hpe.adm.octane.ideplugins.services.connection.granttoken.GrantTokenAuthentication;
+import com.hpe.adm.octane.ideplugins.services.exception.ServiceRuntimeException;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import java.util.Objects;
 
 public class ConnectionSettings {
+
+    private static final Logger logger = LoggerFactory.getLogger(ConnectionSettings.class.getName());
 
     private String baseUrl;
     private Long sharedSpaceId;
@@ -112,11 +117,33 @@ public class ConnectionSettings {
      * @return copy of param
      */
     public static ConnectionSettings getCopy(ConnectionSettings connectionSettings) {
+        Authentication authentication;
+
+        try {
+            authentication = cloneAuthentication(connectionSettings.getAuthentication());
+        } catch (ServiceRuntimeException ex) {
+            logger.warn(ex.toString());
+            logger.warn("Authentication object will not be cloned");
+            authentication = connectionSettings.getAuthentication();
+        }
+
         return new ConnectionSettings(
                 connectionSettings.getBaseUrl(),
                 connectionSettings.getSharedSpaceId(),
                 connectionSettings.getWorkspaceId(),
-                connectionSettings.getAuthentication()); // TODO: BAD BAD DOES
-                                                         // NOT COPY
+                authentication);
     }
+
+    private static Authentication cloneAuthentication(Authentication authentication) {
+        if(authentication instanceof UserAuthentication) {
+            UserAuthentication userAuthentication = (UserAuthentication) authentication;
+            return new UserAuthentication(userAuthentication.getUserName(), userAuthentication.getPassword());
+
+        } else if (authentication instanceof GrantTokenAuthentication){
+            return new GrantTokenAuthentication();
+        }
+
+        throw new ServiceRuntimeException("Failed to clone authentication, unknown type of Authentication");
+    }
+
 }
