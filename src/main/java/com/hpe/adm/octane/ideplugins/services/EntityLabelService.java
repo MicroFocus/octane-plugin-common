@@ -42,12 +42,10 @@ public class EntityLabelService {
 
     private final Logger logger = LoggerFactory.getLogger(MethodHandles.lookup().lookupClass());
 
-
     private static final String ENTITY_TYPE = "entity_type";
     private static final String ENTITY_NAME = "name";
     private static final String ENTITY_INITIALS = "initials";
     private static final String ENTITY_NAME_PLURAL_CAPITALIZED = "plural_capitalized";
-
     private static final String DEFAULT_ENTITY_LABELS_FILE_NAME = "defaultEntityLabels.json";
 
     private String[] usefulEntityLabelsFromServer = new String[]{"defect", "story", "quality_story", "feature", "epic", "requirement_root"};
@@ -90,18 +88,18 @@ public class EntityLabelService {
         //variable used in lambda needs to be final or effectively final(must have value assigned only once)
         Map<String, EntityModel> entityLabelMetadataResolved = entityMetadataFromServer;
 
-        Map<String, EntityModel> entityLabelMetadatas = getDefaultEntityLabels();
+        Map<String, EntityModel> entityLabelMetadata = getDefaultEntityLabels();
 
         Arrays.stream(usefulEntityLabelsFromServer).forEach(string -> {
             EntityModel em = entityLabelMetadataResolved.get(string);
             // hardcoded translation because of mismatch between Entity.Requirements and entity type given by the response
             if (string.equals("requirement_root") && em != null) {
-                entityLabelMetadatas.remove(string);
+                entityLabelMetadata.remove(string);
                 string = "requirement";
             }
-            entityLabelMetadatas.put(string, em);
+            entityLabelMetadata.put(string, em);
         });
-        return entityLabelMetadatas;
+        return entityLabelMetadata;
     }
 
     private Map<String, EntityModel> getDefaultEntityLabels() {
@@ -139,6 +137,5 @@ public class EntityLabelService {
         }
         return entityLabelMetadataMap;
     }
-
 
 }

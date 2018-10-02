@@ -97,7 +97,7 @@ public class ImageService {
             if(e instanceof HttpResponseException && ((HttpResponseException)e).getStatusCode() == 401 && tryCount > 0) {
                 //means that the cookie expired
                 logger.error("Cookie expired, retrying: " + e.getMessage());
-                // lwssoCookie = clientLoginCookieProvider.get(); TODO: andras
+                httpClientProvider.getOctaneHttpClient().authenticate(connectionSettingsProvider.getConnectionSettings().getAuthentication());
                 return downloadImage(pictureLink, --tryCount);
             } else {
                 logger.error(e.getMessage());
