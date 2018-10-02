@@ -16,7 +16,6 @@ package com.hpe.adm.octane.ideplugins.services;
 import com.google.api.client.util.Charsets;
 import com.google.common.io.CharStreams;
 import com.google.inject.Inject;
-import com.hpe.adm.nga.sdk.authentication.SimpleUserAuthentication;
 import com.hpe.adm.nga.sdk.model.EntityModel;
 import com.hpe.adm.nga.sdk.model.StringFieldModel;
 import com.hpe.adm.nga.sdk.network.OctaneHttpClient;
@@ -25,7 +24,6 @@ import com.hpe.adm.nga.sdk.network.OctaneHttpResponse;
 import com.hpe.adm.octane.ideplugins.services.connection.ConnectionSettingsProvider;
 import com.hpe.adm.octane.ideplugins.services.connection.HttpClientProvider;
 import com.hpe.adm.octane.ideplugins.services.exception.ServiceRuntimeException;
-import com.hpe.adm.octane.ideplugins.services.util.ClientType;
 import org.apache.velocity.runtime.resource.loader.ClasspathResourceLoader;
 import org.json.JSONArray;
 import org.json.JSONObject;
@@ -64,6 +62,14 @@ public class EntityLabelService {
 
     public Map<String, EntityModel> getEntityLabelDetails() {
 
+        if (connectionSettingsProvider.getConnectionSettings().isEmpty()) {
+            Map<String, EntityModel> entityLabels = getDefaultEntityLabels();
+            EntityModel em = entityLabels.get("requirement_root");
+            entityLabels.remove("requirement_root");
+            entityLabels.put("requirement", em);
+            return entityLabels;
+        }
+
         String getUrl = connectionSettingsProvider.getConnectionSettings().getBaseUrl() + "/api/shared_spaces/" +
                 connectionSettingsProvider.getConnectionSettings().getSharedSpaceId() + "/workspaces/" +
                 connectionSettingsProvider.getConnectionSettings().getWorkspaceId() + "/entity_labels";
@@ -71,30 +77,30 @@ public class EntityLabelService {
         OctaneHttpRequest getOctaneHttpRequest = new OctaneHttpRequest.GetOctaneHttpRequest(getUrl);
         OctaneHttpClient octaneHttpClient = httpClientProvider.getOctaneHttpClient();
 
-        OctaneHttpResponse response = null;
+        Map<String, EntityModel> entityMetadataFromServer;
+        try {
+            OctaneHttpResponse response = octaneHttpClient.execute(getOctaneHttpRequest);
+            entityMetadataFromServer = getEntityMetadataFromJSON(response.getContent());
+
+        } catch (Exception e) {
+            logger.warn(e.getMessage());
+            entityMetadataFromServer = getDefaultEntityLabels();
+        }
+
+        //variable used in lambda needs to be final or effectively final(must have value assigned only once)
+        Map<String, EntityModel> entityLabelMetadataResolved = entityMetadataFromServer;
 
         Map<String, EntityModel> entityLabelMetadatas = getDefaultEntityLabels();
 
-        try {
-            response = octaneHttpClient.execute(getOctaneHttpRequest);
-        } catch (Exception e) {
-            logger.warn(e.getMessage());
-            //TODO: TB
-        }
-
-        Map<String, EntityModel> entityMetadataFromServer = getEntityMetadataFromJSON(response.getContent()); //TODO: TB
-        Arrays.stream(usefulEntityLabelsFromServer).forEach(s -> {
-            EntityModel em = entityMetadataFromServer.get(s);
+        Arrays.stream(usefulEntityLabelsFromServer).forEach(string -> {
+            EntityModel em = entityLabelMetadataResolved.get(string);
             // hardcoded translation because of mismatch between Entity.Requirements and entity type given by the response
-            if (s.equals("requirement_root")) {
-                s = "requirement";
+            if (string.equals("requirement_root") && em != null) {
+                entityLabelMetadatas.remove(string);
+                string = "requirement";
             }
-            if (em != null) {
-                entityLabelMetadatas.remove(s);
-                entityLabelMetadatas.put(s, em);
-            }
+            entityLabelMetadatas.put(string, em);
         });
-
         return entityLabelMetadatas;
     }
 
@@ -104,13 +110,13 @@ public class EntityLabelService {
                 ClasspathResourceLoader cprl = new ClasspathResourceLoader();
                 InputStream input = cprl.getResourceStream(DEFAULT_ENTITY_LABELS_FILE_NAME);
                 String jsonString = CharStreams.toString(new InputStreamReader(input, Charsets.UTF_8));
-                return getEntityMetadataFromJSON(jsonString);
+                defaultEntityLabels = getEntityMetadataFromJSON(jsonString);
             } catch (IOException e) {
                 throw new ServiceRuntimeException("Failed to parse " + DEFAULT_ENTITY_LABELS_FILE_NAME + " file ", e);
             }
-        } else {
-            return defaultEntityLabels;
         }
+        //return a new hashmap because we dont want to overwrite the defaults
+        return new HashMap<>(defaultEntityLabels);
     }
 
     private Map<String, EntityModel> getEntityMetadataFromJSON(String jsonString) {
