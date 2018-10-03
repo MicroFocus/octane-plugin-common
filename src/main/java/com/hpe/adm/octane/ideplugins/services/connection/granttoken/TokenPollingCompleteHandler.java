@@ -11,10 +11,10 @@
  * limitations under the License.
  */
 
-package com.hpe.adm.octane.ideplugins.services.connection;
+package com.hpe.adm.octane.ideplugins.services.connection.granttoken;
 
-import com.hpe.adm.nga.sdk.network.OctaneHttpClient;
-
-public interface HttpClientProvider {
-    OctaneHttpClient getOctaneHttpClient();
+public interface TokenPollingCompleteHandler {
+	
+	void pollingComplete(TokenPollingCompletedStatus tokenPollingCompletedStatus);
+	
 }

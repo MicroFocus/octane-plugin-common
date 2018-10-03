@@ -13,9 +13,11 @@
 
 package com.hpe.adm.octane.ideplugins.integrationtests.util;
 
+import com.hpe.adm.nga.sdk.authentication.SimpleUserAuthentication;
 import com.hpe.adm.octane.ideplugins.services.connection.BasicConnectionSettingProvider;
 import com.hpe.adm.octane.ideplugins.services.connection.ConnectionSettings;
 import com.hpe.adm.octane.ideplugins.services.connection.ConnectionSettingsProvider;
+import com.hpe.adm.octane.ideplugins.services.di.ServiceModule;
 
 import java.io.IOException;
 import java.util.Properties;
@@ -55,8 +57,11 @@ public class PropertyUtil {
             } catch (NumberFormatException ex) {
                 throw new RuntimeException("Failed to parse shared space/workspace id as number: " + ex);
             }
-            connectionSettings.setUserName(props.getProperty(PropertyKeys.USERNAME.keyStr));
-            connectionSettings.setPassword(props.getProperty(PropertyKeys.PASSWORD.keyStr));
+            connectionSettings.setAuthentication(new SimpleUserAuthentication(
+                    props.getProperty(PropertyKeys.USERNAME.keyStr),
+                    props.getProperty(PropertyKeys.PASSWORD.keyStr),
+                    ServiceModule.CLIENT_TYPE.name()
+            ));
             return new BasicConnectionSettingProvider(connectionSettings);
         }
     }
@@ -96,8 +101,12 @@ public class PropertyUtil {
             ConnectionSettings connectionSettings = new ConnectionSettings();
             connectionSettings.setBaseUrl(getString(PropertyKeys.URL));
             connectionSettings.setSharedSpaceId(getLong(PropertyKeys.SHARED_SPACE));
-            connectionSettings.setUserName(getString(PropertyKeys.USERNAME));
-            connectionSettings.setPassword(getString(PropertyKeys.PASSWORD));
+            connectionSettings.setAuthentication(new SimpleUserAuthentication(
+                    getString(PropertyKeys.USERNAME),
+                    getString(PropertyKeys.PASSWORD),
+                    ServiceModule.CLIENT_TYPE.name()
+            ));
+
             return new BasicConnectionSettingProvider(connectionSettings);
         }
     }

@@ -31,7 +31,7 @@ public class DownloadScriptService {
 
     public String getGherkinTestScriptContent(long testId) {
         ConnectionSettings connectionSettings = connectionSettingsProvider.getConnectionSettings();
-        OctaneHttpClient httpClient = httpClientProvider.geOctaneHttpClient();
+        OctaneHttpClient httpClient = httpClientProvider.getOctaneHttpClient();
         if (null != httpClient) {
             OctaneHttpRequest request = new OctaneHttpRequest.GetOctaneHttpRequest(connectionSettings.getBaseUrl() + "/api/shared_spaces/" + connectionSettings.getSharedSpaceId() +
                     "/workspaces/" + connectionSettings.getWorkspaceId() + "/tests/" + testId + "/script");

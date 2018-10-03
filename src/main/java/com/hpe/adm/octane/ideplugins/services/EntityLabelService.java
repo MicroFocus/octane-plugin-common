@@ -16,7 +16,6 @@ package com.hpe.adm.octane.ideplugins.services;
 import com.google.api.client.util.Charsets;
 import com.google.common.io.CharStreams;
 import com.google.inject.Inject;
-import com.hpe.adm.nga.sdk.authentication.SimpleUserAuthentication;
 import com.hpe.adm.nga.sdk.model.EntityModel;
 import com.hpe.adm.nga.sdk.model.StringFieldModel;
 import com.hpe.adm.nga.sdk.network.OctaneHttpClient;
@@ -25,7 +24,6 @@ import com.hpe.adm.nga.sdk.network.OctaneHttpResponse;
 import com.hpe.adm.octane.ideplugins.services.connection.ConnectionSettingsProvider;
 import com.hpe.adm.octane.ideplugins.services.connection.HttpClientProvider;
 import com.hpe.adm.octane.ideplugins.services.exception.ServiceRuntimeException;
-import com.hpe.adm.octane.ideplugins.services.util.ClientType;
 import org.apache.velocity.runtime.resource.loader.ClasspathResourceLoader;
 import org.json.JSONArray;
 import org.json.JSONObject;
@@ -44,12 +42,10 @@ public class EntityLabelService {
 
     private final Logger logger = LoggerFactory.getLogger(MethodHandles.lookup().lookupClass());
 
-
     private static final String ENTITY_TYPE = "entity_type";
     private static final String ENTITY_NAME = "name";
     private static final String ENTITY_INITIALS = "initials";
     private static final String ENTITY_NAME_PLURAL_CAPITALIZED = "plural_capitalized";
-
     private static final String DEFAULT_ENTITY_LABELS_FILE_NAME = "defaultEntityLabels.json";
 
     private String[] usefulEntityLabelsFromServer = new String[]{"defect", "story", "quality_story", "feature", "epic", "requirement_root"};
@@ -77,14 +73,11 @@ public class EntityLabelService {
                 connectionSettingsProvider.getConnectionSettings().getWorkspaceId() + "/entity_labels";
 
         OctaneHttpRequest getOctaneHttpRequest = new OctaneHttpRequest.GetOctaneHttpRequest(getUrl);
+        OctaneHttpClient octaneHttpClient = httpClientProvider.getOctaneHttpClient();
 
-        OctaneHttpClient octaneHttpClient = httpClientProvider.geOctaneHttpClient();
-        octaneHttpClient.authenticate(new SimpleUserAuthentication(connectionSettingsProvider.getConnectionSettings().getUserName(),
-                connectionSettingsProvider.getConnectionSettings().getPassword(), ClientType.HPE_REST_API_TECH_PREVIEW.name()));
-        OctaneHttpResponse response = null;
         Map<String, EntityModel> entityMetadataFromServer;
         try {
-            response = octaneHttpClient.execute(getOctaneHttpRequest);
+            OctaneHttpResponse response = octaneHttpClient.execute(getOctaneHttpRequest);
             entityMetadataFromServer = getEntityMetadataFromJSON(response.getContent());
 
         } catch (Exception e) {
@@ -95,18 +88,18 @@ public class EntityLabelService {
         //variable used in lambda needs to be final or effectively final(must have value assigned only once)
         Map<String, EntityModel> entityLabelMetadataResolved = entityMetadataFromServer;
 
-        Map<String, EntityModel> entityLabelMetadatas = getDefaultEntityLabels();
+        Map<String, EntityModel> entityLabelMetadata = getDefaultEntityLabels();
 
         Arrays.stream(usefulEntityLabelsFromServer).forEach(string -> {
             EntityModel em = entityLabelMetadataResolved.get(string);
             // hardcoded translation because of mismatch between Entity.Requirements and entity type given by the response
             if (string.equals("requirement_root") && em != null) {
-                entityLabelMetadatas.remove(string);
+                entityLabelMetadata.remove(string);
                 string = "requirement";
             }
-            entityLabelMetadatas.put(string, em);
+            entityLabelMetadata.put(string, em);
         });
-        return entityLabelMetadatas;
+        return entityLabelMetadata;
     }
 
     private Map<String, EntityModel> getDefaultEntityLabels() {
@@ -144,6 +137,5 @@ public class EntityLabelService {
         }
         return entityLabelMetadataMap;
     }
-
 
 }

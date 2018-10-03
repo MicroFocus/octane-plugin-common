@@ -44,7 +44,7 @@ public class SharedSpaceLevelRequestService{
 
         ConnectionSettings connectionSettings = connectionSettingsProvider.getConnectionSettings();
         String retVal = "";
-        OctaneHttpClient httpClient = httpClientProvider.geOctaneHttpClient();
+        OctaneHttpClient httpClient = httpClientProvider.getOctaneHttpClient();
 
         if (null !=httpClient) {
             OctaneHttpRequest request = new OctaneHttpRequest.GetOctaneHttpRequest(connectionSettings.getBaseUrl() + "/api/shared_spaces/" +

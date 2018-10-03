@@ -13,28 +13,48 @@
 
 package com.hpe.adm.octane.ideplugins.services.util;
 
-import com.hpe.adm.octane.ideplugins.services.connection.ConnectionSettings;
-import com.hpe.adm.octane.ideplugins.services.exception.ServiceException;
-import com.hpe.adm.octane.ideplugins.services.exception.ServiceRuntimeException;
-import com.hpe.adm.octane.ideplugins.services.filtering.Entity;
-
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.net.URL;
+
+import com.hpe.adm.nga.sdk.authentication.Authentication;
+import com.hpe.adm.octane.ideplugins.services.connection.ConnectionSettings;
+import com.hpe.adm.octane.ideplugins.services.connection.UserAuthentication;
+import com.hpe.adm.octane.ideplugins.services.exception.ServiceException;
+import com.hpe.adm.octane.ideplugins.services.exception.ServiceRuntimeException;
+import com.hpe.adm.octane.ideplugins.services.filtering.Entity;
 
 public class UrlParser {
 
     private static final String INVALID_URL_FORMAT_MESSAGE = "Given server URL is not valid.";
 
-    public static ConnectionSettings resolveConnectionSettings(String url, String userName, String password) throws ServiceException {
+    public static ConnectionSettings resolveConnectionSettings(String url, Authentication authentication) throws ServiceException {
+        ConnectionSettings connectionSettings = resolveConnectionSettingsFromUrl(url);
+        connectionSettings.setAuthentication(authentication);
+        return connectionSettings;
+    }
 
+    /**
+     * @deprecated use
+     *             {@link #resolveConnectionSettings(String, Authentication)}
+     */
+    @Deprecated
+    public static ConnectionSettings resolveConnectionSettings(String url, String userName, String password) throws ServiceException {
+        ConnectionSettings connectionSettings = resolveConnectionSettingsFromUrl(url);
+        UserAuthentication authentication = new UserAuthentication(userName, password);
+        connectionSettings.setAuthentication(authentication);
+        return connectionSettings;
+    }
+
+    private static ConnectionSettings resolveConnectionSettingsFromUrl(String url) throws ServiceException {
         ConnectionSettings connectionSettings = new ConnectionSettings();
 
         URL siteUrl;
         try {
             siteUrl = new URL(url);
-            siteUrl.toURI(); // does the extra checking required for validation of URI
-            if (!"http" .equals(siteUrl.getProtocol()) && !"https" .equals(siteUrl.getProtocol())) {
+            siteUrl.toURI(); // does the extra checking required for validation
+            // of URI
+            if (!"http".equals(siteUrl.getProtocol()) && !"https".equals(siteUrl.getProtocol())) {
                 throw new Exception();
             }
             int paramIndex = url.indexOf("p=");
@@ -48,15 +68,13 @@ public class UrlParser {
         if (null == siteUrl.getQuery()) {
             throw new ServiceException("Missing query parameters.");
         } else {
-
             try {
-
                 String baseUrl;
                 Long sharedspaceId;
                 Long workspaceId;
 
                 baseUrl = siteUrl.getProtocol() + "://" + siteUrl.getHost();
-                //Add port if not the default
+                // Add port if not the default
                 if (siteUrl.getPort() != 80 && siteUrl.getPort() != -1) {
                     baseUrl += ":" + siteUrl.getPort();
                 }
@@ -71,20 +89,14 @@ public class UrlParser {
                 if (workspaceId < 0)
                     throw new Exception();
 
-
                 connectionSettings.setBaseUrl(baseUrl);
                 connectionSettings.setSharedSpaceId(sharedspaceId);
                 connectionSettings.setWorkspaceId(workspaceId);
 
-
             } catch (Exception ex) {
                 throw new ServiceException("Could not get sharedspace/workspace ids from URL. ");
             }
-
         }
-
-        connectionSettings.setUserName(userName);
-        connectionSettings.setPassword(password);
 
         return connectionSettings;
     }
@@ -92,8 +104,10 @@ public class UrlParser {
     /**
      * Create an octane url from a connection settings object
      *
-     * @param connectionSettings {@link ConnectionSettings} object
-     * @return octane browser url or null if if any of the req. fields are missing (base url, workspace id, shared space id)
+     * @param connectionSettings
+     *            {@link ConnectionSettings} object
+     * @return octane browser url or null if if any of the req. fields are
+     *         missing (base url, workspace id, shared space id)
      */
     public static String createUrlFromConnectionSettings(ConnectionSettings connectionSettings) {
 
@@ -119,13 +133,17 @@ public class UrlParser {
     /**
      * Create an octane ui link from an entity
      *
-     * @param connectionSettings for the base url info
-     * @param entityType         added to url
-     * @param id                 entity id
+     * @param connectionSettings
+     *            for the base url info
+     * @param entityType
+     *            added to url
+     * @param id
+     *            entity id
      * @return URI to Octane web ui, to display the entity
      */
     public static URI createEntityWebURI(ConnectionSettings connectionSettings, Entity entityType, Integer id) {
-        //ex: http://myd-vm24085.hpeswlab.net:8080/ui/entity-navigation?p=1001/1002&entityType=test&id=1001
+        // ex:
+        // http://myd-vm24085.hpeswlab.net:8080/ui/entity-navigation?p=1001/1002&entityType=test&id=1001
         StringBuilder stringBuilder = new StringBuilder();
 
         stringBuilder

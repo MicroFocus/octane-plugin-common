@@ -105,7 +105,7 @@ public class MetadataService {
 
     public Collection<FieldMetadata> getVisibleFields(Entity entityType){
         ConnectionSettings connectionSettings = connectionSettingsProvider.getConnectionSettings();
-        OctaneHttpClient httpClient = httpClientProvider.geOctaneHttpClient();
+        OctaneHttpClient httpClient = httpClientProvider.getOctaneHttpClient();
         if (null == httpClient) {
             throw new ServiceRuntimeException("Failed to authenticate with current connection settings");
         }

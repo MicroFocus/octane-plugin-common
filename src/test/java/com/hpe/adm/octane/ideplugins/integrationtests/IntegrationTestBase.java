@@ -17,7 +17,6 @@ import com.google.inject.Guice;
 import com.google.inject.Inject;
 import com.google.inject.Injector;
 import com.hpe.adm.nga.sdk.Octane;
-import com.hpe.adm.nga.sdk.authentication.SimpleUserAuthentication;
 import com.hpe.adm.nga.sdk.exception.OctaneException;
 import com.hpe.adm.nga.sdk.model.*;
 import com.hpe.adm.nga.sdk.network.OctaneHttpClient;
@@ -29,15 +28,16 @@ import com.hpe.adm.nga.sdk.query.QueryMethod;
 import com.hpe.adm.octane.ideplugins.Constants;
 import com.hpe.adm.octane.ideplugins.integrationtests.util.*;
 import com.hpe.adm.octane.ideplugins.services.EntityService;
+import com.hpe.adm.octane.ideplugins.services.UserService;
 import com.hpe.adm.octane.ideplugins.services.connection.ConnectionSettings;
 import com.hpe.adm.octane.ideplugins.services.connection.ConnectionSettingsProvider;
+import com.hpe.adm.octane.ideplugins.services.connection.HttpClientProvider;
 import com.hpe.adm.octane.ideplugins.services.connection.OctaneProvider;
 import com.hpe.adm.octane.ideplugins.services.di.ServiceModule;
 import com.hpe.adm.octane.ideplugins.services.filtering.Entity;
 import com.hpe.adm.octane.ideplugins.services.mywork.MyWorkService;
 import com.hpe.adm.octane.ideplugins.services.nonentity.EntitySearchService;
 import com.hpe.adm.octane.ideplugins.services.nonentity.OctaneVersionService;
-import com.hpe.adm.octane.ideplugins.services.util.ClientType;
 import com.hpe.adm.octane.ideplugins.services.util.OctaneVersion;
 import org.apache.commons.lang.StringEscapeUtils;
 import org.json.JSONArray;
@@ -63,6 +63,15 @@ public abstract class IntegrationTestBase {
 
     @Inject
     protected OctaneVersionService versionService;
+
+    @Inject
+    protected UserService userService;
+
+    @Inject
+    protected HttpClientProvider httpClientProvider;
+
+    @Inject
+    protected OctaneProvider octaneProvider;
 
     static final Set<Entity> searchEntityTypes = new LinkedHashSet<>(Arrays.asList(
             Entity.EPIC,
@@ -94,6 +103,10 @@ public abstract class IntegrationTestBase {
             throw new RuntimeException(Constants.Errors.CONNECTION_SETTINGS_RETRIEVE_ERROR);
         }
 
+        serviceModule = new ServiceModule(connectionSettingsProvider);
+        Injector injector = Guice.createInjector(serviceModule);
+        injector.injectMembers(this);
+
         Annotation[] annotations = this.getClass().getDeclaredAnnotations();
 
         WorkSpace workSpaceAnnotation = getAnnotation(annotations, WorkSpace.class);
@@ -109,14 +122,10 @@ public abstract class IntegrationTestBase {
             connectionSettingsProvider.setConnectionSettings(connectionSettings);
         }
 
-        serviceModule = new ServiceModule(connectionSettingsProvider);
         User userAnnotation = getAnnotation(annotations, User.class);
         if (userAnnotation != null && userAnnotation.create()) {
             createNewUser(userAnnotation.firstName(), userAnnotation.lastName());
         }
-
-        Injector injector = Guice.createInjector(serviceModule);
-        injector.injectMembers(this);
 
         entityGenerator = new EntityGenerator(injector.getInstance(OctaneProvider.class));
         Entities entities = getAnnotation(annotations, Entities.class);
@@ -182,8 +191,7 @@ public abstract class IntegrationTestBase {
         OctaneHttpRequest postNewWorkspaceRequest = new OctaneHttpRequest.PostOctaneHttpRequest(postUrl, OctaneHttpRequest.JSON_CONTENT_TYPE,
                 dataSet.toString());
         OctaneHttpClient octaneHttpClient = new GoogleHttpClient(urlDomain);
-        octaneHttpClient.authenticate(new SimpleUserAuthentication(connectionSettingsProvider.getConnectionSettings().getUserName(),
-                connectionSettingsProvider.getConnectionSettings().getPassword(), ClientType.HPE_MQM_UI.name()));
+        octaneHttpClient.authenticate(connectionSettingsProvider.getConnectionSettings().getAuthentication());
         OctaneHttpResponse response = null;
         try {
             response = octaneHttpClient.execute(postNewWorkspaceRequest);
@@ -205,16 +213,16 @@ public abstract class IntegrationTestBase {
      *         workspace is found
      */
     private long getDefaultWorkspaceId() {
-        String getUrl = connectionSettingsProvider.getConnectionSettings().getBaseUrl() + Constants.SHARED_SPACE +
+        String getUrl =
+                connectionSettingsProvider.getConnectionSettings().getBaseUrl() +
+                Constants.SHARED_SPACE +
                 connectionSettingsProvider.getConnectionSettings().getSharedSpaceId() + Constants.WORKSPACE;
-        String urlDomain = connectionSettingsProvider.getConnectionSettings().getBaseUrl();
+
         OctaneHttpRequest getAllWorkspacesRequest = new OctaneHttpRequest.GetOctaneHttpRequest(getUrl);
-        OctaneHttpClient octaneHttpClient = new GoogleHttpClient(urlDomain);
-        octaneHttpClient.authenticate(new SimpleUserAuthentication(connectionSettingsProvider.getConnectionSettings().getUserName(),
-                connectionSettingsProvider.getConnectionSettings().getPassword(), ClientType.HPE_MQM_UI.name()));
+
         OctaneHttpResponse response = null;
         try {
-            response = octaneHttpClient.execute(getAllWorkspacesRequest);
+            response = httpClientProvider.getOctaneHttpClient().execute(getAllWorkspacesRequest);
         } catch (Exception e) {
             fail(e.toString());
         }
@@ -304,10 +312,11 @@ public abstract class IntegrationTestBase {
     protected EntityModel getCurrentUser() {
         OctaneProvider octaneProvider = serviceModule.getOctane();
         Octane octane = octaneProvider.getOctane();
+
         List<EntityModel> users = new ArrayList<>(octane.entityList(Constants.WORKSPACE_ENITY_NAME).get().execute());
 
         for (EntityModel user : users) {
-            if (user.getValue(Constants.User.EMAIL).getValue().toString().equals(connectionSettingsProvider.getConnectionSettings().getUserName())) {
+            if (user.getValue(Constants.User.EMAIL).getValue().toString().equals(userService.getCurrentUser().getValue("name").getValue())) {
                 return user;
             }
         }
@@ -366,10 +375,11 @@ public abstract class IntegrationTestBase {
     }
 
     private void createRelease() {
-        String postUrl = connectionSettingsProvider.getConnectionSettings().getBaseUrl() + Constants.SHARED_SPACE +
+        String postUrl =
+                connectionSettingsProvider.getConnectionSettings().getBaseUrl() + Constants.SHARED_SPACE +
                 connectionSettingsProvider.getConnectionSettings().getSharedSpaceId() + Constants.WORKSPACE + "/" +
                 connectionSettingsProvider.getConnectionSettings().getWorkspaceId() + Constants.RELEASES;
-        String urlDomain = connectionSettingsProvider.getConnectionSettings().getBaseUrl();
+
         JSONObject dataSet = new JSONObject();
         JSONObject releaseJson = new JSONObject();
         releaseJson.put(Constants.NAME, Constants.Release.NAME + UUID.randomUUID().toString());
@@ -378,25 +388,29 @@ public abstract class IntegrationTestBase {
         releaseJson.put(Constants.Release.START_DATE, localDateTImeNow.toString() + "Z");
         releaseJson.put(Constants.Release.END_DATE, localDateTImeNow.toString() + "Z");
         JSONObject agileTypeJson = new JSONObject();
+
         if (OctaneVersion.compare(versionService.getOctaneVersion(), OctaneVersion.Operation.HIGHER_EQ, OctaneVersion.EVERTON_P3)) {
             agileTypeJson.put(Constants.ID, Constants.AgileType.NEW_ID);
         } else {
             agileTypeJson.put(Constants.ID, Constants.AgileType.OLD_ID);
         }
+
         agileTypeJson.put(Constants.NAME, Constants.AgileType.NAME);
         agileTypeJson.put(Constants.TYPE, Constants.AgileType.TYPE);
         agileTypeJson.put(Constants.LOGICAL_NAME, Constants.AgileType.NEW_ID);
+
         releaseJson.put(Constants.AgileType.AGILE_TYPE, agileTypeJson);
         JSONArray jsonArray = new JSONArray();
         jsonArray.put(releaseJson);
         dataSet.put(Constants.DATA, jsonArray);
-        OctaneHttpRequest postNewReleaseRequest = new OctaneHttpRequest.PostOctaneHttpRequest(postUrl, OctaneHttpRequest.JSON_CONTENT_TYPE,
+
+        OctaneHttpRequest postNewReleaseRequest = new OctaneHttpRequest.PostOctaneHttpRequest(
+                postUrl,
+                OctaneHttpRequest.JSON_CONTENT_TYPE,
                 dataSet.toString());
-        OctaneHttpClient octaneHttpClient = new GoogleHttpClient(urlDomain);
-        octaneHttpClient.authenticate(new SimpleUserAuthentication(connectionSettingsProvider.getConnectionSettings().getUserName(),
-                connectionSettingsProvider.getConnectionSettings().getPassword(), ClientType.HPE_MQM_UI.name()));
+
         try {
-            octaneHttpClient.execute(postNewReleaseRequest);
+            httpClientProvider.getOctaneHttpClient().execute(postNewReleaseRequest);
         } catch (Exception e) {
             // logger.error("Error while trying to get the response when
             // creating a new release!");
@@ -410,8 +424,7 @@ public abstract class IntegrationTestBase {
         Octane octane = octaneProvider.getOctane();
         octane.entityList(Constants.Release.RELEASES)
                 .delete()
-                .query(
-                        Query.statement(Constants.ID, QueryMethod.EqualTo, getRelease().getValue(Constants.ID).getValue().toString()).build())
+                .query(Query.statement(Constants.ID, QueryMethod.EqualTo, getRelease().getValue(Constants.ID).getValue().toString()).build())
                 .execute();
     }
 
@@ -673,17 +686,10 @@ public abstract class IntegrationTestBase {
             }
         }
         if (workspaceEntities.size() > 0) {
-
-            Octane.Builder octaneBuilder = new Octane.Builder(
-                    new SimpleUserAuthentication(connectionSettingsProvider.getConnectionSettings().getUserName(),
-                            connectionSettingsProvider.getConnectionSettings().getPassword(), ClientType.HPE_MQM_UI.name()));
-            octaneBuilder.sharedSpace(connectionSettingsProvider.getConnectionSettings().getSharedSpaceId());
-            octaneBuilder.workSpace(connectionSettingsProvider.getConnectionSettings().getWorkspaceId());
-            Octane octane = octaneBuilder.Server(connectionSettingsProvider.getConnectionSettings().getBaseUrl()).build();
             if (testItemsQuery != null)
-                octane.entityList(Entity.TEST.getApiEntityName()).delete().query(testItemsQuery.build()).execute();
+                octaneProvider.getOctane().entityList(Entity.TEST.getApiEntityName()).delete().query(testItemsQuery.build()).execute();
             if (workItemsQuery != null)
-                octane.entityList(Entity.WORK_ITEM.getApiEntityName()).delete().query(workItemsQuery.build()).execute();
+                octaneProvider.getOctane().entityList(Entity.WORK_ITEM.getApiEntityName()).delete().query(workItemsQuery.build()).execute();
         }
     }
 
