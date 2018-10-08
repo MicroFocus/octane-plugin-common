@@ -54,6 +54,7 @@ public enum Entity {
     TEAM("teams", "team"),
 
     REQUIREMENT_BASE_ENTITY("requirements", "requirement"),
+    REQUIREMENT_ROOT(Entity.REQUIREMENT_BASE_ENTITY, "requirement_root"),
     REQUIREMENT(Entity.REQUIREMENT_BASE_ENTITY, "requirement_document"),
 
     //Entity used to hold items added to my work
@@ -138,25 +139,23 @@ public enum Entity {
     }
 
 
-    public static Entity getEntityType(String entityType, String entitySubtype) {
-        if (entitySubtype != null) {
-            for (Entity entity : Entity.values()) {
-                if (entity.isSubtype() && entity.getSubtypeName().equals(entitySubtype)) {
-                    return entity;
-                }
+    public static Entity getEntityType(String type) {
+
+        for (Entity entity : Entity.values()) {
+            if (!entity.isSubtype() && entity.getTypeName().equals(type)) {
+                return entity;
             }
         }
 
-        if (entityType != null) {
-            for (Entity entity : Entity.values()) {
-                if (!entity.isSubtype() && entity.getTypeName().equals(entityType)) {
-                    return entity;
-                }
+        for (Entity entity : Entity.values()) {
+            if (entity.isSubtype() && entity.getSubtypeName().equals(type)) {
+                return entity;
             }
         }
 
         return null;
     }
+
     public static Set<Entity> getSubtypes(Entity entity) {
         if (entity.isSubtype()) {
             return Collections.emptySet();
