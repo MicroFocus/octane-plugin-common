@@ -125,8 +125,8 @@ public class ServiceModule extends AbstractModule {
             // because of the null check below
             synchronized(this) {
 	            if (octaneHttpClient == null) {
-	            	
-	            	logger.debug("creating http client pampam");
+
+	            	logger.debug("Creating http client");
 	            	
 	                IdePluginsOctaneHttpClient httpClient = new IdePluginsOctaneHttpClient(currentConnectionSettings.getBaseUrl());
 	                httpClient.setSsoTokenPollingStartedHandler(tokenPollingStartedHandler);
