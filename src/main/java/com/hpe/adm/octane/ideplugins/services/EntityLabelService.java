@@ -79,7 +79,7 @@ public class EntityLabelService {
     }
 
     public boolean areServerSideLabelsLoaded() {
-        return !serverSideLabels.isEmpty();
+        return serverSideLabels != null && !serverSideLabels.isEmpty();
     }
 
     public String getDefaultEntityInitials(Entity entity) {
