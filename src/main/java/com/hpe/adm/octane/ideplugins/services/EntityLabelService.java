@@ -78,6 +78,14 @@ public class EntityLabelService {
         return resultMap;
     }
 
+    public boolean areServerSideLabelsLoaded() {
+        return !serverSideLabels.isEmpty();
+    }
+
+    public String getDefaultEntityInitials(Entity entity) {
+        return defaultLabels.get(entity).getValue(ENTITY_INITIALS).getValue().toString();
+    }
+
     public String getEntityInitials(Entity entity) {
         return getEntityLabelDetails().get(entity).getValue(ENTITY_INITIALS).getValue().toString();
     }

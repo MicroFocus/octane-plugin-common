@@ -174,11 +174,15 @@ public class IdePluginsOctaneHttpClient implements OctaneHttpClient {
 			throw new RuntimeException(e);
 		}
 	}
+
+	public boolean isAuthenticated() {
+		return !lwssoValue.isEmpty();
+	}
 	
 	private boolean grantTokenAuthenticate(Authentication authentication) {
 
 		// do not authenticate if lwssoValue is not empty
-		if (!lwssoValue.isEmpty()) {
+		if (isAuthenticated()) {
 			logger.debug("Skipping authentication, lwssoValue already set");
 			return true;
 		}
