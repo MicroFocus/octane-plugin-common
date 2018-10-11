@@ -96,7 +96,7 @@ public class IdePluginsOctaneHttpClient implements OctaneHttpClient {
 	private final Map<OctaneHttpRequest, OctaneHttpResponse> cachedRequestToResponse = new HashMap<>();
 	private final Map<OctaneHttpRequest, String> requestToEtagMap = new HashMap<>();
 
-	private long pollingTimeoutMillis = 1000 * 30;
+	private long pollingTimeoutMillis = 1000 * 60 * 2;
 	private String sessionCookieName = DEFAULT_OCTANE_SESSION_COOKIE_NAME;
 	private String lwssoValue = "";
 	private final Lock authenticationLock = new ReentrantLock(true);
