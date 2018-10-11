@@ -16,17 +16,16 @@ package com.hpe.adm.octane.ideplugins.services;
 import com.google.api.client.util.Charsets;
 import com.google.common.io.CharStreams;
 import com.google.inject.Inject;
+import com.hpe.adm.nga.sdk.entities.OctaneCollection;
 import com.hpe.adm.nga.sdk.model.EntityModel;
-import com.hpe.adm.nga.sdk.model.StringFieldModel;
-import com.hpe.adm.nga.sdk.network.OctaneHttpClient;
-import com.hpe.adm.nga.sdk.network.OctaneHttpRequest;
-import com.hpe.adm.nga.sdk.network.OctaneHttpResponse;
+import com.hpe.adm.nga.sdk.model.ModelParser;
+import com.hpe.adm.nga.sdk.query.Query;
+import com.hpe.adm.nga.sdk.query.QueryMethod;
 import com.hpe.adm.octane.ideplugins.services.connection.ConnectionSettingsProvider;
-import com.hpe.adm.octane.ideplugins.services.connection.HttpClientProvider;
+import com.hpe.adm.octane.ideplugins.services.connection.OctaneProvider;
 import com.hpe.adm.octane.ideplugins.services.exception.ServiceRuntimeException;
+import com.hpe.adm.octane.ideplugins.services.filtering.Entity;
 import org.apache.velocity.runtime.resource.loader.ClasspathResourceLoader;
-import org.json.JSONArray;
-import org.json.JSONObject;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -34,108 +33,106 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.lang.invoke.MethodHandles;
-import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Map;
 
 public class EntityLabelService {
 
-    private final Logger logger = LoggerFactory.getLogger(MethodHandles.lookup().lookupClass());
+    private static final Logger logger = LoggerFactory.getLogger(MethodHandles.lookup().lookupClass());
 
     private static final String ENTITY_TYPE = "entity_type";
-    private static final String ENTITY_NAME = "name";
     private static final String ENTITY_INITIALS = "initials";
-    private static final String ENTITY_NAME_PLURAL_CAPITALIZED = "plural_capitalized";
     private static final String DEFAULT_ENTITY_LABELS_FILE_NAME = "defaultEntityLabels.json";
 
-    private String[] usefulEntityLabelsFromServer = new String[]{"defect", "story", "quality_story", "feature", "epic", "requirement_root"};
-
-    private Map<String, EntityModel> defaultEntityLabels;
-
-    @Inject
-    private HttpClientProvider httpClientProvider;
+    private OctaneProvider octaneProvider;
+    private static  Map<Entity, EntityModel> defaultLabels = getDefaultEntityLabels();
+    private Map<Entity, EntityModel> serverSideLabels;
 
     @Inject
-    private ConnectionSettingsProvider connectionSettingsProvider;
-
-    public Map<String, EntityModel> getEntityLabelDetails() {
-
-        if (connectionSettingsProvider.getConnectionSettings().isEmpty()) {
-            Map<String, EntityModel> entityLabels = getDefaultEntityLabels();
-            EntityModel em = entityLabels.get("requirement_root");
-            entityLabels.remove("requirement_root");
-            entityLabels.put("requirement", em);
-            return entityLabels;
-        }
-
-        String getUrl = connectionSettingsProvider.getConnectionSettings().getBaseUrl() + "/api/shared_spaces/" +
-                connectionSettingsProvider.getConnectionSettings().getSharedSpaceId() + "/workspaces/" +
-                connectionSettingsProvider.getConnectionSettings().getWorkspaceId() + "/entity_labels";
-
-        OctaneHttpRequest getOctaneHttpRequest = new OctaneHttpRequest.GetOctaneHttpRequest(getUrl);
-        OctaneHttpClient octaneHttpClient = httpClientProvider.getOctaneHttpClient();
-
-        Map<String, EntityModel> entityMetadataFromServer;
-        try {
-            OctaneHttpResponse response = octaneHttpClient.execute(getOctaneHttpRequest);
-            entityMetadataFromServer = getEntityMetadataFromJSON(response.getContent());
-
-        } catch (Exception e) {
-            logger.warn(e.getMessage());
-            entityMetadataFromServer = getDefaultEntityLabels();
-        }
-
-        //variable used in lambda needs to be final or effectively final(must have value assigned only once)
-        Map<String, EntityModel> entityLabelMetadataResolved = entityMetadataFromServer;
-
-        Map<String, EntityModel> entityLabelMetadata = getDefaultEntityLabels();
-
-        Arrays.stream(usefulEntityLabelsFromServer).forEach(string -> {
-            EntityModel em = entityLabelMetadataResolved.get(string);
-            // hardcoded translation because of mismatch between Entity.Requirements and entity type given by the response
-            if (string.equals("requirement_root") && em != null) {
-                entityLabelMetadata.remove(string);
-                string = "requirement";
-            }
-            entityLabelMetadata.put(string, em);
-        });
-        return entityLabelMetadata;
+    public EntityLabelService(OctaneProvider octaneProvider, ConnectionSettingsProvider connectionSettingsProvider) {
+        this.octaneProvider = octaneProvider;
+        connectionSettingsProvider.addChangeHandler(() -> serverSideLabels = null);
     }
 
-    private Map<String, EntityModel> getDefaultEntityLabels() {
-        if (defaultEntityLabels == null) {
+    public Map<Entity, EntityModel> getEntityLabelDetails() {
+
+        if(serverSideLabels == null || serverSideLabels.isEmpty()) {
+
             try {
-                ClasspathResourceLoader cprl = new ClasspathResourceLoader();
-                InputStream input = cprl.getResourceStream(DEFAULT_ENTITY_LABELS_FILE_NAME);
-                String jsonString = CharStreams.toString(new InputStreamReader(input, Charsets.UTF_8));
-                defaultEntityLabels = getEntityMetadataFromJSON(jsonString);
-            } catch (IOException e) {
-                throw new ServiceRuntimeException("Failed to parse " + DEFAULT_ENTITY_LABELS_FILE_NAME + " file ", e);
+                serverSideLabels = getEntityLabelsFromServer();
+
+            } catch (Exception ex) {
+                logger.warn("Failed to get labels from the server, using defaults: " + ex);
+                serverSideLabels = new HashMap<>();
             }
         }
-        //return a new hashmap because we dont want to overwrite the defaults
-        return new HashMap<>(defaultEntityLabels);
+
+        final Map<Entity, EntityModel> resultMap = new HashMap<>(serverSideLabels);
+
+        defaultLabels.forEach((entity, entityModel) -> {
+            if(resultMap.putIfAbsent(entity, entityModel) == null) {
+                logger.trace("Adding default entity label details for " + entity + " since the server side one could not be determined.");
+            }
+        });
+
+        return resultMap;
     }
 
-    private Map<String, EntityModel> getEntityMetadataFromJSON(String jsonString) {
-        Map<String, EntityModel> entityLabelMetadataMap = new HashMap<>();
+    public boolean areServerSideLabelsLoaded() {
+        return serverSideLabels != null && !serverSideLabels.isEmpty();
+    }
 
-        JSONObject shellObject = new JSONObject(jsonString);
-        JSONArray entityLabelJSONObjects = shellObject.getJSONArray("data");
-        for (Object entityLabelObject : entityLabelJSONObjects) {
-            if (entityLabelObject instanceof JSONObject) {
-                //we are supporting only english
-                if (((JSONObject) entityLabelObject).get("language").equals("lang.en")) {
-                    EntityModel em = new EntityModel();
-                    em.setValue(new StringFieldModel(ENTITY_TYPE, ((JSONObject) entityLabelObject).getString(ENTITY_TYPE)));
-                    em.setValue(new StringFieldModel(ENTITY_NAME, ((JSONObject) entityLabelObject).getString(ENTITY_NAME)));
-                    em.setValue((new StringFieldModel(ENTITY_INITIALS, ((JSONObject) entityLabelObject).getString(ENTITY_INITIALS))));
-                    em.setValue((new StringFieldModel(ENTITY_NAME_PLURAL_CAPITALIZED, ((JSONObject) entityLabelObject).getString(ENTITY_NAME_PLURAL_CAPITALIZED))));
-                    entityLabelMetadataMap.put(((JSONObject) entityLabelObject).getString(ENTITY_TYPE), em);
-                }
-            }
+    public String getDefaultEntityInitials(Entity entity) {
+        return defaultLabels.get(entity).getValue(ENTITY_INITIALS).getValue().toString();
+    }
+
+    public String getEntityInitials(Entity entity) {
+        return getEntityLabelDetails().get(entity).getValue(ENTITY_INITIALS).getValue().toString();
+    }
+
+    private Map<Entity, EntityModel> getEntityLabelsFromServer() {
+        OctaneCollection<EntityModel> labelEntityModels =
+                octaneProvider.getOctane()
+                        .entityList("entity_labels")
+                        .get()
+                        .query(Query.statement("language", QueryMethod.EqualTo, "lang.en").build())
+                        .execute();
+
+        return convertToMap(labelEntityModels);
+    }
+
+    private static Map<Entity, EntityModel> getDefaultEntityLabels() {
+        try {
+            ClasspathResourceLoader classpathResourceLoader = new ClasspathResourceLoader();
+            InputStream input = classpathResourceLoader.getResourceStream(DEFAULT_ENTITY_LABELS_FILE_NAME);
+            String jsonString = CharStreams.toString(new InputStreamReader(input, Charsets.UTF_8));
+
+            return convertToMap(ModelParser.getInstance().getEntities(jsonString));
+
+        } catch (IOException e) {
+            throw new ServiceRuntimeException("Failed to parse " + DEFAULT_ENTITY_LABELS_FILE_NAME + " file ", e);
         }
-        return entityLabelMetadataMap;
+    }
+
+    private static Map<Entity, EntityModel> convertToMap(OctaneCollection<EntityModel> entityModels) {
+        Map<Entity, EntityModel> map = new HashMap<>();
+
+        entityModels.forEach(entityModel -> {
+            Entity entityType = Entity.getEntityType(entityModel.getValue(ENTITY_TYPE).getValue().toString());
+
+            // Octane bug, the label is saved for REQUIREMENT_ROOT, not REQUIREMENT or even all of them
+            entityType = entityType == Entity.REQUIREMENT_ROOT ? Entity.REQUIREMENT : entityType;
+
+            if(entityType != null) {
+                map.put(entityType, entityModel);
+            } else {
+                logger.warn("Unknown entity_type string: "
+                        + entityModel.getValue(ENTITY_TYPE).getValue().toString()
+                        + " . will be ignored");
+            }
+        });
+
+        return map;
     }
 
 }

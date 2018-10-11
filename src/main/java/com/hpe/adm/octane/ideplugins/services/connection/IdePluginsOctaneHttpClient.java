@@ -30,6 +30,7 @@ import java.util.Optional;
 import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantLock;
 
+import com.hpe.adm.octane.ideplugins.services.exception.ServiceRuntimeException;
 import org.json.JSONObject;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -95,7 +96,7 @@ public class IdePluginsOctaneHttpClient implements OctaneHttpClient {
 	private final Map<OctaneHttpRequest, OctaneHttpResponse> cachedRequestToResponse = new HashMap<>();
 	private final Map<OctaneHttpRequest, String> requestToEtagMap = new HashMap<>();
 
-	private long pollingTimeoutMillis = 1000 * 30;
+	private long pollingTimeoutMillis = 1000 * 60 * 2;
 	private String sessionCookieName = DEFAULT_OCTANE_SESSION_COOKIE_NAME;
 	private String lwssoValue = "";
 	private final Lock authenticationLock = new ReentrantLock(true);
@@ -173,15 +174,25 @@ public class IdePluginsOctaneHttpClient implements OctaneHttpClient {
 			throw new RuntimeException(e);
 		}
 	}
+
+	public boolean isAuthenticated() {
+		return !lwssoValue.isEmpty();
+	}
 	
-	private boolean grantTokenAuthenticate(Authentication authentication) {		
+	private boolean grantTokenAuthenticate(Authentication authentication) {
+
 		// do not authenticate if lwssoValue is not empty
-		if (!lwssoValue.isEmpty()) {
+		if (isAuthenticated()) {
 			logger.debug("Skipping authentication, lwssoValue already set");
 			return true;
 		}
 
-		try {
+        // getting reference to Main thread
+        if("main".equals(Thread.currentThread().getName())){
+            throw new ServiceRuntimeException("Grand token authentication executed on main thread");
+        }
+
+        try {
 
 			//Reset these so they are not sent to grant_tool_token
 			sessionCookieName = "";
@@ -208,7 +219,7 @@ public class IdePluginsOctaneHttpClient implements OctaneHttpClient {
 					TokenPollingStatus pollingStatus = new TokenPollingStatus();
 					pollingStatus.timeoutTimeStamp = pollingTimeoutTimestamp;
 					pollingStatus = tokenPollingInProgressHandler.polling(pollingStatus);
-					if (pollingStatus.shouldPoll == false) {
+					if (!pollingStatus.shouldPoll) {
 						break;
 					}
 				}

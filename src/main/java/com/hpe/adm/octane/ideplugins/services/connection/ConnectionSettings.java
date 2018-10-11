@@ -104,6 +104,18 @@ public class ConnectionSettings {
 
     }
 
+    public boolean equalsExceptAuth(Object o) {
+        if (this == o)
+            return true;
+        if (o == null || getClass() != o.getClass())
+            return false;
+        ConnectionSettings that = (ConnectionSettings) o;
+
+        return Objects.equals(baseUrl, that.baseUrl) &&
+                Objects.equals(sharedSpaceId, that.sharedSpaceId) &&
+                Objects.equals(workspaceId, that.workspaceId);
+    }
+
     @Override
     public int hashCode() {
         return Objects.hash(baseUrl, sharedSpaceId, workspaceId, authentication);
