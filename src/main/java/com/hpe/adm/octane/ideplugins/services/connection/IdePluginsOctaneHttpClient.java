@@ -567,7 +567,7 @@ public class IdePluginsOctaneHttpClient implements OctaneHttpClient {
 				cookies = HttpCookie.parse(strCookie);
 			} catch (Exception ex) {
 				logger.error("Failed to parse HPSSOCookieCsrf: " + ex.getMessage());
-				continue;
+			 	continue;
 			}
 			Optional<HttpCookie> lwssoCookie = cookies.stream().filter(a -> a.getName().equals(LWSSO_COOKIE_KEY)).findFirst();
 			if (lwssoCookie.isPresent()) {
