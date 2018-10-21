@@ -24,11 +24,9 @@ import static org.junit.Assert.fail;
 
 public class UrlParserUTCase {
 
-    private static String octaneUrlWithPort = "http://myd-vm10632.hpeswlab.net:8081/?p=1001/1002";
-    private static String hash = "#/release-quality/hierarchy/epic/lines?contentFilter=%7B%7D&navFilter=%7B%7D&filter=%7B%22lExpression%22:%7B%22operator%22:%22PROPERTY%22,%22value%22:%22release%22%7D,%22operator%22:%22IN%22,%22rExpression%22:%5B%7B%22operator%22:%22LITERAL%22,%22value%22:%7B%22$uid%22:%221002-release%22,%22$fetchConfiguration%22:null,%22$entityType%22:%22release%22,%22id%22:%221002%22,%22$inFilter%22:true,%22name%22:%22368.2%22%7D%7D%5D%7D";
-    private static String octaneUrlWithPortAndHash = octaneUrlWithPort + hash;
+    private static String octaneUrlWithPort = "https://center.almoctane.com:3213/ui/?p=1001%2F1002&TENANTID=1#/my-items/my-works";
 
-    private static String expectedBase = "http://myd-vm10632.hpeswlab.net:8081";
+    private static String expectedBase = "https://center.almoctane.com:3213";
     private static Long   expectedSharedSpaceId = 1001L;
     private static Long   expectedWorkspaceId = 1002L;
 
@@ -38,7 +36,7 @@ public class UrlParserUTCase {
         //Test parsing
         ConnectionSettings connectionSettings = null;
         try {
-            connectionSettings = UrlParser.resolveConnectionSettings(octaneUrlWithPortAndHash, "username", "password");
+            connectionSettings = UrlParser.resolveConnectionSettings(octaneUrlWithPort, "username", "password");
         } catch (ServiceException e) {
             fail(e.getMessage());
         }
@@ -46,14 +44,6 @@ public class UrlParserUTCase {
         assertEquals(connectionSettings.getBaseUrl(), expectedBase);
         assertEquals(connectionSettings.getSharedSpaceId(), expectedSharedSpaceId);
         assertEquals(connectionSettings.getWorkspaceId(), expectedWorkspaceId);
-
-        //Test removing the hash
-        String urlWithoutHash = UrlParser.removeHash(octaneUrlWithPortAndHash);
-        assertEquals(octaneUrlWithPort, urlWithoutHash);
-
-        //Test rebuilding the url from the base, reuse the parsed connection settings
-        String rebuiltUrl = UrlParser.createUrlFromConnectionSettings(connectionSettings);
-        assertEquals(octaneUrlWithPort, rebuiltUrl);
 
     }
 
