@@ -13,16 +13,22 @@
 
 package com.hpe.adm.octane.ideplugins.services.util;
 
-import java.net.URI;
-import java.net.URISyntaxException;
-import java.net.URL;
-
 import com.hpe.adm.nga.sdk.authentication.Authentication;
 import com.hpe.adm.octane.ideplugins.services.connection.ConnectionSettings;
 import com.hpe.adm.octane.ideplugins.services.connection.UserAuthentication;
 import com.hpe.adm.octane.ideplugins.services.exception.ServiceException;
 import com.hpe.adm.octane.ideplugins.services.exception.ServiceRuntimeException;
 import com.hpe.adm.octane.ideplugins.services.filtering.Entity;
+
+import java.io.UnsupportedEncodingException;
+import java.net.URI;
+import java.net.URISyntaxException;
+import java.net.URL;
+import java.net.URLDecoder;
+import java.util.LinkedHashMap;
+import java.util.LinkedList;
+import java.util.List;
+import java.util.Map;
 
 public class UrlParser {
 
@@ -50,8 +56,14 @@ public class UrlParser {
         ConnectionSettings connectionSettings = new ConnectionSettings();
 
         URL siteUrl;
+
+
         try {
             siteUrl = new URL(url);
+
+            // get rid of what we don't need
+            siteUrl = new URL(siteUrl.getProtocol(), siteUrl.getHost(), siteUrl.getPort(), siteUrl.getFile());
+
             siteUrl.toURI(); // does the extra checking required for validation
             // of URI
             if (!"http".equals(siteUrl.getProtocol()) && !"https".equals(siteUrl.getProtocol())) {
@@ -70,8 +82,8 @@ public class UrlParser {
         } else {
             try {
                 String baseUrl;
-                Long sharedspaceId;
-                Long workspaceId;
+                long sharedspaceId = -1;
+                long workspaceId = -1;
 
                 baseUrl = siteUrl.getProtocol() + "://" + siteUrl.getHost();
                 // Add port if not the default
@@ -79,9 +91,14 @@ public class UrlParser {
                     baseUrl += ":" + siteUrl.getPort();
                 }
 
-                String[] split = siteUrl.getQuery().split("/");
-                sharedspaceId = Long.valueOf(split[0].substring(split[0].indexOf("p=") + 2));
-                workspaceId = Long.valueOf(split[1]);
+                Map<String, List<String>> params = splitQueryParams(siteUrl);
+
+                if(params.containsKey("p") && params.get("p").size() == 1) {
+                    String param = params.get("p").get(0);
+                    String[] split = param.split("/");
+                    sharedspaceId = Long.valueOf(split[0].trim());
+                    workspaceId = Long.valueOf(split[1].trim());
+                }
 
                 if (sharedspaceId < 0)
                     throw new Exception();
@@ -163,6 +180,26 @@ public class UrlParser {
             throw new ServiceRuntimeException(e);
         }
         return uri;
+    }
+
+    public static Map<String, List<String>> splitQueryParams(URL url) throws UnsupportedEncodingException {
+        final Map<String, List<String>> query_pairs = new LinkedHashMap<>();
+
+        final String[] pairs = url.getQuery().split("&");
+        for (String pair : pairs) {
+            final int idx = pair.indexOf("=");
+
+            final String key = idx > 0 ? URLDecoder.decode(pair.substring(0, idx), "UTF-8") : pair;
+
+            if (!query_pairs.containsKey(key)) {
+                query_pairs.put(key, new LinkedList<>());
+            }
+            final String value = idx > 0 && pair.length() > idx + 1 ? URLDecoder.decode(pair.substring(idx + 1), "UTF-8") : null;
+
+            query_pairs.get(key).add(value);
+        }
+
+        return query_pairs;
     }
 
 }
