@@ -13,9 +13,10 @@
 
 package com.hpe.adm.octane.ideplugins.services;
 
-import org.json.JSONObject;
-
 import com.google.inject.Inject;
+import com.hpe.adm.nga.sdk.Octane;
+import com.hpe.adm.nga.sdk.authentication.Authentication;
+import com.hpe.adm.nga.sdk.entities.EntityList;
 import com.hpe.adm.nga.sdk.entities.OctaneCollection;
 import com.hpe.adm.nga.sdk.model.EntityModel;
 import com.hpe.adm.nga.sdk.model.ModelParser;
@@ -24,12 +25,13 @@ import com.hpe.adm.nga.sdk.network.OctaneHttpRequest;
 import com.hpe.adm.nga.sdk.network.OctaneHttpResponse;
 import com.hpe.adm.nga.sdk.query.Query;
 import com.hpe.adm.nga.sdk.query.QueryMethod;
-import com.hpe.adm.octane.ideplugins.services.connection.ConnectionSettings;
-import com.hpe.adm.octane.ideplugins.services.connection.ConnectionSettingsProvider;
-import com.hpe.adm.octane.ideplugins.services.connection.HttpClientProvider;
-import com.hpe.adm.octane.ideplugins.services.connection.OctaneProvider;
+import com.hpe.adm.octane.ideplugins.services.connection.*;
+import com.hpe.adm.octane.ideplugins.services.connection.granttoken.GrantTokenAuthentication;
 import com.hpe.adm.octane.ideplugins.services.exception.ServiceRuntimeException;
 import com.hpe.adm.octane.ideplugins.services.filtering.Entity;
+import org.json.JSONObject;
+
+import java.util.Collection;
 
 public class UserService {
 
@@ -48,25 +50,33 @@ public class UserService {
     private Runnable getCurrentUserRunnable = new Runnable() {
         @Override
         public void run() {
-            ConnectionSettings connectionSettings = connectionSettingsProvider.getConnectionSettings();
-            OctaneHttpClient httpClient = httpClientProvider.getOctaneHttpClient();
-            OctaneHttpRequest request = new OctaneHttpRequest.GetOctaneHttpRequest(connectionSettings.getBaseUrl() + "/api/current_user/");
-            OctaneHttpResponse response = httpClient.execute(request);
-            String json = response.getContent();
-
-            if (response.isSuccessStatusCode() && (json != null && !json.isEmpty())) {
-                currentUserEntityModel = ModelParser.getInstance().getEntityModel(new JSONObject(json));
-                currentUserEntityModel = convertSiteUserToWorkspaceUser(currentUserEntityModel);
+            if(connectionSettingsProvider.getConnectionSettings().getAuthentication() instanceof GrantTokenAuthentication) {
+                initCurrentUserWithNewAPI();
             } else {
-                throw new ServiceRuntimeException("Failed to fetch current logged on user");
+                initCurrentUserWithOldAPI();
             }
         }
     };
 
+    private void initCurrentUserWithNewAPI() {
+        ConnectionSettings connectionSettings = connectionSettingsProvider.getConnectionSettings();
+        OctaneHttpClient httpClient = httpClientProvider.getOctaneHttpClient();
+        OctaneHttpRequest request = new OctaneHttpRequest.GetOctaneHttpRequest(connectionSettings.getBaseUrl() + "/api/current_user/");
+        OctaneHttpResponse response = httpClient.execute(request);
+        String json = response.getContent();
+
+        if (response.isSuccessStatusCode() && (json != null && !json.isEmpty())) {
+            currentUserEntityModel = ModelParser.getInstance().getEntityModel(new JSONObject(json));
+            currentUserEntityModel = convertSiteUserToWorkspaceUser(currentUserEntityModel);
+        } else {
+            throw new ServiceRuntimeException("Failed to fetch current logged on user");
+        }
+    }
+
     /**
      * TODO: you need workspace user ID, need to fix next push server side, or
      * rewrite the whole code to use the name instead of the ID
-     * 
+     *
      * @param siteUser
      * @return
      */
@@ -86,6 +96,25 @@ public class UserService {
         }
 
         return result.iterator().next();
+    }
+
+    private void initCurrentUserWithOldAPI() {
+        Octane octane = octaneProvider.getOctane();
+        Authentication authentication = connectionSettingsProvider.getConnectionSettings().getAuthentication();
+
+        String currentUserName = ((UserAuthentication) authentication).getUserName();
+
+        EntityList entityList = octane.entityList(Entity.WORKSPACE_USER.getApiEntityName());
+        Collection<EntityModel> entityModels =
+                entityList.get().query(
+                        Query.statement("name", QueryMethod.EqualTo, currentUserName).build())
+                        .execute();
+
+        if(entityModels.size()!=1){
+            throw new ServiceRuntimeException("Failed to retrieve logged in user id");
+        } else {
+            currentUserEntityModel = entityModels.iterator().next();
+        }
     }
 
     /**
