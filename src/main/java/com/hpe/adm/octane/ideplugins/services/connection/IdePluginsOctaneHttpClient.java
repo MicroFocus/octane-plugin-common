@@ -119,14 +119,18 @@ public class IdePluginsOctaneHttpClient implements OctaneHttpClient {
 			request.setUnsuccessfulResponseHandler((httpRequest, httpResponse, b) -> false);
 
 			final StringBuilder cookieBuilder = new StringBuilder();
+
 			if (lwssoValue != null && !lwssoValue.isEmpty()) {
 				cookieBuilder.append(sessionCookieName).append("=").append(lwssoValue);
 			}
+
 			if (octaneUserValue != null && !octaneUserValue.isEmpty()) {
 				cookieBuilder.append(";").append(OCTANE_USER_COOKIE_KEY).append("=").append(octaneUserValue);
 			}
 
-			request.getHeaders().setCookie(cookieBuilder.toString());
+			if(!cookieBuilder.toString().isEmpty()) {
+				request.getHeaders().setCookie(cookieBuilder.toString());
+			}
 
 			if (lastUsedAuthentication != null) {
 				String clientTypeHeader = lastUsedAuthentication.getClientHeader();
@@ -148,6 +152,10 @@ public class IdePluginsOctaneHttpClient implements OctaneHttpClient {
 	public synchronized boolean authenticate(Authentication authentication) {
 		authenticationLock.lock();
 		lastUsedAuthentication = authentication;
+
+		// Clear prev
+		this.lwssoValue = null;
+		this.octaneUserValue = null;
 		
 		try {
 			if (authentication instanceof GrantTokenAuthentication) {
@@ -401,9 +409,10 @@ public class IdePluginsOctaneHttpClient implements OctaneHttpClient {
 			if(retryCount > 0 && exception instanceof OctaneException) {
 				OctaneException octaneException = (OctaneException) exception;
 				StringFieldModel errorCodeFieldModel = (StringFieldModel) octaneException.getError().getValue("errorCode");
+				LongFieldModel httpStatusCode = (LongFieldModel) octaneException.getError().getValue("http_status_code");
 
 				//Handle session timeout
-				if (errorCodeFieldModel != null && 
+				if (errorCodeFieldModel != null && httpStatusCode.getValue() == 401 &&
 					(ERROR_CODE_TOKEN_EXPIRED.equals(errorCodeFieldModel.getValue()) || ERROR_CODE_GLOBAL_TOKEN_EXPIRED.equals(errorCodeFieldModel.getValue())) && 
 					lastUsedAuthentication != null) {
 					
