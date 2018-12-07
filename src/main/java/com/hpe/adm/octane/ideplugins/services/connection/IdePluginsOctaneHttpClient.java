@@ -152,10 +152,6 @@ public class IdePluginsOctaneHttpClient implements OctaneHttpClient {
 	public synchronized boolean authenticate(Authentication authentication) {
 		authenticationLock.lock();
 		lastUsedAuthentication = authentication;
-
-		// Clear prev
-		this.lwssoValue = null;
-		this.octaneUserValue = null;
 		
 		try {
 			if (authentication instanceof GrantTokenAuthentication) {
@@ -169,6 +165,9 @@ public class IdePluginsOctaneHttpClient implements OctaneHttpClient {
 	}
 	
 	private boolean octaneAuthenticate(Authentication authentication) {
+
+		clearSessionFields();
+
 		try {
 			final ByteArrayContent content = ByteArrayContent.fromString("application/json", authentication.getAuthenticationString());
 			HttpRequest httpRequest = requestFactory.buildPostRequest(new GenericUrl(urlDomain + OAUTH_AUTH_URL), content);
@@ -184,7 +183,7 @@ public class IdePluginsOctaneHttpClient implements OctaneHttpClient {
 	}
 
 	public boolean isAuthenticated() {
-		return !lwssoValue.isEmpty();
+		return lwssoValue !=null && !lwssoValue.isEmpty();
 	}
 	
 	private boolean grantTokenAuthenticate(Authentication authentication) {
@@ -197,16 +196,12 @@ public class IdePluginsOctaneHttpClient implements OctaneHttpClient {
 
         // getting reference to Main thread
         if("main".equals(Thread.currentThread().getName())){
-            throw new ServiceRuntimeException("Grand token authentication executed on main thread");
+            throw new ServiceRuntimeException("Grant token authentication executed on main thread");
         }
 
         try {
+        	clearSessionFields();
 
-			//Reset these so they are not sent to grant_tool_token
-			sessionCookieName = "";
-			lwssoValue = "";
-			octaneUserValue = "";
-			
 			HttpRequest identifierRequest = requestFactory.buildGetRequest(new GenericUrl(urlDomain + "/authentication/grant_tool_token"));
 			JSONObject identifierResponse = new JSONObject(identifierRequest.execute().parseAsString());
 
@@ -590,6 +585,12 @@ public class IdePluginsOctaneHttpClient implements OctaneHttpClient {
 		return renewed;
 	}
 
+	private void clearSessionFields() {
+		sessionCookieName = DEFAULT_OCTANE_SESSION_COOKIE_NAME;
+		lwssoValue = "";
+		octaneUserValue = "";
+	}
+
 	@Override
 	public void signOut() {
 		GenericUrl genericUrl = new GenericUrl(urlDomain + OAUTH_SIGNOUT_URL);
@@ -600,6 +601,7 @@ public class IdePluginsOctaneHttpClient implements OctaneHttpClient {
 			if (response.isSuccessStatusCode()) {
 				HttpHeaders hdr1 = response.getHeaders();
 				updateLWSSOCookieValue(hdr1);
+				clearSessionFields();
 				lastUsedAuthentication = null;
 			}
 		} catch (Exception e) {
