@@ -32,7 +32,7 @@ public class GrantTokenAuthentication implements Authentication {
 
     @Override
     public String getClientHeader() {
-        return ServiceModule.CLIENT_TYPE.name();
+        return null;
     }
 
 }

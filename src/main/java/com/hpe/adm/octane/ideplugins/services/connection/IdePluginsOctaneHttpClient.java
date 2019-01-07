@@ -13,61 +13,31 @@
 
 package com.hpe.adm.octane.ideplugins.services.connection;
 
+import com.google.api.client.http.*;
+import com.google.api.client.http.javanet.NetHttpTransport;
+import com.hpe.adm.nga.sdk.authentication.Authentication;
+import com.hpe.adm.nga.sdk.exception.OctaneException;
+import com.hpe.adm.nga.sdk.exception.OctanePartialException;
+import com.hpe.adm.nga.sdk.model.*;
+import com.hpe.adm.nga.sdk.network.OctaneHttpClient;
+import com.hpe.adm.nga.sdk.network.OctaneHttpRequest;
+import com.hpe.adm.nga.sdk.network.OctaneHttpResponse;
+import com.hpe.adm.octane.ideplugins.services.connection.granttoken.*;
+import com.hpe.adm.octane.ideplugins.services.exception.ServiceRuntimeException;
+import com.hpe.adm.octane.ideplugins.services.util.ClientType;
+import org.json.JSONObject;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.net.HttpCookie;
 import java.net.Proxy;
 import java.net.ProxySelector;
 import java.net.URI;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collection;
-import java.util.Date;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Optional;
+import java.util.*;
 import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantLock;
-
-import com.hpe.adm.octane.ideplugins.services.exception.ServiceRuntimeException;
-import org.json.JSONObject;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
-import com.google.api.client.http.ByteArrayContent;
-import com.google.api.client.http.FileContent;
-import com.google.api.client.http.GenericUrl;
-import com.google.api.client.http.HttpContent;
-import com.google.api.client.http.HttpHeaders;
-import com.google.api.client.http.HttpMediaType;
-import com.google.api.client.http.HttpRequest;
-import com.google.api.client.http.HttpRequestFactory;
-import com.google.api.client.http.HttpRequestInitializer;
-import com.google.api.client.http.HttpResponse;
-import com.google.api.client.http.HttpResponseException;
-import com.google.api.client.http.HttpStatusCodes;
-import com.google.api.client.http.HttpTransport;
-import com.google.api.client.http.InputStreamContent;
-import com.google.api.client.http.MultipartContent;
-import com.google.api.client.http.javanet.NetHttpTransport;
-import com.hpe.adm.nga.sdk.authentication.Authentication;
-import com.hpe.adm.nga.sdk.exception.OctaneException;
-import com.hpe.adm.nga.sdk.exception.OctanePartialException;
-import com.hpe.adm.nga.sdk.model.EntityModel;
-import com.hpe.adm.nga.sdk.model.ErrorModel;
-import com.hpe.adm.nga.sdk.model.LongFieldModel;
-import com.hpe.adm.nga.sdk.model.ModelParser;
-import com.hpe.adm.nga.sdk.model.StringFieldModel;
-import com.hpe.adm.nga.sdk.network.OctaneHttpClient;
-import com.hpe.adm.nga.sdk.network.OctaneHttpRequest;
-import com.hpe.adm.nga.sdk.network.OctaneHttpResponse;
-import com.hpe.adm.octane.ideplugins.services.connection.granttoken.GrantTokenAuthentication;
-import com.hpe.adm.octane.ideplugins.services.connection.granttoken.TokenPollingCompleteHandler;
-import com.hpe.adm.octane.ideplugins.services.connection.granttoken.TokenPollingCompletedStatus;
-import com.hpe.adm.octane.ideplugins.services.connection.granttoken.TokenPollingInProgressHandler;
-import com.hpe.adm.octane.ideplugins.services.connection.granttoken.TokenPollingStartedHandler;
-import com.hpe.adm.octane.ideplugins.services.connection.granttoken.TokenPollingStatus;
 
 public class IdePluginsOctaneHttpClient implements OctaneHttpClient {
 
@@ -106,7 +76,7 @@ public class IdePluginsOctaneHttpClient implements OctaneHttpClient {
 	private TokenPollingCompleteHandler tokenPollingCompleteHandler;
 	private TokenPollingInProgressHandler tokenPollingInProgressHandler;
 
-	public IdePluginsOctaneHttpClient(String urlDomain) {
+	public IdePluginsOctaneHttpClient(String urlDomain, ClientType clientType) {
 		this.urlDomain = urlDomain;
 
 		requestInitializer = request -> {
@@ -132,11 +102,8 @@ public class IdePluginsOctaneHttpClient implements OctaneHttpClient {
 				request.getHeaders().setCookie(cookieBuilder.toString());
 			}
 
-			if (lastUsedAuthentication != null) {
-				String clientTypeHeader = lastUsedAuthentication.getClientHeader();
-				if (clientTypeHeader != null && !clientTypeHeader.isEmpty()) {
-					request.getHeaders().set(HPE_CLIENT_TYPE, clientTypeHeader);
-				}
+			if (clientType != null) {
+				request.getHeaders().set(HPE_CLIENT_TYPE, clientType.toString());
 			}
 			request.setReadTimeout(60000);
 		};
