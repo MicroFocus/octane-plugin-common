@@ -30,6 +30,10 @@ public class GrantTokenAuthentication implements Authentication {
         return null;
     }
 
+    /**
+     * @link IdePluginsOctaneHttpClient does not use this method, so it doesn't have to be implemented
+     * @return null
+     */
     @Override
     public String getClientHeader() {
         return null;
