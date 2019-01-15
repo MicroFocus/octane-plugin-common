@@ -13,9 +13,6 @@
 
 package com.hpe.adm.octane.ideplugins.services.di;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 import com.google.common.base.Supplier;
 import com.google.common.base.Suppliers;
 import com.google.inject.AbstractModule;
@@ -24,28 +21,22 @@ import com.google.inject.Injector;
 import com.google.inject.Provides;
 import com.hpe.adm.nga.sdk.Octane;
 import com.hpe.adm.nga.sdk.network.OctaneHttpClient;
-import com.hpe.adm.octane.ideplugins.services.connection.ConnectionSettings;
-import com.hpe.adm.octane.ideplugins.services.connection.ConnectionSettingsProvider;
-import com.hpe.adm.octane.ideplugins.services.connection.HttpClientProvider;
-import com.hpe.adm.octane.ideplugins.services.connection.IdePluginsOctaneHttpClient;
-import com.hpe.adm.octane.ideplugins.services.connection.OctaneProvider;
+import com.hpe.adm.octane.ideplugins.services.connection.*;
 import com.hpe.adm.octane.ideplugins.services.connection.granttoken.TokenPollingCompleteHandler;
 import com.hpe.adm.octane.ideplugins.services.connection.granttoken.TokenPollingInProgressHandler;
 import com.hpe.adm.octane.ideplugins.services.connection.granttoken.TokenPollingStartedHandler;
 import com.hpe.adm.octane.ideplugins.services.exception.ServiceRuntimeException;
 import com.hpe.adm.octane.ideplugins.services.mywork.MyWorkService;
 import com.hpe.adm.octane.ideplugins.services.mywork.MyWorkServiceProxyFactory;
+import com.hpe.adm.octane.ideplugins.services.nonentity.OctaneVersionService;
 import com.hpe.adm.octane.ideplugins.services.util.ClientType;
+import com.hpe.adm.octane.ideplugins.services.util.OctaneVersion;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 public class ServiceModule extends AbstractModule {
 
     private static final Logger logger = LoggerFactory.getLogger(ServiceModule.class.getName());
-	
-    /**
-     * Client type header to be used by all rest calls by the SDK Changing the
-     * client type might restrict/permit access to certain server API
-     */
-    public static final ClientType CLIENT_TYPE = ClientType.HPE_REST_API_TECH_PREVIEW;
 
     private ConnectionSettingsProvider connectionSettingsProvider;
 
@@ -127,8 +118,11 @@ public class ServiceModule extends AbstractModule {
 	            if (octaneHttpClient == null) {
 
 	            	logger.debug("Creating http client");
+
+                    ClientType clientType = getClientTypeForServer(currentConnectionSettings);
+                    logger.debug("Client type used for connection settings: " + currentConnectionSettings + " is " + clientType);
 	            	
-	                IdePluginsOctaneHttpClient httpClient = new IdePluginsOctaneHttpClient(currentConnectionSettings.getBaseUrl());
+	                IdePluginsOctaneHttpClient httpClient = new IdePluginsOctaneHttpClient(currentConnectionSettings.getBaseUrl(), clientType);
 	                httpClient.setSsoTokenPollingStartedHandler(tokenPollingStartedHandler);
 	                httpClient.setSsoTokenPollingInProgressHandler(tokenPollingInProgressHandler);
 	                httpClient.setSsoTokenPollingCompleteHandler(tokenPollingCompleteHandler);
@@ -145,6 +139,15 @@ public class ServiceModule extends AbstractModule {
 
             return octaneHttpClient;
         };
+    }
+
+    private static ClientType getClientTypeForServer(ConnectionSettings connectionSettings) {
+        OctaneVersion octaneVersion = OctaneVersionService.getOctaneVersion(connectionSettings);
+        if(octaneVersion.compareTo(OctaneVersion.JUVENTUS_P3) >= 0) {
+            return ClientType.HPE_REST_API_TECH_PREVIEW;
+        } else {
+            return ClientType.HPE_IDE_PLUGINS;
+        }
     }
 
 }

@@ -22,7 +22,7 @@ import com.hpe.adm.octane.ideplugins.services.di.ServiceModule;
 public class UserAuthentication extends SimpleUserAuthentication {
 
     public UserAuthentication(String userName, String password) {
-        super(userName, password, ServiceModule.CLIENT_TYPE.name());
+        super(userName, password);
     }
 
     @Override
