@@ -4,6 +4,7 @@ import com.hpe.adm.nga.sdk.model.EntityModel;
 import com.hpe.adm.nga.sdk.model.ReferenceFieldModel;
 import com.hpe.adm.octane.ideplugins.integrationtests.IntegrationTestBase;
 import com.hpe.adm.octane.ideplugins.services.filtering.Entity;
+import org.junit.Ignore;
 import org.junit.Test;
 
 import java.util.ArrayList;
@@ -67,6 +68,7 @@ public class MyWorkTreeITCase extends IntegrationTestBase {
      * getMyWork()
      */
     @Test
+    @Ignore // TODO
     public void testSetUpMyWorkTree() {
 
         deleteBacklogItems();
