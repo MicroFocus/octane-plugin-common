@@ -144,7 +144,7 @@ public class ServiceModule extends AbstractModule {
     private static ClientType getClientTypeForServer(ConnectionSettings connectionSettings) {
         OctaneVersion octaneVersion = OctaneVersionService.getOctaneVersion(connectionSettings);
         // current version is more than or equal to JUVENTUS_P3
-        if(OctaneVersion.JUVENTUS_P3.compareTo(octaneVersion) < 0) {
+        if(OctaneVersion.JUVENTUS_P3.compareTo(octaneVersion) > 0) {
             return ClientType.HPE_REST_API_TECH_PREVIEW;
         } else {
             return ClientType.HPE_IDE_PLUGINS;
