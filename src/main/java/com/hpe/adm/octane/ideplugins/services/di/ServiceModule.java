@@ -147,7 +147,7 @@ public class ServiceModule extends AbstractModule {
         if(OctaneVersion.JUVENTUS_P3.compareTo(octaneVersion) > 0) {
             return ClientType.HPE_REST_API_TECH_PREVIEW;
         } else {
-            return ClientType.HPE_IDE_PLUGINS;
+            return ClientType.HPE_MQM_UI;
         }
     }
 
