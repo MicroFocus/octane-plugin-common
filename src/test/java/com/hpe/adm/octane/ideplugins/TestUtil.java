@@ -10,9 +10,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
 package com.hpe.adm.octane.ideplugins;
-
 
 import com.hpe.adm.nga.sdk.model.EntityModel;
 import com.hpe.adm.octane.ideplugins.services.filtering.Entity;

@@ -10,7 +10,6 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
 package com.hpe.adm.octane.ideplugins.services;
 
 import com.google.gson.Gson;

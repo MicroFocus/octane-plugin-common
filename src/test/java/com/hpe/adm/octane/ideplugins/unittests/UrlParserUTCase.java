@@ -10,9 +10,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
 package com.hpe.adm.octane.ideplugins.unittests;
-
 
 import com.hpe.adm.octane.ideplugins.services.connection.ConnectionSettings;
 import com.hpe.adm.octane.ideplugins.services.exception.ServiceException;
