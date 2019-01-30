@@ -25,6 +25,7 @@ public class OctaneVersion implements Comparable<OctaneVersion> {
     public static final OctaneVersion GENT_P3 = new OctaneVersion("12.55.12");
     public static final OctaneVersion INTER_P2 = new OctaneVersion("12.60.16");
     public static final OctaneVersion JUVENTUS_P3 = new OctaneVersion("12.60.35");
+    public static final OctaneVersion LIVERPOOL_P0 = new OctaneVersion("12.60.36");
 
     private String almVersion;
     private Integer octaneVersion;
