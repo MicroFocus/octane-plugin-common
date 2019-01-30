@@ -23,7 +23,7 @@ public enum ClientType {
     HPE_MQM_MOBILE,
     HPE_REST_TESTS_TEMP,
     HPE_MQM_PLUGIN_UI,
-    HPE_IDE_PLUGINS,
+    OCTANE_IDE_PLUGINS,
     HPE_SERVICES,
     HPE_PPM,
     MF_E_SIGN,
