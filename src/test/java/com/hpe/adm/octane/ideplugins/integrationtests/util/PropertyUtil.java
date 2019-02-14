@@ -26,6 +26,7 @@ public class PropertyUtil {
     public enum PropertyKeys {
         URL("url"),
         SHARED_SPACE("sharedSpaceId"),
+        WORKSPACE("workspaceId"),
         USERNAME("username"),
         PASSWORD("password");
 
@@ -41,6 +42,7 @@ public class PropertyUtil {
                 Stream.of(
                         PropertyKeys.URL,
                         PropertyKeys.SHARED_SPACE,
+                        PropertyKeys.WORKSPACE,
                         PropertyKeys.USERNAME,
                         PropertyKeys.PASSWORD
                 ).allMatch(propertyKey -> props.keySet().contains(propertyKey.keyStr));
@@ -55,6 +57,7 @@ public class PropertyUtil {
             } catch (NumberFormatException ex) {
                 throw new RuntimeException("Failed to parse shared space/workspace id as number: " + ex);
             }
+            connectionSettings.setWorkspaceId(Long.valueOf(props.getProperty(PropertyKeys.WORKSPACE.keyStr)));
             connectionSettings.setAuthentication(new UserAuthentication(
                     props.getProperty(PropertyKeys.USERNAME.keyStr),
                     props.getProperty(PropertyKeys.PASSWORD.keyStr)
@@ -88,6 +91,7 @@ public class PropertyUtil {
                 Stream.of(
                         PropertyKeys.URL,
                         PropertyKeys.SHARED_SPACE,
+                        PropertyKeys.WORKSPACE,
                         PropertyKeys.USERNAME,
                         PropertyKeys.PASSWORD
                 ).allMatch(propertyKey -> fileProps.keySet().contains(propertyKey.keyStr));
@@ -98,6 +102,7 @@ public class PropertyUtil {
             ConnectionSettings connectionSettings = new ConnectionSettings();
             connectionSettings.setBaseUrl(getString(PropertyKeys.URL));
             connectionSettings.setSharedSpaceId(getLong(PropertyKeys.SHARED_SPACE));
+            connectionSettings.setWorkspaceId(getLong(PropertyKeys.WORKSPACE));
             connectionSettings.setAuthentication(new UserAuthentication(
                     getString(PropertyKeys.USERNAME),
                     getString(PropertyKeys.PASSWORD)

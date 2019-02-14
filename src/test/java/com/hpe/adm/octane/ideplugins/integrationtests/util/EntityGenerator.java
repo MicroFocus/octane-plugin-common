@@ -13,6 +13,7 @@
 package com.hpe.adm.octane.ideplugins.integrationtests.util;
 
 
+import com.google.inject.Inject;
 import com.hpe.adm.nga.sdk.Octane;
 import com.hpe.adm.nga.sdk.model.EntityModel;
 import com.hpe.adm.nga.sdk.model.ReferenceFieldModel;
@@ -45,6 +46,7 @@ public class EntityGenerator {
 
     private OctaneProvider octaneProvider;
 
+    @Inject
     public EntityGenerator(OctaneProvider octaneProvider) {
         this.octaneProvider = octaneProvider;
     }

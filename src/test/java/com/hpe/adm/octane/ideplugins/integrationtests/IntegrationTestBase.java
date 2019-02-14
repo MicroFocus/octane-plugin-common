@@ -25,7 +25,8 @@ import com.hpe.adm.nga.sdk.network.google.GoogleHttpClient;
 import com.hpe.adm.nga.sdk.query.Query;
 import com.hpe.adm.nga.sdk.query.QueryMethod;
 import com.hpe.adm.octane.ideplugins.Constants;
-import com.hpe.adm.octane.ideplugins.integrationtests.util.*;
+import com.hpe.adm.octane.ideplugins.integrationtests.util.EntityGenerator;
+import com.hpe.adm.octane.ideplugins.integrationtests.util.PropertyUtil;
 import com.hpe.adm.octane.ideplugins.services.EntityService;
 import com.hpe.adm.octane.ideplugins.services.UserService;
 import com.hpe.adm.octane.ideplugins.services.connection.ConnectionSettings;
@@ -44,7 +45,6 @@ import org.json.JSONObject;
 import org.junit.After;
 import org.junit.Before;
 
-import java.lang.annotation.Annotation;
 import java.time.LocalDateTime;
 import java.util.*;
 import java.util.stream.Collectors;
@@ -55,7 +55,7 @@ import static org.junit.Assert.fail;
 /**
  * Enables the use of the {@link Inject} annotation
  */
-public abstract class IntegrationTestBase {
+public class IntegrationTestBase {
 
     @Inject
     private EntitySearchService searchService;
@@ -72,6 +72,9 @@ public abstract class IntegrationTestBase {
     @Inject
     protected OctaneProvider octaneProvider;
 
+    @Inject
+    protected EntityGenerator entityGenerator;
+
     static final Set<Entity> searchEntityTypes = new LinkedHashSet<>(Arrays.asList(
             Entity.EPIC,
             Entity.FEATURE,
@@ -85,14 +88,13 @@ public abstract class IntegrationTestBase {
             Entity.GHERKIN_TEST,
             Entity.REQUIREMENT));
 
-    private EntityGenerator entityGenerator;
     protected ConnectionSettingsProvider connectionSettingsProvider;
     private ServiceModule serviceModule;
     private EntityModel nativeStatus;
 
     /**
      * Sets up a context needed for the tests, the context is derived from the
-     * annotations set the implementing class
+     * annotations set on the implementing class
      */
     @Before
     public void setUp() {
@@ -101,40 +103,16 @@ public abstract class IntegrationTestBase {
         if (connectionSettingsProvider == null) {
             throw new RuntimeException(Constants.Errors.CONNECTION_SETTINGS_RETRIEVE_ERROR);
         }
+        ConnectionSettings connectionSettings = connectionSettingsProvider.getConnectionSettings();
+
+        if (connectionSettings.getWorkspaceId() == null) {
+            connectionSettings.setWorkspaceId(createWorkSpace());
+            connectionSettingsProvider.setConnectionSettings(connectionSettings);
+        }
 
         serviceModule = new ServiceModule(connectionSettingsProvider);
         Injector injector = Guice.createInjector(serviceModule);
         injector.injectMembers(this);
-
-        Annotation[] annotations = this.getClass().getDeclaredAnnotations();
-
-        WorkSpace workSpaceAnnotation = getAnnotation(annotations, WorkSpace.class);
-
-        if (workSpaceAnnotation != null && workSpaceAnnotation.clean()) {
-            ConnectionSettings connectionSettings = connectionSettingsProvider.getConnectionSettings();
-            connectionSettings.setWorkspaceId(createWorkSpace());
-            connectionSettingsProvider.setConnectionSettings(connectionSettings);
-        } else {
-
-            ConnectionSettings connectionSettings = connectionSettingsProvider.getConnectionSettings();
-            connectionSettings.setWorkspaceId(getDefaultWorkspaceId());
-            connectionSettingsProvider.setConnectionSettings(connectionSettings);
-        }
-
-        User userAnnotation = getAnnotation(annotations, User.class);
-        if (userAnnotation != null && userAnnotation.create()) {
-            createNewUser(userAnnotation.firstName(), userAnnotation.lastName());
-        }
-
-        entityGenerator = new EntityGenerator(injector.getInstance(OctaneProvider.class));
-        Entities entities = getAnnotation(annotations, Entities.class);
-        if (entities != null) {
-            Entity[] entitiesArray = entities.requiredEntities();
-            for (Entity newEntity : entitiesArray) {
-                System.out.println(newEntity.getEntityName());
-                createEntity(newEntity);
-            }
-        }
 
         nativeStatus = new EntityModel(Constants.TYPE, Constants.NativeStatus.NATIVE_STATUS_TYPE_VALUE);
 
@@ -147,28 +125,8 @@ public abstract class IntegrationTestBase {
         if (OctaneVersion.compare(versionService.getOctaneVersion(), OctaneVersion.Operation.LOWER_EQ, OctaneVersion.EVERTON_P3)) {
             nativeStatus.setValue(new StringFieldModel(Constants.ID, Constants.NativeStatus.NATIVE_STATUS_OLD_ID));
         }
-        createRelease();
-    }
 
-    /**
-     * Looks for an annotation in the implementing subclass
-     *
-     * @param annotations
-     *            the annotations of the implementing subclass
-     * @param annotationClass
-     *            the annotation type to look for
-     * @param <A>
-     *            the generic annotation class
-     * @return the instance of that annotation, @null in case it isn't found
-     */
-    @SuppressWarnings("unchecked")
-    private <A extends Annotation> A getAnnotation(Annotation[] annotations, Class<A> annotationClass) {
-        for (Annotation annotation : annotations) {
-            if (annotation.annotationType().equals(annotationClass)) {
-                return (A) annotation;
-            }
-        }
-        return null;
+        createRelease();
     }
 
     /**
@@ -182,7 +140,7 @@ public abstract class IntegrationTestBase {
         String urlDomain = connectionSettingsProvider.getConnectionSettings().getBaseUrl();
         JSONObject dataSet = new JSONObject();
         JSONObject credentials = new JSONObject();
-        credentials.put(Constants.NAME, Constants.Workspace.NAME_VALUE);
+        credentials.put(Constants.NAME, Constants.Workspace.NAME_VALUE + " : " + UUID.randomUUID().toString().substring(0,5));
         credentials.put(Constants.DESCRIPTION, Constants.Workspace.DESCRIPTION);
         JSONArray jsonArray = new JSONArray();
         jsonArray.put(credentials);
