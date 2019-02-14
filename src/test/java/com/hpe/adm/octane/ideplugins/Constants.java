@@ -46,9 +46,9 @@ public class Constants {
     }
 
     public interface Workspace {
-        String NAME_VALUE = "test_workspace";
+        String NAME_VALUE = "test_ws";
         String DESCRIPTION = "Created from intellij";
-        String WORKSPACE_ID = "workspace_id";
+        String WORKSPACE_ID = "id";
     }
 
     public interface Errors {

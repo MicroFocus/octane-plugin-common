@@ -43,15 +43,15 @@ public class CommentServiceITCase extends IntegrationTestBase {
             String commentText = "Test comment" + UUID.randomUUID().toString();
             commentService.postComment(userStory, commentText);
 
-            //Check if there
+            //Retrieve comments
             Collection<EntityModel> comments = commentService.getComments(userStory);
 
             //Check if comment was posted
-            EntityModel lastComment = comments.iterator().next();
-            String lastCommentText = lastComment.getValue("text").getValue().toString();
-            Assert.assertTrue(lastCommentText != null && lastCommentText.contains(commentText));
+            EntityModel postedComment = comments.iterator().next();
+            String postedCommentText = postedComment.getValue("text").getValue().toString();
+            Assert.assertTrue(postedCommentText != null && postedCommentText.contains(commentText));
 
-            commentService.deleteComment(lastComment.getValue("id").getValue().toString());
+            commentService.deleteComment(postedComment.getValue("id").getValue().toString());
 
             comments = commentService.getComments(userStory);
 

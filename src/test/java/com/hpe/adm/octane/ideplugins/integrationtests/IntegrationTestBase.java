@@ -27,6 +27,7 @@ import com.hpe.adm.nga.sdk.query.QueryMethod;
 import com.hpe.adm.octane.ideplugins.Constants;
 import com.hpe.adm.octane.ideplugins.integrationtests.util.EntityGenerator;
 import com.hpe.adm.octane.ideplugins.integrationtests.util.PropertyUtil;
+import com.hpe.adm.octane.ideplugins.integrationtests.util.UserUtils;
 import com.hpe.adm.octane.ideplugins.services.EntityService;
 import com.hpe.adm.octane.ideplugins.services.UserService;
 import com.hpe.adm.octane.ideplugins.services.connection.ConnectionSettings;
@@ -64,9 +65,6 @@ public class IntegrationTestBase {
     protected OctaneVersionService versionService;
 
     @Inject
-    protected UserService userService;
-
-    @Inject
     protected HttpClientProvider httpClientProvider;
 
     @Inject
@@ -74,6 +72,11 @@ public class IntegrationTestBase {
 
     @Inject
     protected EntityGenerator entityGenerator;
+
+    @Inject
+    protected UserService userService;
+
+    protected UserUtils userUtils;
 
     static final Set<Entity> searchEntityTypes = new LinkedHashSet<>(Arrays.asList(
             Entity.EPIC,
@@ -92,13 +95,14 @@ public class IntegrationTestBase {
     private ServiceModule serviceModule;
     private EntityModel nativeStatus;
 
+    private static String WORKSPACE_NAME = Constants.Workspace.NAME_VALUE + " : " + LocalDateTime.now();
+    private static Long CreatedWorkspaceId = null;
     /**
      * Sets up a context needed for the tests, the context is derived from the
      * annotations set on the implementing class
      */
     @Before
     public void setUp() {
-
         connectionSettingsProvider = PropertyUtil.readFormVmArgs() != null ? PropertyUtil.readFormVmArgs() : PropertyUtil.readFromPropFile();
         if (connectionSettingsProvider == null) {
             throw new RuntimeException(Constants.Errors.CONNECTION_SETTINGS_RETRIEVE_ERROR);
@@ -108,6 +112,8 @@ public class IntegrationTestBase {
         if (connectionSettings.getWorkspaceId() == null) {
             connectionSettings.setWorkspaceId(createWorkSpace());
             connectionSettingsProvider.setConnectionSettings(connectionSettings);
+        } else {
+            // todo clean up workspace
         }
 
         serviceModule = new ServiceModule(connectionSettingsProvider);
@@ -126,68 +132,46 @@ public class IntegrationTestBase {
             nativeStatus.setValue(new StringFieldModel(Constants.ID, Constants.NativeStatus.NATIVE_STATUS_OLD_ID));
         }
 
-        createRelease();
+        //createRelease();
+
+        userUtils = new UserUtils(serviceModule);
     }
 
     /**
-     * Creates a new workspace
+     * Creates a new workspace and stores the id of it for later use
      *
-     * @return the workspace_id of the newly created workspace
+     * @return the workspace_id of the created workspace
      */
     private Long createWorkSpace() {
-        String postUrl = connectionSettingsProvider.getConnectionSettings().getBaseUrl() + Constants.SHARED_SPACE +
-                connectionSettingsProvider.getConnectionSettings().getSharedSpaceId() + Constants.WORKSPACE;
-        String urlDomain = connectionSettingsProvider.getConnectionSettings().getBaseUrl();
-        JSONObject dataSet = new JSONObject();
-        JSONObject credentials = new JSONObject();
-        credentials.put(Constants.NAME, Constants.Workspace.NAME_VALUE + " : " + UUID.randomUUID().toString().substring(0,5));
-        credentials.put(Constants.DESCRIPTION, Constants.Workspace.DESCRIPTION);
-        JSONArray jsonArray = new JSONArray();
-        jsonArray.put(credentials);
-        dataSet.put(Constants.DATA, jsonArray);
-        OctaneHttpRequest postNewWorkspaceRequest = new OctaneHttpRequest.PostOctaneHttpRequest(postUrl, OctaneHttpRequest.JSON_CONTENT_TYPE,
-                dataSet.toString());
-        OctaneHttpClient octaneHttpClient = new GoogleHttpClient(urlDomain);
-        octaneHttpClient.authenticate(connectionSettingsProvider.getConnectionSettings().getAuthentication());
-        OctaneHttpResponse response = null;
-        try {
-            response = octaneHttpClient.execute(postNewWorkspaceRequest);
-        } catch (Exception e) {
-            fail(e.toString());
+        if(CreatedWorkspaceId == null) {
+            String postUrl = connectionSettingsProvider.getConnectionSettings().getBaseUrl() + Constants.SHARED_SPACE +
+                    connectionSettingsProvider.getConnectionSettings().getSharedSpaceId() + Constants.WORKSPACE;
+            String urlDomain = connectionSettingsProvider.getConnectionSettings().getBaseUrl();
+            JSONObject dataSet = new JSONObject();
+            JSONObject credentials = new JSONObject();
+            credentials.put(Constants.NAME, WORKSPACE_NAME);
+            credentials.put(Constants.DESCRIPTION, Constants.Workspace.DESCRIPTION);
+            JSONArray jsonArray = new JSONArray();
+            jsonArray.put(credentials);
+            dataSet.put(Constants.DATA, jsonArray);
+            OctaneHttpRequest postNewWorkspaceRequest = new OctaneHttpRequest.PostOctaneHttpRequest(postUrl, OctaneHttpRequest.JSON_CONTENT_TYPE,
+                    dataSet.toString());
+            OctaneHttpClient octaneHttpClient = new GoogleHttpClient(urlDomain);
+            octaneHttpClient.authenticate(connectionSettingsProvider.getConnectionSettings().getAuthentication());
+            OctaneHttpResponse response = null;
+            try {
+                response = octaneHttpClient.execute(postNewWorkspaceRequest);
+            } catch (Exception e) {
+                fail(e.toString());
+            }
+            JSONObject responseJson = new JSONObject(response.getContent());
+            JSONArray workspaces = responseJson.getJSONArray(Constants.DATA);
+
+            octaneHttpClient.signOut();
+            JSONObject workspace = (JSONObject) workspaces.get(0);
+            CreatedWorkspaceId = workspace.getLong(Constants.Workspace.WORKSPACE_ID);
         }
-        JSONObject responseJson = new JSONObject(response.getContent());
-        JSONArray workspaces = responseJson.getJSONArray(Constants.DATA);
-
-        octaneHttpClient.signOut();
-        JSONObject workspace = (JSONObject) workspaces.get(0);
-        return workspace.getLong(Constants.Workspace.WORKSPACE_ID);
-    }
-
-    /**
-     * Returns the first workspace
-     *
-     * @return the workspace_id of the first workspace obtained, -1 if no
-     *         workspace is found
-     */
-    private long getDefaultWorkspaceId() {
-        String getUrl =
-                connectionSettingsProvider.getConnectionSettings().getBaseUrl() +
-                Constants.SHARED_SPACE +
-                connectionSettingsProvider.getConnectionSettings().getSharedSpaceId() + Constants.WORKSPACE;
-
-        OctaneHttpRequest getAllWorkspacesRequest = new OctaneHttpRequest.GetOctaneHttpRequest(getUrl);
-
-        OctaneHttpResponse response = null;
-        try {
-            response = httpClientProvider.getOctaneHttpClient().execute(getAllWorkspacesRequest);
-        } catch (Exception e) {
-            fail(e.toString());
-        }
-        JSONObject responseJson = new JSONObject(response.getContent());
-        JSONArray workspaces = responseJson.getJSONArray(Constants.DATA);
-        if (workspaces.length() == 0)
-            return -1;
-        return ((JSONObject) workspaces.get(0)).getLong(Constants.ID);
+        return CreatedWorkspaceId;
     }
 
     /**
@@ -215,110 +199,10 @@ public class IntegrationTestBase {
         entityGenerator.deleteEntityModel(entityModel);
     }
 
-    /**
-     * Creates relationships between users and entities
-     *
-     * @param user
-     *            - the user
-     * @param entityModel
-     *            - the new entity to be related to
-     */
-    public void createRelations(EntityModel user, EntityModel entityModel) {
-        user.setValue(new ReferenceFieldModel("userrel", entityModel));
-    }
 
-    /**
-     * Creates a new user with default password: Welcome1
-     *
-     * @return the newly created user entityModel, @null if it could not be
-     *         created
-     */
-    protected EntityModel createNewUser(String firstName, String lastName) {
 
-        EntityModel userEntityModel = new EntityModel();
-        @SuppressWarnings("rawtypes")
-        Set<FieldModel> fields = new HashSet<>();
-        List<EntityModel> roles = getRoles();
 
-        if (roles.size() == 0) {
-            return null;
-        }
 
-        fields.add(new StringFieldModel(Constants.User.LAST_NAME, lastName));
-        fields.add(new StringFieldModel(Constants.TYPE, Constants.User.USER_TYPE));
-        fields.add(new StringFieldModel(Constants.User.FIRST_NAME, firstName));
-        fields.add(new StringFieldModel(Constants.User.EMAIL, firstName + "." + lastName + Constants.User.EMAIL_DOMAIN));
-        fields.add(new StringFieldModel(Constants.User.PASSWORD, Constants.User.PASSWORD_VALUE));
-        fields.add(new MultiReferenceFieldModel(Constants.ROLES, Collections.singletonList(roles.get(0))));
-
-        if (OctaneVersion.isBetween(versionService.getOctaneVersion(), OctaneVersion.EVERTON_P3, OctaneVersion.GENT_P3, false)) {
-            fields.add(new StringFieldModel(Constants.User.PHONE, Constants.User.PHONE_NR));
-        }
-
-        userEntityModel.setValues(fields);
-        OctaneProvider octaneProvider = serviceModule.getOctane();
-        Octane octane = octaneProvider.getOctane();
-        return octane.entityList(Constants.User.USER_TYPE).create().entities(Collections.singletonList(userEntityModel)).execute().iterator().next();
-    }
-
-    /**
-     * Returns the current user
-     *
-     * @return the users entityModel if found, @null otherwise
-     */
-    protected EntityModel getCurrentUser() {
-        OctaneProvider octaneProvider = serviceModule.getOctane();
-        Octane octane = octaneProvider.getOctane();
-
-        List<EntityModel> users = new ArrayList<>(octane.entityList(Constants.WORKSPACE_ENITY_NAME).get().execute());
-
-        for (EntityModel user : users) {
-            if (user.getValue(Constants.User.EMAIL).getValue().toString().equals(userService.getCurrentUser().getValue("name").getValue())) {
-                return user;
-            }
-        }
-        return null;
-    }
-
-    /**
-     * Retrieves all the possible roles that can be assigned to a user
-     *
-     * @return - a list of enitityModels representing the possible roles
-     */
-    private List<EntityModel> getRoles() {
-        OctaneProvider octaneProvider = serviceModule.getOctane();
-        Octane octane = octaneProvider.getOctane();
-        return new ArrayList<>(octane.entityList(Constants.User.USER_ROLES).get().execute());
-    }
-
-    /**
-     * Returns all the workspace users
-     *
-     * @return - a list of entityModels representing the workspace users
-     */
-    public List<EntityModel> getUsers() {
-        EntityService entityService = serviceModule.getInstance(EntityService.class);
-        Set<String> roles = new HashSet<>();
-        roles.add(Constants.ROLES);
-
-        return new ArrayList<>(entityService.findEntities(
-                Entity.WORKSPACE_USER,
-                null,
-                roles));
-
-    }
-
-    /**
-     * Searches for a user by its id
-     *
-     * @param id
-     *            - user id
-     * @return @null - if not found, userEntityModel if found
-     */
-    protected EntityModel getUserById(long id) {
-        EntityService entityService = serviceModule.getInstance(EntityService.class);
-        return entityService.findEntity(Entity.WORKSPACE_USER, id);
-    }
 
     /**
      * Returns the first release in the list of releases
@@ -369,13 +253,11 @@ public class IntegrationTestBase {
         try {
             httpClientProvider.getOctaneHttpClient().execute(postNewReleaseRequest);
         } catch (Exception e) {
-            // logger.error("Error while trying to get the response when
-            // creating a new release!");
             fail(e.toString());
         }
     }
 
-    @After
+
     public void deleteRelease() {
         OctaneProvider octaneProvider = serviceModule.getOctane();
         Octane octane = octaneProvider.getOctane();
@@ -545,25 +427,6 @@ public class IntegrationTestBase {
         } catch (OctaneException e) {
             e.printStackTrace();
         }
-    }
-
-    /**
-     * Sets a user to be the owner of another entity
-     *
-     * @param backlogItem
-     *            - the backlog item
-     * @param owner
-     *            - the user
-     */
-    protected void setOwner(EntityModel backlogItem, EntityModel owner) {
-        EntityModel updatedEntityModel = new EntityModel();
-        updatedEntityModel.setValue(backlogItem.getValue(Constants.ID));
-        updatedEntityModel.setValue(backlogItem.getValue(Constants.TYPE));
-        updatedEntityModel.setValue(new ReferenceFieldModel(Constants.OWNER, owner));
-        Entity entity = Entity.getEntityType(updatedEntityModel);
-        OctaneProvider octaneProvider = serviceModule.getOctane();
-        Octane octane = octaneProvider.getOctane();
-        octane.entityList(entity.getApiEntityName()).update().entities(Collections.singleton(updatedEntityModel)).execute();
     }
 
     /**

@@ -42,7 +42,6 @@ public class PropertyUtil {
                 Stream.of(
                         PropertyKeys.URL,
                         PropertyKeys.SHARED_SPACE,
-                        PropertyKeys.WORKSPACE,
                         PropertyKeys.USERNAME,
                         PropertyKeys.PASSWORD
                 ).allMatch(propertyKey -> props.keySet().contains(propertyKey.keyStr));
@@ -55,7 +54,14 @@ public class PropertyUtil {
             try {
                 connectionSettings.setSharedSpaceId(Long.valueOf(props.getProperty(PropertyKeys.SHARED_SPACE.keyStr)));
             } catch (NumberFormatException ex) {
-                throw new RuntimeException("Failed to parse shared space/workspace id as number: " + ex);
+                throw new RuntimeException("Failed to parse shared space id as number: " + ex);
+            }
+            if(props.keySet().contains(PropertyKeys.WORKSPACE.keyStr)){
+                try {
+                    connectionSettings.setWorkspaceId(getLong(PropertyKeys.WORKSPACE));
+                } catch (NumberFormatException ex) {
+                    throw new RuntimeException("Failed to parse workspace id as number: " + ex);
+                }
             }
             connectionSettings.setWorkspaceId(Long.valueOf(props.getProperty(PropertyKeys.WORKSPACE.keyStr)));
             connectionSettings.setAuthentication(new UserAuthentication(
@@ -91,7 +97,6 @@ public class PropertyUtil {
                 Stream.of(
                         PropertyKeys.URL,
                         PropertyKeys.SHARED_SPACE,
-                        PropertyKeys.WORKSPACE,
                         PropertyKeys.USERNAME,
                         PropertyKeys.PASSWORD
                 ).allMatch(propertyKey -> fileProps.keySet().contains(propertyKey.keyStr));
@@ -102,7 +107,9 @@ public class PropertyUtil {
             ConnectionSettings connectionSettings = new ConnectionSettings();
             connectionSettings.setBaseUrl(getString(PropertyKeys.URL));
             connectionSettings.setSharedSpaceId(getLong(PropertyKeys.SHARED_SPACE));
-            connectionSettings.setWorkspaceId(getLong(PropertyKeys.WORKSPACE));
+            if(fileProps.keySet().contains(PropertyKeys.WORKSPACE.keyStr)){
+                connectionSettings.setWorkspaceId(getLong(PropertyKeys.WORKSPACE));
+            }
             connectionSettings.setAuthentication(new UserAuthentication(
                     getString(PropertyKeys.USERNAME),
                     getString(PropertyKeys.PASSWORD)
