@@ -20,7 +20,7 @@ import com.hpe.adm.octane.ideplugins.services.util.OctaneVersion;
 import org.junit.Assert;
 import org.junit.Test;
 
-public class OctaneVersionServiceITCase extends IntegrationTestBase {
+public class OctaneVersionServiceITCase {
 
     @Inject
     private OctaneVersionService versionService;

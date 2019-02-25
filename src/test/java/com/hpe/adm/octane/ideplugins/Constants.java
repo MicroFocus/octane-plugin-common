@@ -15,7 +15,7 @@ package com.hpe.adm.octane.ideplugins;
 public class Constants {
 
     public static final String SHARED_SPACE = "/api/shared_spaces/";
-    public static final String WORKSPACE = "/workspaces";
+    public static final String WORKSPACES = "/workspaces";
     public static final String DATA = "data";
     public static final String NAME = "name";
     public static final String DESCRIPTION = "description";

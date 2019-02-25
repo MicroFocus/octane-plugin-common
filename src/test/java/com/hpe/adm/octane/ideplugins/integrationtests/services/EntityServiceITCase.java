@@ -25,7 +25,7 @@ import org.junit.Test;
 
 import java.util.Collection;
 
-public class EntityServiceITCase extends IntegrationTestBase {
+public class EntityServiceITCase {
 
     @Inject
     private EntityService entityService;

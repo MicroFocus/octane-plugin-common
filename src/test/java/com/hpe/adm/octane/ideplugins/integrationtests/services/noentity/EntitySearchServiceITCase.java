@@ -20,7 +20,7 @@ import com.hpe.adm.octane.ideplugins.services.filtering.Entity;
 import com.hpe.adm.octane.ideplugins.services.nonentity.EntitySearchService;
 import org.junit.Test;
 
-public class EntitySearchServiceITCase extends IntegrationTestBase {
+public class EntitySearchServiceITCase {
 
     @Inject
     private EntitySearchService searchService;

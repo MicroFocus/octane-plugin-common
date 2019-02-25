@@ -23,7 +23,7 @@ import org.junit.Test;
 import java.util.Arrays;
 import java.util.Map;
 
-public class EntityLabelServiceITCase extends IntegrationTestBase {
+public class EntityLabelServiceITCase {
 
     @Inject
     private EntityLabelService entityLabelService;

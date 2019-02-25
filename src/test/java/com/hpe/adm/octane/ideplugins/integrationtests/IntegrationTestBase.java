@@ -28,7 +28,6 @@ import com.hpe.adm.octane.ideplugins.Constants;
 import com.hpe.adm.octane.ideplugins.integrationtests.util.EntityGenerator;
 import com.hpe.adm.octane.ideplugins.integrationtests.util.PropertyUtil;
 import com.hpe.adm.octane.ideplugins.integrationtests.util.UserUtils;
-import com.hpe.adm.octane.ideplugins.services.EntityService;
 import com.hpe.adm.octane.ideplugins.services.UserService;
 import com.hpe.adm.octane.ideplugins.services.connection.ConnectionSettings;
 import com.hpe.adm.octane.ideplugins.services.connection.ConnectionSettingsProvider;
@@ -43,7 +42,6 @@ import com.hpe.adm.octane.ideplugins.services.util.OctaneVersion;
 import org.apache.commons.lang.StringEscapeUtils;
 import org.json.JSONArray;
 import org.json.JSONObject;
-import org.junit.After;
 import org.junit.Before;
 
 import java.time.LocalDateTime;
@@ -133,8 +131,6 @@ public class IntegrationTestBase {
         }
 
         //createRelease();
-
-        userUtils = new UserUtils(serviceModule);
     }
 
     /**
@@ -145,7 +141,7 @@ public class IntegrationTestBase {
     private Long createWorkSpace() {
         if(CreatedWorkspaceId == null) {
             String postUrl = connectionSettingsProvider.getConnectionSettings().getBaseUrl() + Constants.SHARED_SPACE +
-                    connectionSettingsProvider.getConnectionSettings().getSharedSpaceId() + Constants.WORKSPACE;
+                    connectionSettingsProvider.getConnectionSettings().getSharedSpaceId() + Constants.WORKSPACES;
             String urlDomain = connectionSettingsProvider.getConnectionSettings().getBaseUrl();
             JSONObject dataSet = new JSONObject();
             JSONObject credentials = new JSONObject();
@@ -174,20 +170,7 @@ public class IntegrationTestBase {
         return CreatedWorkspaceId;
     }
 
-    /**
-     * Creates a new entity
-     *
-     * @param entity
-     *            - the new entity
-     * @return the created entityModel, @null if it could not been created
-     */
-    protected EntityModel createEntity(Entity entity) {
-        OctaneProvider octaneProvider = serviceModule.getOctane();
-        EntityModel entityModel = entityGenerator.createEntityModel(entity);
-        Octane octane = octaneProvider.getOctane();
-        octane.entityList(entity.getApiEntityName()).create().entities(Collections.singletonList(entityModel));
-        return entityModel;
-    }
+
 
     /**
      * Removes an entity
@@ -218,7 +201,7 @@ public class IntegrationTestBase {
     private void createRelease() {
         String postUrl =
                 connectionSettingsProvider.getConnectionSettings().getBaseUrl() + Constants.SHARED_SPACE +
-                connectionSettingsProvider.getConnectionSettings().getSharedSpaceId() + Constants.WORKSPACE + "/" +
+                connectionSettingsProvider.getConnectionSettings().getSharedSpaceId() + Constants.WORKSPACES + "/" +
                 connectionSettingsProvider.getConnectionSettings().getWorkspaceId() + Constants.RELEASES;
 
         JSONObject dataSet = new JSONObject();

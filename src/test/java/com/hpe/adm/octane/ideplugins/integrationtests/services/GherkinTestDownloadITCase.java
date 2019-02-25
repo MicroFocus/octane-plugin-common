@@ -12,23 +12,38 @@
  */
 package com.hpe.adm.octane.ideplugins.integrationtests.services;
 
+import com.google.inject.Inject;
+import com.hpe.adm.nga.sdk.Octane;
 import com.hpe.adm.nga.sdk.model.EntityModel;
 import com.hpe.adm.nga.sdk.network.OctaneHttpRequest;
 import com.hpe.adm.nga.sdk.network.OctaneHttpResponse;
-import com.hpe.adm.octane.ideplugins.integrationtests.IntegrationTestBase;
+import com.hpe.adm.octane.ideplugins.integrationtests.util.EntityGenerator;
 import com.hpe.adm.octane.ideplugins.services.connection.ConnectionSettings;
+import com.hpe.adm.octane.ideplugins.services.connection.ConnectionSettingsProvider;
+import com.hpe.adm.octane.ideplugins.services.connection.OctaneProvider;
+import com.hpe.adm.octane.ideplugins.services.di.ServiceModule;
 import com.hpe.adm.octane.ideplugins.services.filtering.Entity;
 import org.json.JSONObject;
 import org.junit.Test;
 
+import java.util.Collections;
 import java.util.UUID;
 
 import static org.junit.Assert.fail;
 
-public class GherkinTestDownloadITCase extends IntegrationTestBase {
+public class GherkinTestDownloadITCase {
+
+    @Inject
+    private ServiceModule serviceModule;
+
+    @Inject
+    private EntityGenerator entityGenerator;
+
+    @Inject
+    private ConnectionSettingsProvider connectionSettingsProvider;
 
     private EntityModel createGherkinTestWithScript(UUID uuid) {
-        EntityModel gherkinTest = createEntity(Entity.GHERKIN_TEST);
+        EntityModel gherkinTest = createGherkinTest(Entity.GHERKIN_TEST);
 
         ConnectionSettings connectionSettings = connectionSettingsProvider.getConnectionSettings();
 
@@ -79,5 +94,20 @@ public class GherkinTestDownloadITCase extends IntegrationTestBase {
         EntityModel gherkinTest = createGherkinTestWithScript(uuid);
         String script = getGherkinScript(gherkinTest);
         assert script.contains(uuid.toString());
+    }
+
+    /**
+     * Creates a new entity
+     *
+     * @param entity
+     *            - the new entity
+     * @return the created entityModel, @null if it could not been created
+     */
+    protected EntityModel createGherkinTest(Entity entity) {
+        OctaneProvider octaneProvider = serviceModule.getOctane();
+        EntityModel entityModel = entityGenerator.createEntityModel(entity);
+        Octane octane = octaneProvider.getOctane();
+        octane.entityList(entity.getApiEntityName()).create().entities(Collections.singletonList(entityModel));
+        return entityModel;
     }
 }

@@ -13,6 +13,7 @@
 
 package com.hpe.adm.octane.ideplugins.integrationtests.util;
 
+import com.google.inject.Inject;
 import com.hpe.adm.nga.sdk.Octane;
 import com.hpe.adm.nga.sdk.model.*;
 import com.hpe.adm.octane.ideplugins.Constants;
@@ -28,17 +29,16 @@ import java.util.*;
 
 public class UserUtils {
 
+    @Inject
     protected UserService userService;
 
+    @Inject
     protected OctaneVersionService versionService;
 
+    @Inject
     protected ServiceModule serviceModule;
 
-    public UserUtils(ServiceModule serviceModule) {
-        this.serviceModule = serviceModule;
-        this.userService = serviceModule.getInstance(UserService.class);
-        this.versionService = serviceModule.getInstance(OctaneVersionService.class);
-    }
+    public UserUtils() {}
 
     /**
      * Sets a user to be the owner of another entity
@@ -46,7 +46,7 @@ public class UserUtils {
      * @param backlogItem - the backlog item
      * @param owner       - the user
      */
-    protected void setOwner(EntityModel backlogItem, EntityModel owner) {
+    public void setOwner(EntityModel backlogItem, EntityModel owner) {
         EntityModel updatedEntityModel = new EntityModel();
         updatedEntityModel.setValue(backlogItem.getValue(Constants.ID));
         updatedEntityModel.setValue(backlogItem.getValue(Constants.TYPE));
@@ -62,7 +62,7 @@ public class UserUtils {
      *
      * @return - a list of enitityModels representing the possible roles
      */
-    private List<EntityModel> getRoles() {
+    public List<EntityModel> getRoles() {
         OctaneProvider octaneProvider = serviceModule.getOctane();
         Octane octane = octaneProvider.getOctane();
         return new ArrayList<>(octane.entityList(Constants.User.USER_ROLES).get().execute());
@@ -74,7 +74,7 @@ public class UserUtils {
      * @param id - user id
      * @return @null - if not found, userEntityModel if found
      */
-    protected EntityModel getUserById(long id) {
+    public EntityModel getUserById(long id) {
         EntityService entityService = serviceModule.getInstance(EntityService.class);
         return entityService.findEntity(Entity.WORKSPACE_USER, id);
     }
@@ -84,7 +84,7 @@ public class UserUtils {
      *
      * @return the users entityModel if found, @null otherwise
      */
-    protected EntityModel getCurrentUser() {
+    public EntityModel getCurrentUser() {
         OctaneProvider octaneProvider = serviceModule.getOctane();
         Octane octane = octaneProvider.getOctane();
 
@@ -114,7 +114,7 @@ public class UserUtils {
      * @return the newly created user entityModel, @null if it could not be
      * created
      */
-    protected EntityModel createNewUser(String firstName, String lastName) {
+    public EntityModel createNewUser(String firstName, String lastName) {
 
         EntityModel userEntityModel = new EntityModel();
         @SuppressWarnings("rawtypes")

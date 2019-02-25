@@ -25,7 +25,7 @@ import org.junit.Test;
 import java.util.Collection;
 import java.util.UUID;
 
-public class CommentServiceITCase extends IntegrationTestBase {
+public class CommentServiceITCase {
 
     @Inject
     private CommentService commentService;
