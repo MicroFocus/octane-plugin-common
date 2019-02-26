@@ -14,7 +14,6 @@ package com.hpe.adm.octane.ideplugins.integrationtests.services;
 
 import com.google.inject.Inject;
 import com.hpe.adm.nga.sdk.metadata.FieldMetadata;
-import com.hpe.adm.octane.ideplugins.integrationtests.IntegrationTestBase;
 import com.hpe.adm.octane.ideplugins.services.MetadataService;
 import com.hpe.adm.octane.ideplugins.services.filtering.Entity;
 import com.hpe.adm.octane.ideplugins.services.util.DefaultEntityFieldsUtil;
@@ -26,7 +25,7 @@ import java.util.Collection;
 import java.util.HashSet;
 import java.util.stream.Collectors;
 
-public class MetadataServiceITCase extends IntegrationTestBase {
+public class MetadataServiceITCase {
 
     @Inject
     MetadataService metadataService;

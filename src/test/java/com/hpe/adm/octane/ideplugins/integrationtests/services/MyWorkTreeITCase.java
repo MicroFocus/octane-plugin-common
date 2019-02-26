@@ -13,50 +13,70 @@
 package com.hpe.adm.octane.ideplugins.integrationtests.services;
 
 import com.google.inject.Inject;
+import com.hpe.adm.nga.sdk.Octane;
 import com.hpe.adm.nga.sdk.model.EntityModel;
 import com.hpe.adm.nga.sdk.model.ReferenceFieldModel;
-import com.hpe.adm.octane.ideplugins.integrationtests.IntegrationTestBase;
-import com.hpe.adm.octane.ideplugins.integrationtests.util.UserUtils;
+import com.hpe.adm.octane.ideplugins.integrationtests.util.*;
+import com.hpe.adm.octane.ideplugins.services.connection.OctaneProvider;
 import com.hpe.adm.octane.ideplugins.services.filtering.Entity;
 import org.junit.Ignore;
 import org.junit.Test;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.UUID;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 
-public class MyWorkTreeITCase extends IntegrationTestBase {
+public class MyWorkTreeITCase {
 
     @Inject
     private UserUtils userUtils;
 
+    @Inject
+    private OctaneProvider octaneProvider;
+
+    @Inject
+    private EntityUtils entityUtils;
+
+    @Inject
+    private RunUtils runUtils;
+
+    @Inject
+    private TaskUtils taskUtils;
+
+    @Inject
+    private TestUtils testUtils;
+
+    @Inject
+    private MyWorkUtils myWorkUtils;
+
     private List<EntityModel> testAddEntities() {
         List<EntityModel> entities = new ArrayList<>();
-        entities.add(createEntity(Entity.DEFECT));
+        entities.add(entityUtils.createEntity(Entity.DEFECT));
 
-        entities.add(createEntity(Entity.QUALITY_STORY));
+        entities.add(entityUtils.createEntity(Entity.QUALITY_STORY));
 
-        entities.add(createEntity(Entity.MANUAL_TEST));
-        entities.add(createEntity(Entity.GHERKIN_TEST));
+        entities.add(entityUtils.createEntity(Entity.MANUAL_TEST));
+        entities.add(entityUtils.createEntity(Entity.GHERKIN_TEST));
 
-        EntityModel manualTest = createEntity(Entity.MANUAL_TEST);
+        EntityModel manualTest = entityUtils.createEntity(Entity.MANUAL_TEST);
         entities.add(manualTest);
-        entities.add(createManualRun(manualTest, "manual test 1 " + UUID.randomUUID()));
+        entities.add(runUtils.createManualRun(manualTest, "manual test 1 " + UUID.randomUUID()));
 
-        EntityModel userStoryWithTask = createEntity(Entity.USER_STORY);
+        EntityModel userStoryWithTask = entityUtils.createEntity(Entity.USER_STORY);
         entities.add(userStoryWithTask);
-        entities.add(createTask(userStoryWithTask, "task 1" + UUID.randomUUID()));
+        entities.add(taskUtils.createTask(userStoryWithTask, "task 1" + UUID.randomUUID()));
 
-        entities.add(createTestSuite("suite 1" + UUID.randomUUID()));
+        entities.add(testUtils.createTestSuite("suite 1" + UUID.randomUUID()));
 
-        EntityModel testSuiteRun = createTestSuite("test suite 3" + UUID.randomUUID());
+        EntityModel testSuiteRun = testUtils.createTestSuite("test suite 3" + UUID.randomUUID());
         entities.add(testSuiteRun);
-        entities.add(createTestSuiteRun(testSuiteRun, "test suite run 1" + UUID.randomUUID()));
+        entities.add(runUtils.createTestSuiteRun(testSuiteRun, "test suite run 1" + UUID.randomUUID()));
 
-        entities.add(createAutomatedTest("automated test 1" + UUID.randomUUID()));
+        entities.add(testUtils.createAutomatedTest("automated test 1" + UUID.randomUUID()));
 
 
         return entities;
@@ -69,7 +89,7 @@ public class MyWorkTreeITCase extends IntegrationTestBase {
             if (entityModel.getValue("type").getValue().equals("test_automated") || entityModel.getValue("type").getValue().equals("test_suite")) {
                 continue;
             }
-            addToMyWork(entityModel);
+            myWorkUtils.addToMyWork(entityModel);
             entityModels.add(entityModel);
         }
         return entityModels;
@@ -80,20 +100,16 @@ public class MyWorkTreeITCase extends IntegrationTestBase {
      * Out of this 3 entities 1 will be added to my work section using the method addToMyWork
      * Another entity will be added to my work section by updating their owner sections
      * the last entity will be left as a backlog item
-     * The test checks whether the methods add the items to my work and verifies if they are present using the method
-     * getMyWork()
+     * The test checks whether the methods add the items to my work and verifies if they are present
      */
     @Test
     @Ignore // TODO
     public void testSetUpMyWorkTree() {
-
-        deleteBacklogItems();
-
+        testAddEntities();
         List<EntityModel> entitiesForMyWork = testAddEntities();
-        List<EntityModel> entities = testAddEntities();
         List<EntityModel> entitiesWithOwners = addToMyWorkByOwnerField(testAddEntities());
         List<EntityModel> entityModelsInMyWork = addEntitiesToMyWork(entitiesForMyWork);
-        List<EntityModel> workItems = getMyWorkItems();
+        List<EntityModel> workItems = myWorkUtils.getMyWorkItems();
 
         List<EntityModel> myWorkEntities = Stream.concat(entityModelsInMyWork.stream(), entitiesWithOwners.stream()).collect(Collectors.toList());
 
@@ -149,4 +165,7 @@ public class MyWorkTreeITCase extends IntegrationTestBase {
         return entityModels;
     }
 
+
 }
+
+

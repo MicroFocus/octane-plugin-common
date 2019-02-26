@@ -1,5 +1,6 @@
 package com.hpe.adm.octane.ideplugins.integrationtests.util;
 
+import com.google.inject.Inject;
 import com.hpe.adm.nga.sdk.entities.OctaneCollection;
 import com.hpe.adm.nga.sdk.model.EntityModel;
 import com.hpe.adm.nga.sdk.model.StringFieldModel;
@@ -13,6 +14,9 @@ import static org.junit.Assert.fail;
 
 public class WorkspaceUtils {
 
+    @Inject
+    private OctaneProvider octaneProvider;
+
     private static String WORKSPACE_NAME = Constants.Workspace.NAME_VALUE + " : " + LocalDateTime.now();
 
     /**
@@ -20,7 +24,7 @@ public class WorkspaceUtils {
      *
      * @return the workspace_id of the created workspace
      */
-    public static String createWorkSpace(OctaneProvider octaneProvider) {
+    public String createWorkSpace() {
         EntityModel workspace = new EntityModel();
         workspace.setValue(new StringFieldModel(Constants.NAME, WORKSPACE_NAME));
         workspace.setValue(new StringFieldModel(Constants.DESCRIPTION, Constants.Workspace.DESCRIPTION));

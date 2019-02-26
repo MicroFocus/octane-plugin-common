@@ -15,7 +15,6 @@ package com.hpe.adm.octane.ideplugins.integrationtests.services.noentity;
 
 import com.google.inject.Inject;
 import com.hpe.adm.octane.ideplugins.TestUtil;
-import com.hpe.adm.octane.ideplugins.integrationtests.IntegrationTestBase;
 import com.hpe.adm.octane.ideplugins.services.filtering.Entity;
 import com.hpe.adm.octane.ideplugins.services.nonentity.EntitySearchService;
 import org.junit.Test;

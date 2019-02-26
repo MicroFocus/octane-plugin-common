@@ -17,9 +17,10 @@ import com.hpe.adm.nga.sdk.Octane;
 import com.hpe.adm.nga.sdk.model.EntityModel;
 import com.hpe.adm.nga.sdk.network.OctaneHttpRequest;
 import com.hpe.adm.nga.sdk.network.OctaneHttpResponse;
-import com.hpe.adm.octane.ideplugins.integrationtests.util.EntityGenerator;
+import com.hpe.adm.octane.ideplugins.integrationtests.util.EntityUtils;
 import com.hpe.adm.octane.ideplugins.services.connection.ConnectionSettings;
 import com.hpe.adm.octane.ideplugins.services.connection.ConnectionSettingsProvider;
+import com.hpe.adm.octane.ideplugins.services.connection.HttpClientProvider;
 import com.hpe.adm.octane.ideplugins.services.connection.OctaneProvider;
 import com.hpe.adm.octane.ideplugins.services.di.ServiceModule;
 import com.hpe.adm.octane.ideplugins.services.filtering.Entity;
@@ -37,10 +38,13 @@ public class GherkinTestDownloadITCase {
     private ServiceModule serviceModule;
 
     @Inject
-    private EntityGenerator entityGenerator;
+    private EntityUtils entityUtils;
 
     @Inject
     private ConnectionSettingsProvider connectionSettingsProvider;
+
+    @Inject
+    protected HttpClientProvider httpClientProvider;
 
     private EntityModel createGherkinTestWithScript(UUID uuid) {
         EntityModel gherkinTest = createGherkinTest(Entity.GHERKIN_TEST);
@@ -105,7 +109,7 @@ public class GherkinTestDownloadITCase {
      */
     protected EntityModel createGherkinTest(Entity entity) {
         OctaneProvider octaneProvider = serviceModule.getOctane();
-        EntityModel entityModel = entityGenerator.createEntityModel(entity);
+        EntityModel entityModel = entityUtils.createEntityModel(entity);
         Octane octane = octaneProvider.getOctane();
         octane.entityList(entity.getApiEntityName()).create().entities(Collections.singletonList(entityModel));
         return entityModel;

@@ -12,9 +12,10 @@
  */
 package com.hpe.adm.octane.ideplugins.integrationtests.services;
 
+import com.google.inject.Inject;
 import com.hpe.adm.nga.sdk.model.EntityModel;
+import com.hpe.adm.nga.sdk.model.EntityUtil;
 import com.hpe.adm.nga.sdk.model.StringFieldModel;
-import com.hpe.adm.octane.ideplugins.integrationtests.IntegrationTestBase;
 import com.hpe.adm.octane.ideplugins.services.filtering.Entity;
 import org.junit.Assert;
 import org.junit.Test;
@@ -25,7 +26,10 @@ import java.util.UUID;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
-public class SearchFunctionalityITCase extends IntegrationTestBase {
+public class SearchFunctionalityITCase {
+
+    @Inject
+    private EntityUtil entityUtil;
 
     private static final String randomUUID = UUID.randomUUID().toString();
 

@@ -7,28 +7,22 @@ import com.hpe.adm.nga.sdk.model.EntityModel;
 import com.hpe.adm.nga.sdk.model.StringFieldModel;
 import com.hpe.adm.octane.ideplugins.Constants;
 import com.hpe.adm.octane.ideplugins.integrationtests.services.*;
-import com.hpe.adm.octane.ideplugins.integrationtests.util.EntityGenerator;
+import com.hpe.adm.octane.ideplugins.integrationtests.util.EntityUtils;
 import com.hpe.adm.octane.ideplugins.integrationtests.util.PropertyUtil;
 import com.hpe.adm.octane.ideplugins.integrationtests.util.UserUtils;
+import com.hpe.adm.octane.ideplugins.integrationtests.util.WorkspaceUtils;
 import com.hpe.adm.octane.ideplugins.services.UserService;
 import com.hpe.adm.octane.ideplugins.services.connection.ConnectionSettings;
 import com.hpe.adm.octane.ideplugins.services.connection.ConnectionSettingsProvider;
 import com.hpe.adm.octane.ideplugins.services.connection.HttpClientProvider;
 import com.hpe.adm.octane.ideplugins.services.connection.OctaneProvider;
 import com.hpe.adm.octane.ideplugins.services.di.ServiceModule;
-import com.hpe.adm.octane.ideplugins.services.filtering.Entity;
-import com.hpe.adm.octane.ideplugins.services.nonentity.EntitySearchService;
 import com.hpe.adm.octane.ideplugins.services.nonentity.OctaneVersionService;
 import com.hpe.adm.octane.ideplugins.services.util.OctaneVersion;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.runner.RunWith;
 import org.junit.runners.Suite;
-
-import java.time.LocalDateTime;
-import java.util.Arrays;
-import java.util.LinkedHashSet;
-import java.util.Set;
 
 @RunWith(Suite.class)
 @Suite.SuiteClasses({
@@ -47,9 +41,6 @@ import java.util.Set;
 public class IntegrationTestSuite {
 
     @Inject
-    private EntitySearchService searchService;
-
-    @Inject
     protected OctaneVersionService versionService;
 
     @Inject
@@ -59,7 +50,7 @@ public class IntegrationTestSuite {
     protected OctaneProvider octaneProvider;
 
     @Inject
-    protected EntityGenerator entityGenerator;
+    protected EntityUtils entityUtils;
 
     @Inject
     protected UserService userService;
@@ -67,25 +58,11 @@ public class IntegrationTestSuite {
     @Inject
     protected UserUtils userUtils;
 
-    static final Set<Entity> searchEntityTypes = new LinkedHashSet<>(Arrays.asList(
-            Entity.EPIC,
-            Entity.FEATURE,
-            Entity.USER_STORY,
-            Entity.QUALITY_STORY,
-            Entity.DEFECT,
-            Entity.TASK,
-            Entity.TEST_SUITE,
-            Entity.MANUAL_TEST,
-            Entity.AUTOMATED_TEST,
-            Entity.GHERKIN_TEST,
-            Entity.REQUIREMENT));
+    @Inject
+    private WorkspaceUtils workspaceUtils;
 
     protected ConnectionSettingsProvider connectionSettingsProvider;
-    private ServiceModule serviceModule;
     private EntityModel nativeStatus;
-
-    private static String WORKSPACE_NAME = Constants.Workspace.NAME_VALUE + " : " + LocalDateTime.now();
-
 
     /**
      * Sets up a context needed for the tests, the context is derived from the
@@ -100,11 +77,12 @@ public class IntegrationTestSuite {
         ConnectionSettings connectionSettings = connectionSettingsProvider.getConnectionSettings();
 
         if (connectionSettings.getWorkspaceId() == null) {
-            connectionSettings.setWorkspaceId(createWorkSpace());
+            // todo try catch the parse
+            connectionSettings.setWorkspaceId(Long.parseLong(workspaceUtils.createWorkSpace()));
             connectionSettingsProvider.setConnectionSettings(connectionSettings);
         }
 
-        serviceModule = new ServiceModule(connectionSettingsProvider);
+        ServiceModule serviceModule = new ServiceModule(connectionSettingsProvider);
         Injector injector = Guice.createInjector(serviceModule);
         injector.injectMembers(this);
 

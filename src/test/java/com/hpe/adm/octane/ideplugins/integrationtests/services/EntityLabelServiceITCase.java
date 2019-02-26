@@ -14,7 +14,6 @@ package com.hpe.adm.octane.ideplugins.integrationtests.services;
 
 import com.google.inject.Inject;
 import com.hpe.adm.nga.sdk.model.EntityModel;
-import com.hpe.adm.octane.ideplugins.integrationtests.IntegrationTestBase;
 import com.hpe.adm.octane.ideplugins.services.EntityLabelService;
 import com.hpe.adm.octane.ideplugins.services.filtering.Entity;
 import org.junit.Assert;
