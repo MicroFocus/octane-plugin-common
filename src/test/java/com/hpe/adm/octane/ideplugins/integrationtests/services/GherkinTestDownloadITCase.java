@@ -22,7 +22,6 @@ import com.hpe.adm.octane.ideplugins.services.connection.ConnectionSettings;
 import com.hpe.adm.octane.ideplugins.services.connection.ConnectionSettingsProvider;
 import com.hpe.adm.octane.ideplugins.services.connection.HttpClientProvider;
 import com.hpe.adm.octane.ideplugins.services.connection.OctaneProvider;
-import com.hpe.adm.octane.ideplugins.services.di.ServiceModule;
 import com.hpe.adm.octane.ideplugins.services.filtering.Entity;
 import org.json.JSONObject;
 import org.junit.Test;
@@ -35,7 +34,7 @@ import static org.junit.Assert.fail;
 public class GherkinTestDownloadITCase {
 
     @Inject
-    private ServiceModule serviceModule;
+    private OctaneProvider octaneProvider;
 
     @Inject
     private EntityUtils entityUtils;
@@ -57,8 +56,8 @@ public class GherkinTestDownloadITCase {
                 gherkinTest.getValue("id").getValue() + "/script";
 
         JSONObject script = new JSONObject();
-        script.put("comment","");
-        script.put("revision_type","Minor");
+        script.put("comment", "");
+        script.put("revision_type", "Minor");
         script.put("script", uuid);
 
         OctaneHttpRequest updateScriptRequest = new OctaneHttpRequest.PutOctaneHttpRequest(putUrl, OctaneHttpRequest.JSON_CONTENT_TYPE, script.toString());
@@ -71,7 +70,7 @@ public class GherkinTestDownloadITCase {
         return gherkinTest;
     }
 
-    private String getGherkinScript(EntityModel gherkinTest){
+    private String getGherkinScript(EntityModel gherkinTest) {
 
         ConnectionSettings connectionSettings = connectionSettingsProvider.getConnectionSettings();
         String getUrl = connectionSettings.getBaseUrl() + "/api/shared_spaces/" +
@@ -93,8 +92,8 @@ public class GherkinTestDownloadITCase {
     }
 
     @Test
-    public void testGherkinTestScriptDownload(){
-        UUID uuid =UUID.randomUUID();
+    public void testGherkinTestScriptDownload() {
+        UUID uuid = UUID.randomUUID();
         EntityModel gherkinTest = createGherkinTestWithScript(uuid);
         String script = getGherkinScript(gherkinTest);
         assert script.contains(uuid.toString());
@@ -103,12 +102,10 @@ public class GherkinTestDownloadITCase {
     /**
      * Creates a new entity
      *
-     * @param entity
-     *            - the new entity
+     * @param entity - the new entity
      * @return the created entityModel, @null if it could not been created
      */
     protected EntityModel createGherkinTest(Entity entity) {
-        OctaneProvider octaneProvider = serviceModule.getOctane();
         EntityModel entityModel = entityUtils.createEntityModel(entity);
         Octane octane = octaneProvider.getOctane();
         octane.entityList(entity.getApiEntityName()).create().entities(Collections.singletonList(entityModel));

@@ -36,9 +36,6 @@ public class MyWorkTreeITCase {
     private UserUtils userUtils;
 
     @Inject
-    private OctaneProvider octaneProvider;
-
-    @Inject
     private EntityUtils entityUtils;
 
     @Inject

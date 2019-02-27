@@ -19,7 +19,7 @@ import org.junit.Test;
 
 import static org.junit.Assert.assertNotNull;
 
-public class DependencyInjectionITCase extends IntegrationTestBase {
+public class DependencyInjectionITCase {
 
     @Inject
     private ConnectionSettingsProvider connectionSettingsProvider;
