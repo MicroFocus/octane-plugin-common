@@ -27,6 +27,8 @@ import org.junit.BeforeClass;
 import org.junit.runner.RunWith;
 import org.junit.runners.Suite;
 
+import javax.print.ServiceUI;
+
 @RunWith(Suite.class)
 @Suite.SuiteClasses({
         EntitySearchServiceITCase.class,
@@ -45,8 +47,8 @@ import org.junit.runners.Suite;
 
 public class IntegrationTestSuite {
 
-    /**
-     * Sets up a context needed for the tests, the context is derived from the
+
+     /* Sets up a context needed for the tests, the context is derived from the
      * annotations set on the implementing class
      */
     @BeforeClass
@@ -60,8 +62,10 @@ public class IntegrationTestSuite {
         ServiceModule serviceModule = new ServiceModule(connectionSettingsProvider);
         Injector injector = Guice.createInjector(serviceModule);
 
-        WorkspaceUtils workspaceUtils = injector.getInstance(WorkspaceUtils.class);
+        // project wide must use same serviceModule
+        TestServiceModule.setServiceModule(serviceModule);
 
+        WorkspaceUtils workspaceUtils = injector.getInstance(WorkspaceUtils.class);
         if (connectionSettings.getWorkspaceId() == null) {
             // todo try catch the parse
             connectionSettings.setWorkspaceId(Long.parseLong(workspaceUtils.createWorkSpace()));

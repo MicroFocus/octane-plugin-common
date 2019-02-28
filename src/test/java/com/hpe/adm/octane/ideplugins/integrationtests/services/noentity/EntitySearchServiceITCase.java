@@ -13,16 +13,34 @@
 package com.hpe.adm.octane.ideplugins.integrationtests.services.noentity;
 
 
+import com.google.inject.Guice;
 import com.google.inject.Inject;
+import com.google.inject.Injector;
 import com.hpe.adm.octane.ideplugins.TestUtil;
+import com.hpe.adm.octane.ideplugins.integrationtests.TestServiceModule;
+import com.hpe.adm.octane.ideplugins.integrationtests.util.EntityUtils;
+import com.hpe.adm.octane.ideplugins.integrationtests.util.UserUtils;
+import com.hpe.adm.octane.ideplugins.services.UserService;
+import com.hpe.adm.octane.ideplugins.services.connection.HttpClientProvider;
+import com.hpe.adm.octane.ideplugins.services.connection.OctaneProvider;
+import com.hpe.adm.octane.ideplugins.services.di.ServiceModule;
 import com.hpe.adm.octane.ideplugins.services.filtering.Entity;
 import com.hpe.adm.octane.ideplugins.services.nonentity.EntitySearchService;
+import com.hpe.adm.octane.ideplugins.services.nonentity.OctaneVersionService;
+import org.junit.Before;
 import org.junit.Test;
 
 public class EntitySearchServiceITCase {
 
     @Inject
     private EntitySearchService searchService;
+
+    @Before
+    public void setUp() {
+        ServiceModule serviceModule = TestServiceModule.getServiceModule();
+        Injector injector = Guice.createInjector(serviceModule);
+        injector.injectMembers(this);
+    }
 
     @Test
     public void testGlobalSearch() {
