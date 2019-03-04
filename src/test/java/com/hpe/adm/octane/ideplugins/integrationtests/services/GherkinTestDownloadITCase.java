@@ -28,6 +28,7 @@ import com.hpe.adm.octane.ideplugins.services.connection.OctaneProvider;
 import com.hpe.adm.octane.ideplugins.services.di.ServiceModule;
 import com.hpe.adm.octane.ideplugins.services.filtering.Entity;
 import org.json.JSONObject;
+import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 
@@ -58,7 +59,7 @@ public class GherkinTestDownloadITCase {
     }
 
     private EntityModel createGherkinTestWithScript(UUID uuid) {
-        EntityModel gherkinTest = createGherkinTest(Entity.GHERKIN_TEST);
+        EntityModel gherkinTest = entityUtils.createEntity(Entity.GHERKIN_TEST);
 
         ConnectionSettings connectionSettings = connectionSettingsProvider.getConnectionSettings();
 
@@ -76,7 +77,7 @@ public class GherkinTestDownloadITCase {
         try {
             httpClientProvider.getOctaneHttpClient().execute(updateScriptRequest);
         } catch (Exception e) {
-            fail(e.toString());
+            Assert.fail(e.toString());
         }
 
         return gherkinTest;
@@ -96,7 +97,7 @@ public class GherkinTestDownloadITCase {
         try {
             response = httpClientProvider.getOctaneHttpClient().execute(updateScriptRequest);
         } catch (Exception e) {
-            fail(e.toString());
+            Assert.fail(e.toString());
         }
 
         JSONObject responseJson = new JSONObject(response.getContent());
@@ -109,18 +110,5 @@ public class GherkinTestDownloadITCase {
         EntityModel gherkinTest = createGherkinTestWithScript(uuid);
         String script = getGherkinScript(gherkinTest);
         assert script.contains(uuid.toString());
-    }
-
-    /**
-     * Creates a new entity
-     *
-     * @param entity - the new entity
-     * @return the created entityModel, @null if it could not been created
-     */
-    protected EntityModel createGherkinTest(Entity entity) {
-        EntityModel entityModel = entityUtils.createEntityModel(entity);
-        Octane octane = octaneProvider.getOctane();
-        octane.entityList(entity.getApiEntityName()).create().entities(Collections.singletonList(entityModel));
-        return entityModel;
     }
 }
