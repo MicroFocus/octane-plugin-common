@@ -13,16 +13,29 @@
 package com.hpe.adm.octane.ideplugins.integrationtests.services.noentity;
 
 
+import com.google.inject.Guice;
 import com.google.inject.Inject;
+import com.google.inject.Injector;
+import com.hpe.adm.octane.ideplugins.integrationtests.TestServiceModule;
+import com.hpe.adm.octane.ideplugins.services.di.ServiceModule;
 import com.hpe.adm.octane.ideplugins.services.nonentity.OctaneVersionService;
 import com.hpe.adm.octane.ideplugins.services.util.OctaneVersion;
 import org.junit.Assert;
+import org.junit.Before;
 import org.junit.Test;
 
 public class OctaneVersionServiceITCase {
 
     @Inject
     private OctaneVersionService versionService;
+
+    @Before
+    public void setUp() {
+        ServiceModule serviceModule = TestServiceModule.getServiceModule();
+        Injector injector = Guice.createInjector(serviceModule);
+        injector.injectMembers(this);
+    }
+
 
     @Test
     public void testVersionService() {

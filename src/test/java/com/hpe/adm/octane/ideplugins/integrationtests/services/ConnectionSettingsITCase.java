@@ -13,16 +13,20 @@
 package com.hpe.adm.octane.ideplugins.integrationtests.services;
 
 import com.google.api.client.http.HttpResponseException;
+import com.google.inject.Guice;
 import com.google.inject.Inject;
+import com.google.inject.Injector;
 import com.hpe.adm.nga.sdk.exception.OctaneException;
 import com.hpe.adm.nga.sdk.model.EntityModel;
 import com.hpe.adm.nga.sdk.network.OctaneHttpClient;
 import com.hpe.adm.nga.sdk.network.google.GoogleHttpClient;
+import com.hpe.adm.octane.ideplugins.integrationtests.TestServiceModule;
 import com.hpe.adm.octane.ideplugins.integrationtests.util.UserUtils;
 import com.hpe.adm.octane.ideplugins.services.TestService;
 import com.hpe.adm.octane.ideplugins.services.connection.ConnectionSettings;
 import com.hpe.adm.octane.ideplugins.services.connection.ConnectionSettingsProvider;
 import com.hpe.adm.octane.ideplugins.services.connection.UserAuthentication;
+import com.hpe.adm.octane.ideplugins.services.di.ServiceModule;
 import com.hpe.adm.octane.ideplugins.services.filtering.Entity;
 import org.junit.Assert;
 import org.junit.Before;
@@ -47,6 +51,10 @@ public class ConnectionSettingsITCase {
 
     @Before
     public void setup() {
+        ServiceModule serviceModule = TestServiceModule.getServiceModule();
+        Injector injector = Guice.createInjector(serviceModule);
+        injector.injectMembers(this);
+
         connectionSettings = connectionSettingsProvider.getConnectionSettings();
         correctWorkspaceId = connectionSettings.getWorkspaceId();
         correctSharedSpaceId = connectionSettings.getSharedSpaceId();

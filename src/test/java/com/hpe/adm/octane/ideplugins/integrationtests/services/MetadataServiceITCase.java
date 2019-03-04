@@ -12,12 +12,17 @@
  */
 package com.hpe.adm.octane.ideplugins.integrationtests.services;
 
+import com.google.inject.Guice;
 import com.google.inject.Inject;
+import com.google.inject.Injector;
 import com.hpe.adm.nga.sdk.metadata.FieldMetadata;
+import com.hpe.adm.octane.ideplugins.integrationtests.TestServiceModule;
 import com.hpe.adm.octane.ideplugins.services.MetadataService;
+import com.hpe.adm.octane.ideplugins.services.di.ServiceModule;
 import com.hpe.adm.octane.ideplugins.services.filtering.Entity;
 import com.hpe.adm.octane.ideplugins.services.util.DefaultEntityFieldsUtil;
 import org.junit.Assert;
+import org.junit.Before;
 import org.junit.Test;
 
 import java.util.Arrays;
@@ -29,6 +34,13 @@ public class MetadataServiceITCase {
 
     @Inject
     MetadataService metadataService;
+
+    @Before
+    public void setUp() {
+        ServiceModule serviceModule = TestServiceModule.getServiceModule();
+        Injector injector = Guice.createInjector(serviceModule);
+        injector.injectMembers(this);
+    }
 
     @Test
     public void testMethodForVisibleFields(){

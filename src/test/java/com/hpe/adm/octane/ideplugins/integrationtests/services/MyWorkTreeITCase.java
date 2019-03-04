@@ -12,13 +12,18 @@
  */
 package com.hpe.adm.octane.ideplugins.integrationtests.services;
 
+import com.google.inject.Guice;
 import com.google.inject.Inject;
+import com.google.inject.Injector;
 import com.hpe.adm.nga.sdk.Octane;
 import com.hpe.adm.nga.sdk.model.EntityModel;
 import com.hpe.adm.nga.sdk.model.ReferenceFieldModel;
+import com.hpe.adm.octane.ideplugins.integrationtests.TestServiceModule;
 import com.hpe.adm.octane.ideplugins.integrationtests.util.*;
 import com.hpe.adm.octane.ideplugins.services.connection.OctaneProvider;
+import com.hpe.adm.octane.ideplugins.services.di.ServiceModule;
 import com.hpe.adm.octane.ideplugins.services.filtering.Entity;
+import org.junit.Before;
 import org.junit.Ignore;
 import org.junit.Test;
 
@@ -49,6 +54,13 @@ public class MyWorkTreeITCase {
 
     @Inject
     private MyWorkUtils myWorkUtils;
+
+    @Before
+    public void setUp() {
+        ServiceModule serviceModule = TestServiceModule.getServiceModule();
+        Injector injector = Guice.createInjector(serviceModule);
+        injector.injectMembers(this);
+    }
 
     private List<EntityModel> testAddEntities() {
         List<EntityModel> entities = new ArrayList<>();
