@@ -58,9 +58,14 @@ public class EntityLabelServiceITCase {
 
     @Test
     public void testGetEntityLabelDetails() {
-        Map<Entity, EntityModel> entityLabelMap = entityLabelService.getEntityLabelDetails();
-        boolean areEntityTypesCovered = Arrays.stream(entityTypes).allMatch(e -> entityLabelMap.get(e) != null);
-        Assert.assertTrue(areEntityTypesCovered);
+        try {
+            Map<Entity, EntityModel> entityLabelMap = entityLabelService.getEntityLabelDetails();
+            boolean areEntityTypesCovered = Arrays.stream(entityTypes).allMatch(e -> entityLabelMap.get(e) != null);
+            Assert.assertTrue(areEntityTypesCovered);
+        } catch (Exception ex) {
+            Assert.fail("Failed to retrieve entity labels from server...");
+        }
+
     }
 
 }
