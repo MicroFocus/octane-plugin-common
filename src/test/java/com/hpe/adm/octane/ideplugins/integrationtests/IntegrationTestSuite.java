@@ -21,8 +21,8 @@ import org.junit.runners.Suite;
 @Suite.SuiteClasses({
 //        EntitySearchServiceITCase.class,
 //        OctaneVersionServiceITCase.class,
-        CommentServiceITCase.class,
-//        ConnectionSettingsITCase.class,
+//        CommentServiceITCase.class,
+        ConnectionSettingsITCase.class,
 //        EntityLabelServiceITCase.class,
 //        EntityServiceITCase.class,
 //        GherkinTestDownloadITCase.class,

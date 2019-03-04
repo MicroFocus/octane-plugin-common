@@ -16,11 +16,14 @@ import com.google.api.client.http.HttpResponseException;
 import com.google.inject.Guice;
 import com.google.inject.Inject;
 import com.google.inject.Injector;
+import com.hpe.adm.nga.sdk.authentication.Authentication;
 import com.hpe.adm.nga.sdk.exception.OctaneException;
 import com.hpe.adm.nga.sdk.model.EntityModel;
 import com.hpe.adm.nga.sdk.network.OctaneHttpClient;
 import com.hpe.adm.nga.sdk.network.google.GoogleHttpClient;
+import com.hpe.adm.octane.ideplugins.Constants;
 import com.hpe.adm.octane.ideplugins.integrationtests.TestServiceModule;
+import com.hpe.adm.octane.ideplugins.integrationtests.util.PropertyUtil;
 import com.hpe.adm.octane.ideplugins.integrationtests.util.UserUtils;
 import com.hpe.adm.octane.ideplugins.services.TestService;
 import com.hpe.adm.octane.ideplugins.services.connection.ConnectionSettings;
@@ -30,6 +33,7 @@ import com.hpe.adm.octane.ideplugins.services.di.ServiceModule;
 import com.hpe.adm.octane.ideplugins.services.filtering.Entity;
 import org.junit.Assert;
 import org.junit.Before;
+import org.junit.BeforeClass;
 import org.junit.Test;
 
 import java.util.UUID;
@@ -42,6 +46,7 @@ public class ConnectionSettingsITCase {
     @Inject
     private ConnectionSettingsProvider connectionSettingsProvider;
 
+    private ServiceModule serviceModule;
     private TestService testService;
 
     private ConnectionSettings connectionSettings;
@@ -51,7 +56,7 @@ public class ConnectionSettingsITCase {
 
     @Before
     public void setup() {
-        ServiceModule serviceModule = TestServiceModule.getServiceModule();
+        serviceModule = TestServiceModule.getServiceModule();
         Injector injector = Guice.createInjector(serviceModule);
         injector.injectMembers(this);
 
@@ -62,10 +67,10 @@ public class ConnectionSettingsITCase {
         testService = new TestService();
     }
 
-    private boolean validateCredentials(String username, String password, String baseUrl) {
-        OctaneHttpClient octaneHttpClient = new GoogleHttpClient(baseUrl);
+    private boolean validateCredentials(Authentication authentication) {
+        OctaneHttpClient octaneHttpClient = serviceModule.getOctaneHttpClient().getOctaneHttpClient();
         try {
-            return octaneHttpClient.authenticate(new UserAuthentication(username, password));
+            return octaneHttpClient.authenticate(authentication);
         } catch (Exception e) {
             if (e.getCause() instanceof HttpResponseException && ((HttpResponseException) e.getCause()).getStatusCode() == 401) {
                 return false;
@@ -89,23 +94,27 @@ public class ConnectionSettingsITCase {
 
     @Test
     public void testCorrectCredentials() {
-        assert validateCredentials(userUtils.getCurrentUser().getValue("email").getValue().toString(), "Welcome1", baseUrl);
+        // try the credentials provided in the property file/ vm args
+        ConnectionSettings connectionSettings = connectionSettingsProvider.getConnectionSettings();
+        assert validateCredentials(connectionSettings.getAuthentication());
     }
 
     @Test
     public void testCorrectUsernameAndIncorrectPassword() {
         EntityModel newUser = userUtils.createNewUser("User", UUID.randomUUID().toString());
-        assert !validateCredentials(userUtils.getUserById((Long.parseLong(newUser.getValue("id").getValue().toString()))).getValue("email").getValue().toString(), UUID.randomUUID().toString(), baseUrl);
+        assert !validateCredentials(new UserAuthentication(
+                userUtils.getUserById((Long.parseLong(newUser.getValue("id").getValue().toString()))).getValue("email").getValue().toString(),
+                UUID.randomUUID().toString()));
     }
 
     @Test
     public void testIncorrectUsernameAndCorrectPassword() {
-        assert !validateCredentials(UUID.randomUUID().toString(), "Welcome1", baseUrl);
+        assert !validateCredentials(new UserAuthentication(UUID.randomUUID().toString(), "Welcome1"));
     }
 
     @Test
     public void testIncorrectUsernameAndIncorrectPassword() {
-        assert !validateCredentials(UUID.randomUUID().toString(), UUID.randomUUID().toString(), baseUrl);
+        assert !validateCredentials(new UserAuthentication(UUID.randomUUID().toString(), UUID.randomUUID().toString()));
     }
 
     @Test
