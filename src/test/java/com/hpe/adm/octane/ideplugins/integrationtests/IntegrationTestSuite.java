@@ -19,17 +19,17 @@ import org.junit.runners.Suite;
 
 @RunWith(Suite.class)
 @Suite.SuiteClasses({
-//        EntitySearchServiceITCase.class,
-//        OctaneVersionServiceITCase.class,
-//        CommentServiceITCase.class,
-//        ConnectionSettingsITCase.class,
-//        EntityLabelServiceITCase.class,
-//        EntityServiceITCase.class,
-//        GherkinTestDownloadITCase.class,
-//        MetadataServiceITCase.class,
+        EntitySearchServiceITCase.class,
+        OctaneVersionServiceITCase.class,
+        CommentServiceITCase.class,
+        ConnectionSettingsITCase.class,
+        EntityLabelServiceITCase.class,
+        EntityServiceITCase.class,
+        GherkinTestDownloadITCase.class,
+        MetadataServiceITCase.class,
         MyWorkTreeITCase.class,
-//        RequirementsITCase.class,
-//        SearchFunctionalityITCase.class
+        RequirementsITCase.class,
+        SearchFunctionalityITCase.class
 })
 
 public class IntegrationTestSuite {

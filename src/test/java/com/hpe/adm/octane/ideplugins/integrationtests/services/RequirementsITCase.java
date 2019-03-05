@@ -23,9 +23,13 @@ import com.hpe.adm.octane.ideplugins.integrationtests.util.RequirementUtils;
 import com.hpe.adm.octane.ideplugins.services.di.ServiceModule;
 import com.hpe.adm.octane.ideplugins.services.nonentity.OctaneVersionService;
 import com.hpe.adm.octane.ideplugins.services.util.OctaneVersion;
+import org.junit.After;
+import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 
+import java.util.ArrayList;
+import java.util.List;
 import java.util.UUID;
 
 public class RequirementsITCase {
@@ -39,11 +43,14 @@ public class RequirementsITCase {
     @Inject
     private EntityUtils entityUtils;
 
+    private List<EntityModel> entityModelList;
+
     @Before
     public void setUp() {
         ServiceModule serviceModule = TestServiceModule.getServiceModule();
         Injector injector = Guice.createInjector(serviceModule);
         injector.injectMembers(this);
+        entityModelList = new ArrayList<>();
     }
 
     @Test
@@ -52,6 +59,8 @@ public class RequirementsITCase {
             EntityModel requirementFolder = requirementUtils.createRequirementFolder("folder " + UUID.randomUUID());
             EntityModel requirement = requirementUtils.createRequirement("requirement " + UUID.randomUUID().toString(), requirementFolder);
             EntityModel createdRequirement = requirementUtils.findRequirementById(Long.parseLong(requirement.getValue("id").getValue().toString()));
+            entityModelList.add(requirementFolder);
+            entityModelList.add(requirement);
             assert (Long.parseLong(requirement.getValue("id").getValue().toString()) == Long.parseLong(createdRequirement.getValue("id").getValue().toString()));
         }
     }
@@ -60,10 +69,12 @@ public class RequirementsITCase {
     public void testSearchRequirement() {
         if (OctaneVersion.compare(versionService.getOctaneVersion(), OctaneVersion.Operation.LOWER_EQ, OctaneVersion.EVERTON_P3)) {
             EntityModel requirementFolder = requirementUtils.createRequirementFolder("folder" + UUID.randomUUID());
-            EntityModel entityModel = requirementUtils.createRequirement("requirement " + UUID.randomUUID().toString(), requirementFolder);
+            EntityModel requirement = requirementUtils.createRequirement("requirement " + UUID.randomUUID().toString(), requirementFolder);
+            entityModelList.add(requirementFolder);
+            entityModelList.add(requirement);
             String descriptionText = UUID.randomUUID().toString();
-            entityUtils.setDescription(entityModel, descriptionText);
-            EntityModel createdRequirement = requirementUtils.findRequirementById(Long.parseLong(entityModel.getValue("id").getValue().toString()));
+            entityUtils.setDescription(requirement, descriptionText);
+            EntityModel createdRequirement = requirementUtils.findRequirementById(Long.parseLong(requirement.getValue("id").getValue().toString()));
             try {
                 Thread.sleep(40000);//--wait until the elastic search is updated with the entities
             } catch (Exception e) {
@@ -73,5 +84,16 @@ public class RequirementsITCase {
             assert entityUtils.compareEntities(createdRequirement, entityUtils.search("id", createdRequirement.getValue("id").getValue().toString()));
             assert entityUtils.compareEntities(createdRequirement, entityUtils.search("description", descriptionText));
         }
+    }
+
+    @After
+    public void tearDown() {
+        entityModelList.forEach(em -> {
+            try {
+                entityUtils.deleteEntityModel(em);
+            } catch (Exception e) {
+                Assert.fail("Failed to delete created requirements: " + e.getMessage());
+            }
+        });
     }
 }

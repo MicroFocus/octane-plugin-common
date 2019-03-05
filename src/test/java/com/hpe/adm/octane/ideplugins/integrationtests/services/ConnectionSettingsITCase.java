@@ -20,20 +20,18 @@ import com.hpe.adm.nga.sdk.authentication.Authentication;
 import com.hpe.adm.nga.sdk.exception.OctaneException;
 import com.hpe.adm.nga.sdk.model.EntityModel;
 import com.hpe.adm.nga.sdk.network.OctaneHttpClient;
-import com.hpe.adm.nga.sdk.network.google.GoogleHttpClient;
-import com.hpe.adm.octane.ideplugins.Constants;
 import com.hpe.adm.octane.ideplugins.integrationtests.TestServiceModule;
-import com.hpe.adm.octane.ideplugins.integrationtests.util.PropertyUtil;
 import com.hpe.adm.octane.ideplugins.integrationtests.util.UserUtils;
 import com.hpe.adm.octane.ideplugins.services.TestService;
 import com.hpe.adm.octane.ideplugins.services.connection.ConnectionSettings;
 import com.hpe.adm.octane.ideplugins.services.connection.ConnectionSettingsProvider;
+import com.hpe.adm.octane.ideplugins.services.connection.IdePluginsOctaneHttpClient;
 import com.hpe.adm.octane.ideplugins.services.connection.UserAuthentication;
 import com.hpe.adm.octane.ideplugins.services.di.ServiceModule;
 import com.hpe.adm.octane.ideplugins.services.filtering.Entity;
+import com.hpe.adm.octane.ideplugins.services.util.ClientType;
 import org.junit.Assert;
 import org.junit.Before;
-import org.junit.BeforeClass;
 import org.junit.Test;
 
 import java.util.UUID;
@@ -53,6 +51,7 @@ public class ConnectionSettingsITCase {
     private long correctWorkspaceId;
     private long correctSharedSpaceId;
     private String baseUrl;
+    private String newUserEmail;
 
     @Before
     public void setup() {
@@ -68,7 +67,7 @@ public class ConnectionSettingsITCase {
     }
 
     private boolean validateCredentials(Authentication authentication) {
-        OctaneHttpClient octaneHttpClient = serviceModule.getOctaneHttpClient().getOctaneHttpClient();
+        OctaneHttpClient octaneHttpClient = new IdePluginsOctaneHttpClient(baseUrl, ClientType.OCTANE_IDE_PLUGINS);
         try {
             return octaneHttpClient.authenticate(authentication);
         } catch (Exception e) {
@@ -101,10 +100,14 @@ public class ConnectionSettingsITCase {
 
     @Test
     public void testCorrectUsernameAndIncorrectPassword() {
-        EntityModel newUser = userUtils.createNewUser("User", UUID.randomUUID().toString());
-        assert !validateCredentials(new UserAuthentication(
-                userUtils.getUserById((Long.parseLong(newUser.getValue("id").getValue().toString()))).getValue("email").getValue().toString(),
-                UUID.randomUUID().toString()));
+        try {
+            EntityModel newUser = userUtils.createNewUser("User", UUID.randomUUID().toString());
+            newUserEmail = userUtils.getUserById((Long.parseLong(newUser.getValue("id").getValue().toString())))
+                    .getValue("email").getValue().toString();
+        } catch (Exception ex) {
+            Assert.fail("Failed to create new user: " + ex.getMessage());
+        }
+        assert !validateCredentials(new UserAuthentication(newUserEmail, UUID.randomUUID().toString()));
     }
 
     @Test
