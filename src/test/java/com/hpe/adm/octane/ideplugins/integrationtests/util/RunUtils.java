@@ -1,20 +1,27 @@
+/*
+ * Copyright 2017 EntIT Software LLC, a Micro Focus company, L.P.
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *   http://www.apache.org/licenses/LICENSE-2.0
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
 package com.hpe.adm.octane.ideplugins.integrationtests.util;
 
 import com.google.inject.Inject;
 import com.hpe.adm.nga.sdk.Octane;
-import com.hpe.adm.nga.sdk.metadata.FieldMetadata;
 import com.hpe.adm.nga.sdk.model.EntityModel;
-import com.hpe.adm.nga.sdk.model.FieldModel;
 import com.hpe.adm.nga.sdk.model.ReferenceFieldModel;
 import com.hpe.adm.nga.sdk.model.StringFieldModel;
 import com.hpe.adm.octane.ideplugins.Constants;
 import com.hpe.adm.octane.ideplugins.services.connection.OctaneProvider;
 import com.hpe.adm.octane.ideplugins.services.filtering.Entity;
 
-import java.util.Collection;
 import java.util.Collections;
-import java.util.List;
-import java.util.stream.Collectors;
 
 public class RunUtils {
 
@@ -30,10 +37,8 @@ public class RunUtils {
     /**
      * Creates a manual test run
      *
-     * @param manualTest
-     *            - the Manual Test to which the test run is planned
-     * @param name
-     *            - the name of the run
+     * @param manualTest - the Manual Test to which the test run is planned
+     * @param name       - the name of the run
      * @return the entityModel of the run
      */
     public EntityModel createManualRun(EntityModel manualTest, String name) {
@@ -63,10 +68,8 @@ public class RunUtils {
     /**
      * Creates a test suite run
      *
-     * @param testSuite
-     *            the test suite which is used to create the test suite run
-     * @param testSuiteRunName
-     *            the name of the suite run
+     * @param testSuite        the test suite which is used to create the test suite run
+     * @param testSuiteRunName the name of the suite run
      * @return the created entityModel of the suite run
      */
     public EntityModel createTestSuiteRun(EntityModel testSuite, String testSuiteRunName) {
