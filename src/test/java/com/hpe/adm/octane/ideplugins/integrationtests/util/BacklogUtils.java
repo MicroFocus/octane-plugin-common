@@ -24,7 +24,7 @@ public class BacklogUtils {
      *
      * @return a list of the work items and lists
      */
-    private List<EntityModel> retrieveBacklog() {
+    public List<EntityModel> retrieveBacklog() {
         Octane octane = octaneProvider.getOctane();
         List<EntityModel> workItems = new ArrayList<>(octane.entityList(Entity.WORK_ITEM.getApiEntityName()).get()
                 .query(Query.not(Constants.SUBTYPE, QueryMethod.EqualTo, Constants.WORK_ITEM_ROOT).build()).execute());
@@ -36,7 +36,7 @@ public class BacklogUtils {
     /**
      * Deletes the backlog items
      */
-    protected void deleteBacklogItems() {
+    public void deleteBacklogItems() {
         List<EntityModel> workspaceEntities = retrieveBacklog();
         Query.QueryBuilder workItemsQuery = null;
         Query.QueryBuilder testItemsQuery = null;

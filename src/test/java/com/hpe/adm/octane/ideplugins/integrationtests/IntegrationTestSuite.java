@@ -25,9 +25,9 @@ import org.junit.runners.Suite;
 //        ConnectionSettingsITCase.class,
 //        EntityLabelServiceITCase.class,
 //        EntityServiceITCase.class,
-        GherkinTestDownloadITCase.class,
+//        GherkinTestDownloadITCase.class,
 //        MetadataServiceITCase.class,
-//        MyWorkTreeITCase.class,
+        MyWorkTreeITCase.class,
 //        RequirementsITCase.class,
 //        SearchFunctionalityITCase.class
 })

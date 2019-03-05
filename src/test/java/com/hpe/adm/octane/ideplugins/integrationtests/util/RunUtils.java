@@ -2,14 +2,19 @@ package com.hpe.adm.octane.ideplugins.integrationtests.util;
 
 import com.google.inject.Inject;
 import com.hpe.adm.nga.sdk.Octane;
+import com.hpe.adm.nga.sdk.metadata.FieldMetadata;
 import com.hpe.adm.nga.sdk.model.EntityModel;
+import com.hpe.adm.nga.sdk.model.FieldModel;
 import com.hpe.adm.nga.sdk.model.ReferenceFieldModel;
 import com.hpe.adm.nga.sdk.model.StringFieldModel;
 import com.hpe.adm.octane.ideplugins.Constants;
 import com.hpe.adm.octane.ideplugins.services.connection.OctaneProvider;
 import com.hpe.adm.octane.ideplugins.services.filtering.Entity;
 
+import java.util.Collection;
 import java.util.Collections;
+import java.util.List;
+import java.util.stream.Collectors;
 
 public class RunUtils {
 
@@ -42,14 +47,16 @@ public class RunUtils {
         Entity entity = Entity.getEntityType(manualRun);
         Octane octane = octaneProvider.getOctane();
         try {
-            return octane.entityList(entity.getApiEntityName()).create().entities(Collections.singletonList(manualRun)).execute().iterator().next();
+            EntityModel run = octane.entityList(entity.getApiEntityName()).create().entities(Collections.singletonList(manualRun)).execute().iterator().next();
+            return getRunById(run.getValue("id").getValue().toString());
         } catch (Exception e) {
             manualRun.removeValue(Constants.NATIVE_STATUS);
             EntityModel newNativeStatus = nativeStatus;
             newNativeStatus.removeValue(Constants.ID);
             newNativeStatus.setValue(new StringFieldModel(Constants.ID, Constants.NativeStatus.NATIVE_STATUS_RUN_ID));
             manualRun.setValue(new ReferenceFieldModel(Constants.NATIVE_STATUS, newNativeStatus));
-            return octane.entityList(entity.getApiEntityName()).create().entities(Collections.singletonList(manualRun)).execute().iterator().next();
+            EntityModel run = octane.entityList(entity.getApiEntityName()).create().entities(Collections.singletonList(manualRun)).execute().iterator().next();
+            return getRunById(run.getValue("id").getValue().toString());
         }
     }
 
@@ -73,6 +80,11 @@ public class RunUtils {
         Entity entity = Entity.getEntityType(testSuiteRun);
         Octane octane = octaneProvider.getOctane();
         return octane.entityList(entity.getApiEntityName()).create().entities(Collections.singletonList(testSuiteRun)).execute().iterator().next();
+    }
+
+    private EntityModel getRunById(String id) {
+        Octane octane = octaneProvider.getOctane();
+        return octane.entityList(Entity.MANUAL_TEST_RUN.getApiEntityName()).at(id).get().execute();
     }
 
 }

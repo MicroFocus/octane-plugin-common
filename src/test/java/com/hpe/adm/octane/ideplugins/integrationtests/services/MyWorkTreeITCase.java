@@ -15,20 +15,15 @@ package com.hpe.adm.octane.ideplugins.integrationtests.services;
 import com.google.inject.Guice;
 import com.google.inject.Inject;
 import com.google.inject.Injector;
-import com.hpe.adm.nga.sdk.Octane;
 import com.hpe.adm.nga.sdk.model.EntityModel;
 import com.hpe.adm.nga.sdk.model.ReferenceFieldModel;
 import com.hpe.adm.octane.ideplugins.integrationtests.TestServiceModule;
 import com.hpe.adm.octane.ideplugins.integrationtests.util.*;
-import com.hpe.adm.octane.ideplugins.services.connection.OctaneProvider;
 import com.hpe.adm.octane.ideplugins.services.di.ServiceModule;
 import com.hpe.adm.octane.ideplugins.services.filtering.Entity;
-import org.junit.Before;
-import org.junit.Ignore;
-import org.junit.Test;
+import org.junit.*;
 
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.List;
 import java.util.UUID;
 import java.util.stream.Collectors;
@@ -45,6 +40,9 @@ public class MyWorkTreeITCase {
 
     @Inject
     private RunUtils runUtils;
+
+    @Inject
+    private BacklogUtils backlogUtils;
 
     @Inject
     private TaskUtils taskUtils;
@@ -73,7 +71,6 @@ public class MyWorkTreeITCase {
 
         EntityModel manualTest = entityUtils.createEntity(Entity.MANUAL_TEST);
         entities.add(manualTest);
-        entities.add(runUtils.createManualRun(manualTest, "manual test 1 " + UUID.randomUUID()));
 
         EntityModel userStoryWithTask = entityUtils.createEntity(Entity.USER_STORY);
         entities.add(userStoryWithTask);
@@ -81,13 +78,10 @@ public class MyWorkTreeITCase {
 
         entities.add(testUtils.createTestSuite("suite 1" + UUID.randomUUID()));
 
-        EntityModel testSuiteRun = testUtils.createTestSuite("test suite 3" + UUID.randomUUID());
-        entities.add(testSuiteRun);
-        entities.add(runUtils.createTestSuiteRun(testSuiteRun, "test suite run 1" + UUID.randomUUID()));
+        EntityModel testSuite = testUtils.createTestSuite("test suite 2" + UUID.randomUUID());
+        entities.add(testSuite);
 
         entities.add(testUtils.createAutomatedTest("automated test 1" + UUID.randomUUID()));
-
-
         return entities;
     }
 
@@ -95,10 +89,26 @@ public class MyWorkTreeITCase {
     private List<EntityModel> addEntitiesToMyWork(List<EntityModel> entities) {
         List<EntityModel> entityModels = new ArrayList<>();
         for (EntityModel entityModel : entities) {
-            if (entityModel.getValue("type").getValue().equals("test_automated") || entityModel.getValue("type").getValue().equals("test_suite")) {
+            if (entityModel.getValue("type").getValue().equals("test_automated")
+                    || entityModel.getValue("type").getValue().equals("test_suite")) {
                 continue;
             }
             myWorkUtils.addToMyWork(entityModel);
+            entityModels.add(entityModel);
+        }
+        return entityModels;
+    }
+
+    public List<EntityModel> addToMyWorkByOwnerField(List<EntityModel> backlogItems) {
+        EntityModel currentUser = userUtils.getCurrentUser();
+        List<EntityModel> entityModels = new ArrayList<>();
+        for (EntityModel entityModel : backlogItems) {
+            if (entityModel.getValue("type").getValue().equals("test_automated")
+                    || entityModel.getValue("type").getValue().equals("test_suite")
+                    || entityModel.getValue("type").getValue().toString().contains("run")) {
+                continue;
+            }
+            userUtils.setOwner(entityModel, currentUser);
             entityModels.add(entityModel);
         }
         return entityModels;
@@ -112,8 +122,8 @@ public class MyWorkTreeITCase {
      * The test checks whether the methods add the items to my work and verifies if they are present
      */
     @Test
-    @Ignore // TODO
     public void testSetUpMyWorkTree() {
+
         testAddEntities();
         List<EntityModel> entitiesForMyWork = testAddEntities();
         List<EntityModel> entitiesWithOwners = addToMyWorkByOwnerField(testAddEntities());
@@ -124,11 +134,9 @@ public class MyWorkTreeITCase {
 
         assert myWorkEntities.size() == workItems.size();
 
-        boolean expectedWorkItems = false;
-        int count = 0;
-        int itemCount = workItems.size();
+        boolean itemsFound = true;
+
         for (EntityModel entityModel : workItems) {
-            count++;
             ReferenceFieldModel subField = null;
             String entityType = entityModel.getValue("entity_type").getValue().toString();
             if (entityType.equals("work_item")) {
@@ -143,38 +151,24 @@ public class MyWorkTreeITCase {
             if (entityType.equals("task")) {
                 subField = (ReferenceFieldModel) entityModel.getValue("my_follow_items_task");
             }
-            for (EntityModel entityModel1 : myWorkEntities) {
-                if (subField.getValue().getValue("id").getValue().toString().equals(entityModel1.getValue("id").getValue().toString())) {
-                    expectedWorkItems = true;
-                    break;
-                }
-            }
-            if (!expectedWorkItems) {
+
+            ReferenceFieldModel subFieldVal = subField;
+            boolean itemPresent = myWorkEntities.stream().noneMatch(em ->
+                    subFieldVal != null && subFieldVal.getValue().getValue("id").getValue().toString().equals(em.getValue("id").getValue().toString()));
+
+            if (itemPresent) {
+                itemsFound = false;
                 break;
             }
-            if (count == itemCount) {
-                break;
-            }
-            expectedWorkItems = false;
         }
-        assert expectedWorkItems;
+
+        assert itemsFound;
     }
 
-
-    public List<EntityModel> addToMyWorkByOwnerField(List<EntityModel> backlogItems) {
-        EntityModel currentUser = userUtils.getCurrentUser();
-        List<EntityModel> entityModels = new ArrayList<>();
-        for (EntityModel entityModel : backlogItems) {
-            if (entityModel.getValue("type").getValue().equals("test_automated") || entityModel.getValue("type").getValue().equals("test_suite") || entityModel.getValue("type").getValue().toString().contains("run")) {
-                continue;
-            }
-            userUtils.setOwner(entityModel, currentUser);
-            entityModels.add(entityModel);
-        }
-        return entityModels;
+    @After
+    public void tearDown() {
+        backlogUtils.deleteBacklogItems();
     }
-
-
 }
 
 

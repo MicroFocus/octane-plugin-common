@@ -15,7 +15,6 @@ package com.hpe.adm.octane.ideplugins.integrationtests.services;
 import com.google.inject.Guice;
 import com.google.inject.Inject;
 import com.google.inject.Injector;
-import com.hpe.adm.nga.sdk.Octane;
 import com.hpe.adm.nga.sdk.model.EntityModel;
 import com.hpe.adm.nga.sdk.network.OctaneHttpRequest;
 import com.hpe.adm.nga.sdk.network.OctaneHttpResponse;
@@ -24,7 +23,6 @@ import com.hpe.adm.octane.ideplugins.integrationtests.util.EntityUtils;
 import com.hpe.adm.octane.ideplugins.services.connection.ConnectionSettings;
 import com.hpe.adm.octane.ideplugins.services.connection.ConnectionSettingsProvider;
 import com.hpe.adm.octane.ideplugins.services.connection.HttpClientProvider;
-import com.hpe.adm.octane.ideplugins.services.connection.OctaneProvider;
 import com.hpe.adm.octane.ideplugins.services.di.ServiceModule;
 import com.hpe.adm.octane.ideplugins.services.filtering.Entity;
 import org.json.JSONObject;
@@ -32,15 +30,9 @@ import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 
-import java.util.Collections;
 import java.util.UUID;
 
-import static org.junit.Assert.fail;
-
 public class GherkinTestDownloadITCase {
-
-    @Inject
-    private OctaneProvider octaneProvider;
 
     @Inject
     private EntityUtils entityUtils;
