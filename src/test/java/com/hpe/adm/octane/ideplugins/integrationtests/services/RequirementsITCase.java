@@ -45,6 +45,9 @@ public class RequirementsITCase {
 
     private List<EntityModel> entityModelList;
 
+    private long timeoutCount = 15;
+    private long timeout = 5000; // 5 seconds
+
     @Before
     public void setUp() {
         ServiceModule serviceModule = TestServiceModule.getServiceModule();
@@ -75,14 +78,26 @@ public class RequirementsITCase {
             String descriptionText = UUID.randomUUID().toString();
             entityUtils.setDescription(requirement, descriptionText);
             EntityModel createdRequirement = requirementUtils.findRequirementById(Long.parseLong(requirement.getValue("id").getValue().toString()));
-            try {
-                Thread.sleep(40000);//--wait until the elastic search is updated with the entities
-            } catch (Exception e) {
-                e.printStackTrace();
+
+            int retryCount = 0;
+            while(retryCount < timeoutCount) {
+                boolean searchByName = entityUtils.compareEntities(createdRequirement, entityUtils.search("name", createdRequirement.getValue("name").getValue().toString()));
+                boolean searchById = entityUtils.compareEntities(createdRequirement, entityUtils.search("id", createdRequirement.getValue("id").getValue().toString()));
+                boolean searchByDescription = entityUtils.compareEntities(createdRequirement, entityUtils.search("description", descriptionText));
+                if(searchByDescription && searchById && searchByName) {
+                    assert true;
+                    return;
+                } else {
+                    try {
+                        Thread.sleep(timeout);
+                        retryCount++;
+                    } catch (Exception e) {
+                        Assert.fail("Failed sleep while waiting for elasticsearch: " + e.getMessage());
+                    }
+                }
             }
-            assert entityUtils.compareEntities(createdRequirement, entityUtils.search("name", createdRequirement.getValue("name").getValue().toString()));
-            assert entityUtils.compareEntities(createdRequirement, entityUtils.search("id", createdRequirement.getValue("id").getValue().toString()));
-            assert entityUtils.compareEntities(createdRequirement, entityUtils.search("description", descriptionText));
+
+            Assert.fail("Failed to test search requirements...");
         }
     }
 

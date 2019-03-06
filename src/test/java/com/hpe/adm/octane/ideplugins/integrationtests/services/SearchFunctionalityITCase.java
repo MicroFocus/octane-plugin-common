@@ -41,6 +41,8 @@ public class SearchFunctionalityITCase {
     private TaskUtils taskUtils;
 
     private static final String randomUUID = UUID.randomUUID().toString();
+    private long timeoutCount = 15;
+    private long timeout = 5000; // 5 seconds
 
     @Before
     public void setUp() {
@@ -74,20 +76,34 @@ public class SearchFunctionalityITCase {
     public void testSearchEntities() {
         List<EntityModel> entityModels = createSearchableEntities();
         setDescription(entityModels);
-        try {
-            Thread.sleep(40000);// --wait until the elastic search is updated
-                                // with the entities
-        } catch (Exception e) {
-            e.printStackTrace();
+
+        int retryCount = 0;
+        while(retryCount < timeoutCount) {
+            boolean found = true;
+            for (EntityModel entityModel : entityModels) {
+                // search by name
+                if(entityUtils.search("name", entityModel.getValue("name").getValue().toString()) == null
+                    || entityUtils.search("id", entityModel.getValue("id").getValue().toString()) == null
+                    || entityUtils.search("description", entityModel.getValue("description").getValue().toString()) == null) {
+                    found = false;
+                    break;
+                }
+            }
+            if(found) {
+                assert true;
+                return;
+            } else {
+                try {
+                    Thread.sleep(timeout);
+                    retryCount++;
+                } catch (Exception e) {
+                    Assert.fail("Failed sleep while waiting for elasticsearch: " + e.getMessage());
+                }
+            }
         }
-        for (EntityModel entityModel : entityModels) {
-            // search by name
-            Assert.assertNotNull(entityUtils.search("name", entityModel.getValue("name").getValue().toString()));
-            // search by id
-            Assert.assertNotNull(entityUtils.search("id", entityModel.getValue("id").getValue().toString()));
-            // search by description
-            Assert.assertNotNull(entityUtils.search("description", entityModel.getValue("description").getValue().toString()));
-        }
+        Assert.fail("Failed to test search entities...");
+
+
     }
 
     @Test
