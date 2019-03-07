@@ -97,6 +97,8 @@
         <maven-javadoc-plugin.version>2.10.4</maven-javadoc-plugin.version>
 
         <logback.version>1.2.3</logback.version>
+
+        <runSuite>IntegrationTestSuite.class</runSuite>
     </properties>
 
     <dependencies>
@@ -194,8 +196,7 @@
                 <version>${maven-surefire.version}</version>
                 <configuration>
                     <includes>
-                        <include>**/*ITCase.java</include>
-                        <include>**/*UTCase.java</include>
+                        <include>${runSuite}</include>
                     </includes>
                 </configuration>
             </plugin>
