@@ -13,7 +13,6 @@
 package com.hpe.adm.octane.ideplugins.services.connection;
 
 import com.hpe.adm.nga.sdk.authentication.SimpleUserAuthentication;
-import com.hpe.adm.octane.ideplugins.services.di.ServiceModule;
 
 /**
  * {@link SimpleUserAuthentication} that exposes the username and password field

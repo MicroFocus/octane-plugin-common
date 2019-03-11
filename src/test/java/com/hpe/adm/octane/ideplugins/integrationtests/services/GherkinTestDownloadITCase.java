@@ -12,47 +12,73 @@
  */
 package com.hpe.adm.octane.ideplugins.integrationtests.services;
 
+import com.google.inject.Guice;
+import com.google.inject.Inject;
+import com.google.inject.Injector;
 import com.hpe.adm.nga.sdk.model.EntityModel;
 import com.hpe.adm.nga.sdk.network.OctaneHttpRequest;
 import com.hpe.adm.nga.sdk.network.OctaneHttpResponse;
-import com.hpe.adm.octane.ideplugins.integrationtests.IntegrationTestBase;
+import com.hpe.adm.octane.ideplugins.integrationtests.TestServiceModule;
+import com.hpe.adm.octane.ideplugins.integrationtests.util.EntityUtils;
 import com.hpe.adm.octane.ideplugins.services.connection.ConnectionSettings;
+import com.hpe.adm.octane.ideplugins.services.connection.ConnectionSettingsProvider;
+import com.hpe.adm.octane.ideplugins.services.connection.HttpClientProvider;
+import com.hpe.adm.octane.ideplugins.services.di.ServiceModule;
 import com.hpe.adm.octane.ideplugins.services.filtering.Entity;
 import org.json.JSONObject;
+import org.junit.After;
+import org.junit.Assert;
+import org.junit.Before;
 import org.junit.Test;
 
 import java.util.UUID;
 
-import static org.junit.Assert.fail;
+public class GherkinTestDownloadITCase {
 
-public class GherkinTestDownloadITCase extends IntegrationTestBase {
+    @Inject
+    private EntityUtils entityUtils;
+
+    @Inject
+    private ConnectionSettingsProvider connectionSettingsProvider;
+
+    @Inject
+    protected HttpClientProvider httpClientProvider;
+
+    private EntityModel gherkinTest;
+
+    @Before
+    public void setUp() {
+        ServiceModule serviceModule = TestServiceModule.getServiceModule();
+        Injector injector = Guice.createInjector(serviceModule);
+        injector.injectMembers(this);
+    }
 
     private EntityModel createGherkinTestWithScript(UUID uuid) {
-        EntityModel gherkinTest = createEntity(Entity.GHERKIN_TEST);
-
-        ConnectionSettings connectionSettings = connectionSettingsProvider.getConnectionSettings();
-
-        String putUrl = connectionSettings.getBaseUrl() + "/api/shared_spaces/" +
-                connectionSettings.getSharedSpaceId() + "/workspaces/" +
-                connectionSettings.getWorkspaceId() + "/tests/" +
-                gherkinTest.getValue("id").getValue() + "/script";
-
-        JSONObject script = new JSONObject();
-        script.put("comment","");
-        script.put("revision_type","Minor");
-        script.put("script", uuid);
-
-        OctaneHttpRequest updateScriptRequest = new OctaneHttpRequest.PutOctaneHttpRequest(putUrl, OctaneHttpRequest.JSON_CONTENT_TYPE, script.toString());
         try {
+            gherkinTest = entityUtils.createEntity(Entity.GHERKIN_TEST);
+
+            ConnectionSettings connectionSettings = connectionSettingsProvider.getConnectionSettings();
+
+            String putUrl = connectionSettings.getBaseUrl() + "/api/shared_spaces/" +
+                    connectionSettings.getSharedSpaceId() + "/workspaces/" +
+                    connectionSettings.getWorkspaceId() + "/tests/" +
+                    gherkinTest.getValue("id").getValue() + "/script";
+
+            JSONObject script = new JSONObject();
+            script.put("comment", "");
+            script.put("revision_type", "Minor");
+            script.put("script", uuid);
+
+            OctaneHttpRequest updateScriptRequest = new OctaneHttpRequest.PutOctaneHttpRequest(putUrl, OctaneHttpRequest.JSON_CONTENT_TYPE, script.toString());
             httpClientProvider.getOctaneHttpClient().execute(updateScriptRequest);
         } catch (Exception e) {
-            fail(e.toString());
+            Assert.fail(e.toString());
         }
 
         return gherkinTest;
     }
 
-    private String getGherkinScript(EntityModel gherkinTest){
+    private String getGherkinScript(EntityModel gherkinTest) {
 
         ConnectionSettings connectionSettings = connectionSettingsProvider.getConnectionSettings();
         String getUrl = connectionSettings.getBaseUrl() + "/api/shared_spaces/" +
@@ -66,7 +92,7 @@ public class GherkinTestDownloadITCase extends IntegrationTestBase {
         try {
             response = httpClientProvider.getOctaneHttpClient().execute(updateScriptRequest);
         } catch (Exception e) {
-            fail(e.toString());
+            Assert.fail(e.toString());
         }
 
         JSONObject responseJson = new JSONObject(response.getContent());
@@ -74,10 +100,19 @@ public class GherkinTestDownloadITCase extends IntegrationTestBase {
     }
 
     @Test
-    public void testGherkinTestScriptDownload(){
-        UUID uuid =UUID.randomUUID();
+    public void testGherkinTestScriptDownload() {
+        UUID uuid = UUID.randomUUID();
         EntityModel gherkinTest = createGherkinTestWithScript(uuid);
         String script = getGherkinScript(gherkinTest);
         assert script.contains(uuid.toString());
+    }
+
+    @After
+    public void tearDown() {
+        try{
+            entityUtils.deleteEntityModel(gherkinTest);
+        }catch (Exception e) {
+            Assert.fail("Failed to delete gherkin test: " + e.getMessage());
+        }
     }
 }

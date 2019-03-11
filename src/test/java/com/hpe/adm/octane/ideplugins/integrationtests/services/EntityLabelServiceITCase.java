@@ -12,18 +12,22 @@
  */
 package com.hpe.adm.octane.ideplugins.integrationtests.services;
 
+import com.google.inject.Guice;
 import com.google.inject.Inject;
+import com.google.inject.Injector;
 import com.hpe.adm.nga.sdk.model.EntityModel;
-import com.hpe.adm.octane.ideplugins.integrationtests.IntegrationTestBase;
+import com.hpe.adm.octane.ideplugins.integrationtests.TestServiceModule;
 import com.hpe.adm.octane.ideplugins.services.EntityLabelService;
+import com.hpe.adm.octane.ideplugins.services.di.ServiceModule;
 import com.hpe.adm.octane.ideplugins.services.filtering.Entity;
 import org.junit.Assert;
+import org.junit.Before;
 import org.junit.Test;
 
 import java.util.Arrays;
 import java.util.Map;
 
-public class EntityLabelServiceITCase extends IntegrationTestBase {
+public class EntityLabelServiceITCase {
 
     @Inject
     private EntityLabelService entityLabelService;
@@ -45,11 +49,23 @@ public class EntityLabelServiceITCase extends IntegrationTestBase {
             Entity.REQUIREMENT
     };
 
+    @Before
+    public void setUp() {
+        ServiceModule serviceModule = TestServiceModule.getServiceModule();
+        Injector injector = Guice.createInjector(serviceModule);
+        injector.injectMembers(this);
+    }
+
     @Test
     public void testGetEntityLabelDetails() {
-        Map<Entity, EntityModel> entityLabelMap = entityLabelService.getEntityLabelDetails();
-        boolean areEntityTypesCovered = Arrays.stream(entityTypes).allMatch(e -> entityLabelMap.get(e) != null);
-        Assert.assertTrue(areEntityTypesCovered);
+        try {
+            Map<Entity, EntityModel> entityLabelMap = entityLabelService.getEntityLabelDetails();
+            boolean areEntityTypesCovered = Arrays.stream(entityTypes).allMatch(e -> entityLabelMap.get(e) != null);
+            Assert.assertTrue(areEntityTypesCovered);
+        } catch (Exception ex) {
+            Assert.fail("Failed to retrieve entity labels from server...");
+        }
+
     }
 
 }

@@ -12,10 +12,16 @@
  */
 package com.hpe.adm.octane.ideplugins;
 
+import com.hpe.adm.octane.ideplugins.services.filtering.Entity;
+
+import java.util.Arrays;
+import java.util.LinkedHashSet;
+import java.util.Set;
+
 public class Constants {
 
     public static final String SHARED_SPACE = "/api/shared_spaces/";
-    public static final String WORKSPACE = "/workspaces";
+    public static final String WORKSPACES = "/workspaces";
     public static final String DATA = "data";
     public static final String NAME = "name";
     public static final String DESCRIPTION = "description";
@@ -23,7 +29,7 @@ public class Constants {
     public static final String TYPE = "type";
     public static final String ROLES = "roles";
     public static final String WORKSPACE_ENITY_NAME = "workspace_users";
-    public static final String RELEASES = "/releases";
+    public static final String RELEASES = "releases";
     public static final String REQUIREMENTS = "requirements";
     public static final String REQUIREMENT_ROOT = "requirement_root";
     public static final String PHASE = "phase";
@@ -46,9 +52,9 @@ public class Constants {
     }
 
     public interface Workspace {
-        String NAME_VALUE = "test_workspace1";
+        String NAME_VALUE = "test_ws";
         String DESCRIPTION = "Created from intellij";
-        String WORKSPACE_ID = "workspace_id";
+        String WORKSPACE_ID = "id";
     }
 
     public interface Errors {
@@ -79,7 +85,7 @@ public class Constants {
     public interface Release {
         String RELEASES = "releases";
         String TYPE = "release";
-        String NAME = "test_Release";
+        String NAME = "test_release";
         String START_DATE = "start_date";
         String END_DATE = "end_date";
     }
@@ -91,4 +97,17 @@ public class Constants {
         String NAME = "scrum";
         String TYPE = "list_node";
     }
+
+    public static final Set<Entity> SearchEntityTypes = new LinkedHashSet<>(Arrays.asList(
+            Entity.EPIC,
+            Entity.FEATURE,
+            Entity.USER_STORY,
+            Entity.QUALITY_STORY,
+            Entity.DEFECT,
+            Entity.TASK,
+            Entity.TEST_SUITE,
+            Entity.MANUAL_TEST,
+            Entity.AUTOMATED_TEST,
+            Entity.GHERKIN_TEST,
+            Entity.REQUIREMENT));
 }

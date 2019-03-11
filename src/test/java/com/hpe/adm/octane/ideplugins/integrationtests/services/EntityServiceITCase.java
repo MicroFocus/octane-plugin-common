@@ -12,71 +12,83 @@
  */
 package com.hpe.adm.octane.ideplugins.integrationtests.services;
 
+import com.google.inject.Guice;
 import com.google.inject.Inject;
+import com.google.inject.Injector;
 import com.hpe.adm.nga.sdk.model.EntityModel;
-import com.hpe.adm.octane.ideplugins.integrationtests.IntegrationTestBase;
-import com.hpe.adm.octane.ideplugins.integrationtests.util.User;
-import com.hpe.adm.octane.ideplugins.integrationtests.util.WorkSpace;
+import com.hpe.adm.octane.ideplugins.integrationtests.TestServiceModule;
+import com.hpe.adm.octane.ideplugins.integrationtests.util.EntityUtils;
 import com.hpe.adm.octane.ideplugins.services.EntityService;
-import com.hpe.adm.octane.ideplugins.services.TestService;
-import com.hpe.adm.octane.ideplugins.services.connection.ConnectionSettings;
-import com.hpe.adm.octane.ideplugins.services.connection.ConnectionSettingsProvider;
+import com.hpe.adm.octane.ideplugins.services.di.ServiceModule;
 import com.hpe.adm.octane.ideplugins.services.filtering.Entity;
+import org.junit.After;
 import org.junit.Assert;
+import org.junit.Before;
 import org.junit.Test;
 
+import java.util.ArrayList;
 import java.util.Collection;
-@WorkSpace(clean = false)
-@User(create = false, firstName = "",lastName = "")
-public class EntityServiceITCase extends IntegrationTestBase {
+import java.util.List;
+
+public class EntityServiceITCase {
 
     @Inject
     private EntityService entityService;
 
     @Inject
-    private TestService testService;
+    private EntityUtils entityUtils;
 
-    @Inject
-    private ConnectionSettingsProvider connectionSettingsProvider;
+    List<EntityModel> createdEntities;
+
+    @Before
+    public void setUp() {
+        ServiceModule serviceModule = TestServiceModule.getServiceModule();
+        Injector injector = Guice.createInjector(serviceModule);
+        injector.injectMembers(this);
+
+        try {
+            createdEntities = new ArrayList<>();
+            createdEntities.add(entityUtils.createEntity(Entity.USER_STORY));
+            createdEntities.add(entityUtils.createEntity(Entity.MANUAL_TEST));
+            createdEntities.add(entityUtils.createEntity(Entity.DEFECT));
+        } catch (Exception e) {
+            Assert.fail("Failed to create entities...");
+        }
+    }
 
     @Test
     public void testEntityConstants() {
+        try {
+            Collection<EntityModel> entities = entityService.findEntities(Entity.MANUAL_TEST);
 
-        Collection<EntityModel> entities = entityService.findEntities(Entity.MANUAL_TEST);
+            if (entities.size() > 0) {
+                EntityModel firstEntity = entities.iterator().next();
+                Assert.assertEquals(Entity.getEntityType(firstEntity), Entity.MANUAL_TEST);
+            }
 
-        if (entities.size() > 0) {
-            EntityModel firstEntity = entities.iterator().next();
-            Assert.assertEquals(Entity.getEntityType(firstEntity), Entity.MANUAL_TEST);
-        }
+            entities = entityService.findEntities(Entity.DEFECT);
+            if (entities.size() > 0) {
+                EntityModel firstEntity = entities.iterator().next();
+                Assert.assertEquals(Entity.getEntityType(firstEntity), Entity.DEFECT);
+            }
 
-        entities = entityService.findEntities(Entity.DEFECT);
-        if (entities.size() > 0) {
-            EntityModel firstEntity = entities.iterator().next();
-            Assert.assertEquals(Entity.getEntityType(firstEntity), Entity.DEFECT);
-        }
-
-        entities = entityService.findEntities(Entity.USER_STORY);
-        if (entities.size() > 0) {
-            EntityModel firstEntity = entities.iterator().next();
-            Assert.assertEquals(Entity.getEntityType(firstEntity), Entity.USER_STORY);
+            entities = entityService.findEntities(Entity.USER_STORY);
+            if (entities.size() > 0) {
+                EntityModel firstEntity = entities.iterator().next();
+                Assert.assertEquals(Entity.getEntityType(firstEntity), Entity.USER_STORY);
+            }
+        } catch (Exception e) {
+            Assert.fail("Failed to execute entity constants test: " + e.getMessage());
         }
     }
 
-    @Test
-    public void testConnection() {
-        ConnectionSettings connectionSettings = connectionSettingsProvider.getConnectionSettings();
-
+    @After
+    public void tearDown() {
         try {
-            testService.getOctane(connectionSettings);
+            createdEntities.forEach(em -> entityUtils.deleteEntityModel(em));
         } catch (Exception e) {
-            Assert.fail(e.toString());
+            Assert.fail("Failed to delete created entities...");
         }
 
-        try {
-            testService.getOctane(connectionSettings);
-        } catch (Exception e) {
-            Assert.fail(e.toString());
-        }
     }
-
 }

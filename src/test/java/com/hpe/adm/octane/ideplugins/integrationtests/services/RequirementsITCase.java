@@ -13,21 +13,57 @@
 package com.hpe.adm.octane.ideplugins.integrationtests.services;
 
 
+import com.google.inject.Guice;
+import com.google.inject.Inject;
+import com.google.inject.Injector;
 import com.hpe.adm.nga.sdk.model.EntityModel;
-import com.hpe.adm.octane.ideplugins.integrationtests.IntegrationTestBase;
+import com.hpe.adm.octane.ideplugins.integrationtests.TestServiceModule;
+import com.hpe.adm.octane.ideplugins.integrationtests.util.EntityUtils;
+import com.hpe.adm.octane.ideplugins.integrationtests.util.RequirementUtils;
+import com.hpe.adm.octane.ideplugins.services.di.ServiceModule;
+import com.hpe.adm.octane.ideplugins.services.nonentity.OctaneVersionService;
 import com.hpe.adm.octane.ideplugins.services.util.OctaneVersion;
+import org.junit.After;
+import org.junit.Assert;
+import org.junit.Before;
 import org.junit.Test;
 
+import java.util.ArrayList;
+import java.util.List;
 import java.util.UUID;
 
-public class RequirementsITCase extends IntegrationTestBase {
+public class RequirementsITCase {
+
+    @Inject
+    private RequirementUtils requirementUtils;
+
+    @Inject
+    private OctaneVersionService versionService;
+
+    @Inject
+    private EntityUtils entityUtils;
+
+    private List<EntityModel> entityModelList;
+
+    private long timeoutCount = 15;
+    private long timeout = 5000; // 5 seconds
+
+    @Before
+    public void setUp() {
+        ServiceModule serviceModule = TestServiceModule.getServiceModule();
+        Injector injector = Guice.createInjector(serviceModule);
+        injector.injectMembers(this);
+        entityModelList = new ArrayList<>();
+    }
 
     @Test
     public void testCreateRequirement() {
         if (OctaneVersion.compare(versionService.getOctaneVersion(), OctaneVersion.Operation.LOWER_EQ, OctaneVersion.EVERTON_P3)) {
-            EntityModel requirementFolder = createRequirementFolder("folder " + UUID.randomUUID());
-            EntityModel requirement = createRequirement("requirement " + UUID.randomUUID().toString(), requirementFolder);
-            EntityModel createdRequirement = findRequirementById(Long.parseLong(requirement.getValue("id").getValue().toString()));
+            EntityModel requirementFolder = requirementUtils.createRequirementFolder("folder " + UUID.randomUUID());
+            EntityModel requirement = requirementUtils.createRequirement("requirement " + UUID.randomUUID().toString(), requirementFolder);
+            EntityModel createdRequirement = requirementUtils.findRequirementById(Long.parseLong(requirement.getValue("id").getValue().toString()));
+            entityModelList.add(requirementFolder);
+            entityModelList.add(requirement);
             assert (Long.parseLong(requirement.getValue("id").getValue().toString()) == Long.parseLong(createdRequirement.getValue("id").getValue().toString()));
         }
     }
@@ -35,19 +71,44 @@ public class RequirementsITCase extends IntegrationTestBase {
     @Test
     public void testSearchRequirement() {
         if (OctaneVersion.compare(versionService.getOctaneVersion(), OctaneVersion.Operation.LOWER_EQ, OctaneVersion.EVERTON_P3)) {
-            EntityModel requirementFolder = createRequirementFolder("folder" + UUID.randomUUID());
-            EntityModel entityModel = createRequirement("requirement " + UUID.randomUUID().toString(), requirementFolder);
+            EntityModel requirementFolder = requirementUtils.createRequirementFolder("folder" + UUID.randomUUID());
+            EntityModel requirement = requirementUtils.createRequirement("requirement " + UUID.randomUUID().toString(), requirementFolder);
+            entityModelList.add(requirementFolder);
+            entityModelList.add(requirement);
             String descriptionText = UUID.randomUUID().toString();
-            setDescription(entityModel, descriptionText);
-            EntityModel createdRequirement = findRequirementById(Long.parseLong(entityModel.getValue("id").getValue().toString()));
-            try {
-                Thread.sleep(40000);//--wait until the elastic search is updated with the entities
-            } catch (Exception e) {
-                e.printStackTrace();
+            entityUtils.setDescription(requirement, descriptionText);
+            EntityModel createdRequirement = requirementUtils.findRequirementById(Long.parseLong(requirement.getValue("id").getValue().toString()));
+
+            int retryCount = 0;
+            while(retryCount < timeoutCount) {
+                boolean searchByName = entityUtils.compareEntities(createdRequirement, entityUtils.search("name", createdRequirement.getValue("name").getValue().toString()));
+                boolean searchById = entityUtils.compareEntities(createdRequirement, entityUtils.search("id", createdRequirement.getValue("id").getValue().toString()));
+                boolean searchByDescription = entityUtils.compareEntities(createdRequirement, entityUtils.search("description", descriptionText));
+                if(searchByDescription && searchById && searchByName) {
+                    assert true;
+                    return;
+                } else {
+                    try {
+                        Thread.sleep(timeout);
+                        retryCount++;
+                    } catch (Exception e) {
+                        Assert.fail("Failed sleep while waiting for elasticsearch: " + e.getMessage());
+                    }
+                }
             }
-            assert compareEntities(createdRequirement, search("name", createdRequirement.getValue("name").getValue().toString()));
-            assert compareEntities(createdRequirement, search("id", createdRequirement.getValue("id").getValue().toString()));
-            assert compareEntities(createdRequirement, search("description", descriptionText));
+
+            Assert.fail("Failed to test search requirements...");
         }
+    }
+
+    @After
+    public void tearDown() {
+        entityModelList.forEach(em -> {
+            try {
+                entityUtils.deleteEntityModel(em);
+            } catch (Exception e) {
+                Assert.fail("Failed to delete created requirements: " + e.getMessage());
+            }
+        });
     }
 }

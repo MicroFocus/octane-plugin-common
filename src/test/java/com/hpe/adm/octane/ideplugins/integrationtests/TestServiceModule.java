@@ -10,20 +10,20 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.hpe.adm.octane.ideplugins.integrationtests.util;
 
+package com.hpe.adm.octane.ideplugins.integrationtests;
 
-import java.lang.annotation.ElementType;
-import java.lang.annotation.Retention;
-import java.lang.annotation.RetentionPolicy;
-import java.lang.annotation.Target;
+import com.hpe.adm.octane.ideplugins.services.di.ServiceModule;
 
-/**
- * This annotation is to be used on the classes that extend the IntegrationTestBase class
- * the parameter clean specifies if the environment needs a clean workspace or not
- */
-@Retention(RetentionPolicy.RUNTIME)
-@Target(ElementType.TYPE)
-public @interface WorkSpace {
-        boolean clean();
+public class TestServiceModule {
+
+    private static ServiceModule ServiceModule;
+
+    public static void setServiceModule(ServiceModule serviceModule) {
+        ServiceModule = serviceModule;
+    }
+
+    public static ServiceModule getServiceModule() {
+        return ServiceModule;
+    }
 }

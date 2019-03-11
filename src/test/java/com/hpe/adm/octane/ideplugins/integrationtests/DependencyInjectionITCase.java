@@ -12,20 +12,31 @@
  */
 package com.hpe.adm.octane.ideplugins.integrationtests;
 
+import com.google.inject.Guice;
 import com.google.inject.Inject;
+import com.google.inject.Injector;
 import com.hpe.adm.octane.ideplugins.services.TestService;
 import com.hpe.adm.octane.ideplugins.services.connection.ConnectionSettingsProvider;
+import com.hpe.adm.octane.ideplugins.services.di.ServiceModule;
+import org.junit.Before;
 import org.junit.Test;
 
 import static org.junit.Assert.assertNotNull;
 
-public class DependencyInjectionITCase extends IntegrationTestBase {
+public class DependencyInjectionITCase {
 
     @Inject
     private ConnectionSettingsProvider connectionSettingsProvider;
 
     @Inject
     private TestService testService;
+
+    @Before
+    public void setUp() {
+        ServiceModule serviceModule = TestServiceModule.getServiceModule();
+        Injector injector = Guice.createInjector(serviceModule);
+        injector.injectMembers(this);
+    }
 
     @Test
     public void testInjection(){

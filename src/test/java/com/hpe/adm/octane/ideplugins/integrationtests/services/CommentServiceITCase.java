@@ -13,19 +13,24 @@
 package com.hpe.adm.octane.ideplugins.integrationtests.services;
 
 
+import com.google.inject.Guice;
 import com.google.inject.Inject;
+import com.google.inject.Injector;
 import com.hpe.adm.nga.sdk.model.EntityModel;
-import com.hpe.adm.octane.ideplugins.integrationtests.IntegrationTestBase;
+import com.hpe.adm.octane.ideplugins.integrationtests.TestServiceModule;
+import com.hpe.adm.octane.ideplugins.integrationtests.util.EntityUtils;
 import com.hpe.adm.octane.ideplugins.services.CommentService;
 import com.hpe.adm.octane.ideplugins.services.EntityService;
+import com.hpe.adm.octane.ideplugins.services.di.ServiceModule;
 import com.hpe.adm.octane.ideplugins.services.filtering.Entity;
 import org.junit.Assert;
+import org.junit.Before;
 import org.junit.Test;
 
 import java.util.Collection;
 import java.util.UUID;
 
-public class CommentServiceITCase extends IntegrationTestBase {
+public class CommentServiceITCase {
 
     @Inject
     private CommentService commentService;
@@ -33,25 +38,36 @@ public class CommentServiceITCase extends IntegrationTestBase {
     @Inject
     private EntityService entityService;
 
+    @Inject
+    private EntityUtils entityUtils;
+
+    @Before
+    public void setUp() {
+        ServiceModule serviceModule = TestServiceModule.getServiceModule();
+        Injector injector = Guice.createInjector(serviceModule);
+        injector.injectMembers(this);
+    }
+
+
     @Test
     public void testCommentService() {
-        Collection<EntityModel> userStories = entityService.findEntities(Entity.USER_STORY);
-        if (userStories.size() > 0) {
-            EntityModel userStory = userStories.iterator().next();
+
+        try {
+            EntityModel userStory = entityUtils.createEntity(Entity.USER_STORY);
 
             //Add a random comment
             String commentText = "Test comment" + UUID.randomUUID().toString();
             commentService.postComment(userStory, commentText);
 
-            //Check if there
+            //Retrieve comments
             Collection<EntityModel> comments = commentService.getComments(userStory);
 
             //Check if comment was posted
-            EntityModel lastComment = comments.iterator().next();
-            String lastCommentText = lastComment.getValue("text").getValue().toString();
-            Assert.assertTrue(lastCommentText != null && lastCommentText.contains(commentText));
+            EntityModel postedComment = comments.iterator().next();
+            String postedCommentText = postedComment.getValue("text").getValue().toString();
+            Assert.assertTrue(postedCommentText != null && postedCommentText.contains(commentText));
 
-            commentService.deleteComment(lastComment.getValue("id").getValue().toString());
+            commentService.deleteComment(postedComment.getValue("id").getValue().toString());
 
             comments = commentService.getComments(userStory);
 
@@ -63,7 +79,12 @@ public class CommentServiceITCase extends IntegrationTestBase {
                     .noneMatch(text -> text.contains(commentText))
             );
 
+            entityUtils.deleteEntityModel(userStory);
+        } catch (Exception ex) {
+            Assert.fail("Failed to carry out comment test: " + ex.getMessage());
         }
+
+
     }
 
 }
