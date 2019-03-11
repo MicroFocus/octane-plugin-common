@@ -53,10 +53,17 @@ public class IntegrationTestSuite {
      */
     @BeforeClass
     public static void setUp() {
-        ConnectionSettingsProvider connectionSettingsProvider = PropertyUtil.readFormVmArgs() != null ? PropertyUtil.readFormVmArgs() : PropertyUtil.readFromPropFile();
-        if (connectionSettingsProvider == null) {
-            throw new RuntimeException(Constants.Errors.CONNECTION_SETTINGS_RETRIEVE_ERROR);
+        ConnectionSettingsProvider connectionSettingsProvider;
+        try{
+            connectionSettingsProvider = PropertyUtil.readFormVmArgs() != null ? PropertyUtil.readFormVmArgs() : PropertyUtil.readFromPropFile();
+            if (connectionSettingsProvider == null) {
+                Assert.fail(Constants.Errors.CONNECTION_SETTINGS_RETRIEVE_ERROR);
+            }
+        } catch (Exception ex) {
+            Assert.fail(Constants.Errors.CONNECTION_SETTINGS_RETRIEVE_ERROR);
+            return;
         }
+
         ConnectionSettings connectionSettings = connectionSettingsProvider.getConnectionSettings();
 
         ServiceModule serviceModule = new ServiceModule(connectionSettingsProvider);

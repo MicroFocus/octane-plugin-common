@@ -58,7 +58,7 @@ public class PropertyUtil {
             }
             if(props.keySet().contains(PropertyKeys.WORKSPACE.keyStr)){
                 try {
-                    connectionSettings.setWorkspaceId(getLong(PropertyKeys.WORKSPACE));
+                    connectionSettings.setWorkspaceId(Long.parseLong(props.getProperty(PropertyKeys.WORKSPACE.keyStr)));
                 } catch (NumberFormatException ex) {
                     throw new RuntimeException("Failed to parse workspace id as number: " + ex);
                 }
