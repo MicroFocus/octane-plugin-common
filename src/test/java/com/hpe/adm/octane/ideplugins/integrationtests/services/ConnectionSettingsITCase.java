@@ -67,7 +67,7 @@ public class ConnectionSettingsITCase {
     }
 
     private boolean validateCredentials(Authentication authentication) {
-        OctaneHttpClient octaneHttpClient = new IdePluginsOctaneHttpClient(baseUrl, ClientType.OCTANE_IDE_PLUGINS);
+        OctaneHttpClient octaneHttpClient = new IdePluginsOctaneHttpClient(baseUrl, ClientType.OCTANE_IDE_PLUGIN);
         try {
             return octaneHttpClient.authenticate(authentication);
         } catch (Exception e) {

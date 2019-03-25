@@ -146,7 +146,7 @@ public class ServiceModule extends AbstractModule {
         if(OctaneVersion.LIVERPOOL_P0.compareTo(octaneVersion) > 0) {
             return ClientType.HPE_REST_API_TECH_PREVIEW;
         } else {
-            return ClientType.OCTANE_IDE_PLUGINS;
+            return ClientType.OCTANE_IDE_PLUGIN;
         }
     }
 
