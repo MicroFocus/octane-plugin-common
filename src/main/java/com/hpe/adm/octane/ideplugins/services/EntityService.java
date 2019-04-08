@@ -25,6 +25,7 @@ import com.hpe.adm.nga.sdk.query.Query;
 import com.hpe.adm.nga.sdk.query.QueryMethod;
 import com.hpe.adm.octane.ideplugins.services.connection.ConnectionSettingsProvider;
 import com.hpe.adm.octane.ideplugins.services.connection.OctaneProvider;
+import com.hpe.adm.octane.ideplugins.services.exception.ServiceRuntimeException;
 import com.hpe.adm.octane.ideplugins.services.filtering.Entity;
 import com.hpe.adm.octane.ideplugins.services.nonentity.OctaneVersionService;
 import com.hpe.adm.octane.ideplugins.services.util.OctaneVersion;
@@ -204,23 +205,36 @@ public class EntityService {
      */
     public EntityModel findEntity(Entity entityType, Long entityId, Set<String> fields) {
 
-        GetEntity get = octaneProvider.getOctane()
+        GetEntities get = octaneProvider.getOctane()
                 .entityList(entityType.getApiEntityName())
-                .at(entityId.toString())
                 .get();
+
+        Query.QueryBuilder entityQuery = Query.statement("id", QueryMethod.EqualTo, entityId);
+
+        if(entityType.isSubtype()) {
+            Query.QueryBuilder subtypeQuery = Query.statement("subtype", QueryMethod.EqualTo, entityType.getSubtypeName());
+            entityQuery = entityQuery.and(subtypeQuery);
+        }
+
+        get = get.query(entityQuery.build());
 
         if (fields != null && fields.size() != 0) {
             get = get.addFields(fields.toArray(new String[]{}));
         }
 
-        EntityModel retrivedEntity = get.execute();
+        Collection<EntityModel> retrievedEntities = get.execute();
+        if(retrievedEntities.size() == 0) {
+            throw new ServiceRuntimeException("Entity of type: " + entityType.getTypeName() + ", with id: " + entityId + " could not be found");
+        }
+
+        EntityModel retrievedEntity = retrievedEntities.iterator().next();
 
         //Make sure subtype is always set
         if(entityType.isSubtype()) {
-            retrivedEntity.setValue(new StringFieldModel("subtype", entityType.getSubtypeName()));
+            retrievedEntity.setValue(new StringFieldModel("subtype", entityType.getSubtypeName()));
         }
 
-        return retrivedEntity;
+        return retrievedEntity;
     }
 
     public EntityModel findEntity(Entity entityType, Long entityId) {
