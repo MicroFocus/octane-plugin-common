@@ -312,7 +312,7 @@ public class EntityService {
         }
 
         // we don't need to send back subtype for update, and we should remove it since some versions
-        // of octane misinterpret the update
+        // of octane misinterpret it as update on subtype which is not allowed
         entityModel.removeValue("subtype");
 
         EntityList entityList = octaneProvider.getOctane().entityList(entityType.getApiEntityName());
