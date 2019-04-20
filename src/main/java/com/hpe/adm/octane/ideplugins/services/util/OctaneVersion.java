@@ -68,6 +68,22 @@ public class OctaneVersion implements Comparable<OctaneVersion> {
         return buildNumber;
     }
 
+    public boolean isLessThan(OctaneVersion anotherVersions) {
+        return compareTo(anotherVersions) < 0;
+    }
+
+    public boolean isMoreThan(OctaneVersion anotherVersions) {
+        return compareTo(anotherVersions) > 0;
+    }
+
+    public boolean isLessOrEqThan(OctaneVersion anotherVersions) {
+        return compareTo(anotherVersions) <= 0;
+    }
+
+    public boolean isMoreOrEqThan(OctaneVersion anotherVersions) {
+        return compareTo(anotherVersions) >= 0;
+    }
+
     @Override
     public boolean equals(Object o) {
         if (this == o) return true;

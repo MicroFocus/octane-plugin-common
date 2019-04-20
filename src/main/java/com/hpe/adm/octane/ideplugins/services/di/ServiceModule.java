@@ -1,5 +1,5 @@
 /*
- * Copyright 2017 EntIT Software LLC, a Micro Focus company, L.P.
+ * © 2017 EntIT Software LLC, a Micro Focus company, L.P.
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
@@ -10,6 +10,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+
 package com.hpe.adm.octane.ideplugins.services.di;
 
 import com.google.common.base.Supplier;
@@ -143,10 +144,10 @@ public class ServiceModule extends AbstractModule {
     private static ClientType getClientTypeForServer(ConnectionSettings connectionSettings) {
         OctaneVersion octaneVersion = OctaneVersionService.getOctaneVersion(connectionSettings);
         // current version is more than or equal to JUVENTUS_P3
-        if(OctaneVersion.LIVERPOOL_P0.compareTo(octaneVersion) > 0) {
+        if(OctaneVersion.JUVENTUS_P3.compareTo(octaneVersion) > 0) {
             return ClientType.HPE_REST_API_TECH_PREVIEW;
         } else {
-            return ClientType.OCTANE_IDE_PLUGIN;
+            return ClientType.HPE_MQM_UI;
         }
     }
 
