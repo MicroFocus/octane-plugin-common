@@ -310,7 +310,11 @@ public class EntityService {
             //manually mark it as dirty
             entityModel.setValue(entityModel.getValue(MetadataService.FIELD_CLIENT_LOCK_STAMP));
         }
-        
+
+        // we don't need to send back subtype for update, and we should remove it since some versions
+        // of octane misinterpret it as update on subtype which is not allowed
+        entityModel.removeValue("subtype");
+
         EntityList entityList = octaneProvider.getOctane().entityList(entityType.getApiEntityName());
         entityList.at(entityId).update().entity(entityModel).execute();
     }
