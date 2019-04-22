@@ -30,10 +30,9 @@ import org.slf4j.LoggerFactory;
 
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
-import java.net.HttpCookie;
-import java.net.Proxy;
-import java.net.ProxySelector;
-import java.net.URI;
+import java.io.UnsupportedEncodingException;
+import java.net.*;
+import java.nio.charset.Charset;
 import java.util.*;
 import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantLock;
@@ -262,11 +261,14 @@ public class IdePluginsOctaneHttpClient implements OctaneHttpClient {
 	 * @return {@link HttpRequest}
 	 */
 	protected HttpRequest convertOctaneRequestToGoogleHttpRequest(OctaneHttpRequest octaneHttpRequest) {
+
 		final HttpRequest httpRequest;
+		final String urlString = encodeUrlQueryParams(octaneHttpRequest.getRequestUrl());
+
 		try {
 			switch (octaneHttpRequest.getOctaneRequestMethod()) {
 			case GET: {
-				GenericUrl domain = new GenericUrl(octaneHttpRequest.getRequestUrl());
+				GenericUrl domain = new GenericUrl(urlString);
 				httpRequest = requestFactory.buildGetRequest(domain);
 				httpRequest.getHeaders().setAccept(((OctaneHttpRequest.GetOctaneHttpRequest) octaneHttpRequest).getAcceptType());
 				final String eTagHeader = requestToEtagMap.get(octaneHttpRequest);
@@ -277,7 +279,7 @@ public class IdePluginsOctaneHttpClient implements OctaneHttpClient {
 			}
 			case POST: {
 				OctaneHttpRequest.PostOctaneHttpRequest postOctaneHttpRequest = (OctaneHttpRequest.PostOctaneHttpRequest) octaneHttpRequest;
-				GenericUrl domain = new GenericUrl(octaneHttpRequest.getRequestUrl());
+				GenericUrl domain = new GenericUrl(urlString);
 				httpRequest = requestFactory.buildPostRequest(domain, ByteArrayContent.fromString(null, postOctaneHttpRequest.getContent()));
 				httpRequest.getHeaders().setAccept(postOctaneHttpRequest.getAcceptType());
 				httpRequest.getHeaders().setContentType(postOctaneHttpRequest.getContentType());
@@ -289,14 +291,14 @@ public class IdePluginsOctaneHttpClient implements OctaneHttpClient {
 			}
 			case PUT: {
 				OctaneHttpRequest.PutOctaneHttpRequest putHttpOctaneHttpRequest = (OctaneHttpRequest.PutOctaneHttpRequest) octaneHttpRequest;
-				GenericUrl domain = new GenericUrl(octaneHttpRequest.getRequestUrl());
+				GenericUrl domain = new GenericUrl(urlString);
 				httpRequest = requestFactory.buildPutRequest(domain, ByteArrayContent.fromString(null, putHttpOctaneHttpRequest.getContent()));
 				httpRequest.getHeaders().setAccept(putHttpOctaneHttpRequest.getAcceptType());
 				httpRequest.getHeaders().setContentType(putHttpOctaneHttpRequest.getContentType());
 				break;
 			}
 			case DELETE: {
-				GenericUrl domain = new GenericUrl(octaneHttpRequest.getRequestUrl());
+				GenericUrl domain = new GenericUrl(urlString);
 				httpRequest = requestFactory.buildDeleteRequest(domain);
 				break;
 			}
@@ -308,6 +310,19 @@ public class IdePluginsOctaneHttpClient implements OctaneHttpClient {
 			throw new RuntimeException(e);
 		}
 		return httpRequest;
+	}
+
+	private String encodeUrlQueryParams(String url) {
+		try {
+			URL parsedUrl = new URL(url);
+			String query = parsedUrl.getQuery();
+			String encodedQuery = URLEncoder.encode(query, Charset.defaultCharset().name());
+
+			return url.replace(query, encodedQuery);
+		} catch (MalformedURLException | UnsupportedEncodingException e) {
+			logger.error("Failed to encode url query params: " + e);
+			return url;
+		}
 	}
 
 	/**
