@@ -30,9 +30,7 @@ import org.slf4j.LoggerFactory;
 
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
-import java.io.UnsupportedEncodingException;
 import java.net.*;
-import java.nio.charset.Charset;
 import java.util.*;
 import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantLock;
@@ -263,7 +261,7 @@ public class IdePluginsOctaneHttpClient implements OctaneHttpClient {
 	protected HttpRequest convertOctaneRequestToGoogleHttpRequest(OctaneHttpRequest octaneHttpRequest) {
 
 		final HttpRequest httpRequest;
-		final String urlString = encodeUrlQueryParams(octaneHttpRequest.getRequestUrl());
+		final String urlString = encodePlusSignInUrl(octaneHttpRequest.getRequestUrl());
 
 		try {
 			switch (octaneHttpRequest.getOctaneRequestMethod()) {
@@ -312,14 +310,17 @@ public class IdePluginsOctaneHttpClient implements OctaneHttpClient {
 		return httpRequest;
 	}
 
-	private String encodeUrlQueryParams(String url) {
+	/*
+	 * Google http client library's Generic URL won't encode the '+' sign
+	 * This is a known issue and is marked as wont-fix, check their github
+	 */
+	private String encodePlusSignInUrl(String url) {
 		try {
 			URL parsedUrl = new URL(url);
 			String query = parsedUrl.getQuery();
-			String encodedQuery = URLEncoder.encode(query, Charset.defaultCharset().name());
-
-			return url.replace(query, encodedQuery);
-		} catch (MalformedURLException | UnsupportedEncodingException e) {
+			String parsedQuery = query.replaceAll("\\+", "%2B");
+			return url.replace(query, parsedQuery);
+		} catch (MalformedURLException e) {
 			logger.error("Failed to encode url query params: " + e);
 			return url;
 		}
