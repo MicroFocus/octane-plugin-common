@@ -15,8 +15,8 @@ package com.hpe.adm.octane.ideplugins.unittests;
 import com.hpe.adm.octane.ideplugins.services.util.OctaneVersion;
 import org.junit.Test;
 
+import static org.junit.Assert.*;
 import static org.junit.Assert.assertTrue;
-import static org.junit.Assert.fail;
 
 public class OctaneVersionUTCase {
 
@@ -50,15 +50,18 @@ public class OctaneVersionUTCase {
         v1 = new OctaneVersion("12.53.13.23");
         v2 = new OctaneVersion("12.53.13.23");
 
-        assertTrue(v1.equals(v2));
+        assertEquals(v1, v2);
         assertTrue(OctaneVersion.compare(v1, OctaneVersion.Operation.EQ, v2));
         assertTrue(OctaneVersion.compare(v1, OctaneVersion.Operation.LOWER_EQ, v2));
+        assertTrue(v1.isLessOrEqThan(v2));
         assertTrue(OctaneVersion.compare(v1, OctaneVersion.Operation.HIGHER_EQ, v2));
+        assertTrue(v1.isMoreOrEqThan(v2));
 
         v1 = new OctaneVersion("12.53.13.23");
         v2 = new OctaneVersion("12.55.3.21321");
 
         assertTrue(OctaneVersion.compare(v1, OctaneVersion.Operation.LOWER, v2));
+        assertTrue(v1.isLessThan(v2));
     }
 
 }
