@@ -21,7 +21,8 @@
 				{ "name":"team" },
 				{ "name":"blocked_reason"},
 				{ "name":"owner"},
-				{ "name":"detected_by"}
+				{ "name":"detected_by"},
+				{ "name":"description"}
 			]
 		 },
 		{ 
@@ -40,7 +41,8 @@
 				{ "name":"blocked" },
 				{ "name":"blocked_reason"},
 				{ "name":"author"},
-				{ "name":"owner"}
+				{ "name":"owner"},
+				{ "name":"description"}
 			]
 		 },   
 		{   
@@ -59,7 +61,8 @@
 				{ "name":"blocked" },
 				{ "name":"blocked_reason" },
 				{ "name":"author"},
-				{ "name":"owner"}
+				{ "name":"owner"},
+				{ "name":"description"}
 			]
 		 },
 		{ 
@@ -74,7 +77,8 @@
 				{ "name":"product_areas" },
 				{ "name":"automation_status" },
 				{ "name":"owner"},
-				{ "name":"designer"}
+				{ "name":"designer"},
+				{ "name":"description"}
 			]
 		 },
 		{ 
@@ -89,7 +93,8 @@
 				{ "name":"product_areas" },
 				{ "name":"automation_status" },
 				{ "name":"owner"},
-				{ "name":"designer"}
+				{ "name":"designer"},
+				{ "name":"description"}
 			]
 		 },
 		{ 
@@ -103,7 +108,8 @@
 				{ "name":"product_areas" },
 				{ "name":"covered_content" },
 				{ "name":"executable" },
-				{ "name":"owner"}
+				{ "name":"owner"},
+				{ "name":"description"}
 			]
 		 },
 		{ 
@@ -118,7 +124,8 @@
 				{ "name":"product_areas" },
 				{ "name":"automation_status" },
 				{ "name":"owner"},
-				{ "name":"designer"}
+				{ "name":"designer"},
+				{ "name":"description"}
 			]
 		 },
 		{ 
@@ -133,7 +140,8 @@
 				{ "name":"last_modified" },
 				{ "name":"draft_run" },
 				{ "name":"owner"},
-				{ "name":"run_by"}
+				{ "name":"run_by"},
+				{ "name":"description"}
 			]
 		 },
 		 { 
@@ -147,7 +155,8 @@
 				{ "name":"draft_run" },
 				{ "name":"last_modified" },
 				{ "name":"default_taxonomies" },
-				{ "name":"owner"}
+				{ "name":"owner"},
+				{ "name":"description"}
 			]
 		 },
 		{ 
@@ -161,7 +170,8 @@
 				{ "name":"invested_hours" },
 				{ "name":"remaining_hours" },
 				{ "name":"author"},
-				{ "name":"owner"}
+				{ "name":"owner"},
+				{ "name":"description"}
 			]
 		 },
 		{ 
@@ -171,7 +181,8 @@
 				{ "name":"creation_time" },
 				{ "name":"last_modified" },
 				{ "name":"author"},
-				{ "name":"owner"}
+				{ "name":"owner"},
+				{ "name":"description"}
 			]
 		 }
 	]
