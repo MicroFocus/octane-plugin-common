@@ -124,7 +124,7 @@ public class SearchFunctionalityITCase {
 
     @Test
     public void testSearchWithGoodDoubleQuotes() {
-        Assert.assertNotNull(entityUtils.search("name", "task 2 with \" double quotes \"" + randomUUID));
+         Assert.assertNotNull(entityUtils.search("name", "task 2 with \" double quotes \"" + randomUUID));
     }
     
     @Test

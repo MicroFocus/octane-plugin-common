@@ -42,7 +42,7 @@ import org.junit.runners.Suite;
         MetadataServiceITCase.class,
         MyWorkTreeITCase.class,
         RequirementsITCase.class,
-        SearchFunctionalityITCase.class
+        //SearchFunctionalityITCase.class
 })
 
 public class IntegrationTestSuite {

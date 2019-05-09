@@ -17,13 +17,13 @@ import com.hpe.adm.octane.ideplugins.services.di.ServiceModule;
 
 public class TestServiceModule {
 
-    private static ServiceModule ServiceModule;
+    private static ServiceModule serviceModule;
 
     public static void setServiceModule(ServiceModule serviceModule) {
-        ServiceModule = serviceModule;
+        TestServiceModule.serviceModule = serviceModule;
     }
 
     public static ServiceModule getServiceModule() {
-        return ServiceModule;
+        return serviceModule;
     }
 }
