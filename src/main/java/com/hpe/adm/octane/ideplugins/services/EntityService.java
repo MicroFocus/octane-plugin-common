@@ -15,7 +15,6 @@ package com.hpe.adm.octane.ideplugins.services;
 import com.google.inject.Inject;
 import com.hpe.adm.nga.sdk.entities.EntityList;
 import com.hpe.adm.nga.sdk.entities.get.GetEntities;
-import com.hpe.adm.nga.sdk.entities.get.GetEntity;
 import com.hpe.adm.nga.sdk.extension.entities.ExtendedGetEntities;
 import com.hpe.adm.nga.sdk.model.EntityModel;
 import com.hpe.adm.nga.sdk.model.FieldModel;

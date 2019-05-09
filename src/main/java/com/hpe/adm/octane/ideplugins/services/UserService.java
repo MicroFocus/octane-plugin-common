@@ -28,6 +28,7 @@ import com.hpe.adm.octane.ideplugins.services.connection.*;
 import com.hpe.adm.octane.ideplugins.services.connection.granttoken.GrantTokenAuthentication;
 import com.hpe.adm.octane.ideplugins.services.exception.ServiceRuntimeException;
 import com.hpe.adm.octane.ideplugins.services.filtering.Entity;
+import com.hpe.adm.octane.ideplugins.services.util.UrlParser;
 import org.json.JSONObject;
 
 import java.util.Collection;
@@ -102,6 +103,8 @@ public class UserService {
         Authentication authentication = connectionSettingsProvider.getConnectionSettings().getAuthentication();
 
         String currentUserName = ((UserAuthentication) authentication).getUserName();
+        //TODO This is a nasty hotfix for the username having special characters
+        currentUserName = UrlParser.urlEncodeQueryParamValue(currentUserName);
 
         EntityList entityList = octane.entityList(Entity.WORKSPACE_USER.getApiEntityName());
         Collection<EntityModel> entityModels =

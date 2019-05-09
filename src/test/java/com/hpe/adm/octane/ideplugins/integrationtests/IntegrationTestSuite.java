@@ -42,7 +42,8 @@ import org.junit.runners.Suite;
         MetadataServiceITCase.class,
         MyWorkTreeITCase.class,
         RequirementsITCase.class,
-        //SearchFunctionalityITCase.class
+        SearchFunctionalityITCase.class,
+        CommitMessageServiceITCase.class
 })
 
 public class IntegrationTestSuite {
@@ -53,6 +54,14 @@ public class IntegrationTestSuite {
      */
     @BeforeClass
     public static void setUp() {
+        initTestServiceModuleIfNeeded();
+    }
+
+    public static void initTestServiceModuleIfNeeded() {
+        if(TestServiceModule.getServiceModule() != null ){
+            return;
+        }
+
         ConnectionSettingsProvider connectionSettingsProvider;
         try{
             connectionSettingsProvider = PropertyUtil.readFormVmArgs() != null ? PropertyUtil.readFormVmArgs() : PropertyUtil.readFromPropFile();

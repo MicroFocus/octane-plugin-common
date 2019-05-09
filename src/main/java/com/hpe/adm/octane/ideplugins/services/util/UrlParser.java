@@ -12,6 +12,7 @@
  */
 package com.hpe.adm.octane.ideplugins.services.util;
 
+import com.google.api.client.util.Charsets;
 import com.hpe.adm.nga.sdk.authentication.Authentication;
 import com.hpe.adm.octane.ideplugins.services.connection.ConnectionSettings;
 import com.hpe.adm.octane.ideplugins.services.connection.UserAuthentication;
@@ -20,10 +21,7 @@ import com.hpe.adm.octane.ideplugins.services.exception.ServiceRuntimeException;
 import com.hpe.adm.octane.ideplugins.services.filtering.Entity;
 
 import java.io.UnsupportedEncodingException;
-import java.net.URI;
-import java.net.URISyntaxException;
-import java.net.URL;
-import java.net.URLDecoder;
+import java.net.*;
 import java.util.LinkedHashMap;
 import java.util.LinkedList;
 import java.util.List;
@@ -199,6 +197,14 @@ public class UrlParser {
         }
 
         return query_pairs;
+    }
+
+    public static String urlEncodeQueryParamValue(String queryParamValue) {
+        try {
+            return URLEncoder.encode(queryParamValue, Charsets.UTF_8.name());
+        } catch (UnsupportedEncodingException ex) {
+            throw new RuntimeException(ex);
+        }
     }
 
 }

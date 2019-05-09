@@ -18,15 +18,9 @@ import com.google.inject.Inject;
 import com.google.inject.Injector;
 import com.hpe.adm.octane.ideplugins.TestUtil;
 import com.hpe.adm.octane.ideplugins.integrationtests.TestServiceModule;
-import com.hpe.adm.octane.ideplugins.integrationtests.util.EntityUtils;
-import com.hpe.adm.octane.ideplugins.integrationtests.util.UserUtils;
-import com.hpe.adm.octane.ideplugins.services.UserService;
-import com.hpe.adm.octane.ideplugins.services.connection.HttpClientProvider;
-import com.hpe.adm.octane.ideplugins.services.connection.OctaneProvider;
 import com.hpe.adm.octane.ideplugins.services.di.ServiceModule;
 import com.hpe.adm.octane.ideplugins.services.filtering.Entity;
 import com.hpe.adm.octane.ideplugins.services.nonentity.EntitySearchService;
-import com.hpe.adm.octane.ideplugins.services.nonentity.OctaneVersionService;
 import org.junit.Before;
 import org.junit.Test;
 

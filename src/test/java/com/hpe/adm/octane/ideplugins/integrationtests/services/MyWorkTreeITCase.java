@@ -21,7 +21,9 @@ import com.hpe.adm.octane.ideplugins.integrationtests.TestServiceModule;
 import com.hpe.adm.octane.ideplugins.integrationtests.util.*;
 import com.hpe.adm.octane.ideplugins.services.di.ServiceModule;
 import com.hpe.adm.octane.ideplugins.services.filtering.Entity;
-import org.junit.*;
+import org.junit.After;
+import org.junit.Before;
+import org.junit.Test;
 
 import java.util.ArrayList;
 import java.util.List;

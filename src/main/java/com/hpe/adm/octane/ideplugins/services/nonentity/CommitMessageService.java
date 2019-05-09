@@ -15,46 +15,70 @@ package com.hpe.adm.octane.ideplugins.services.nonentity;
 import com.google.gson.JsonArray;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonParser;
+import com.google.gson.JsonSyntaxException;
 import com.google.inject.Inject;
+import com.hpe.adm.nga.sdk.model.EntityModel;
+import com.hpe.adm.nga.sdk.model.ReferenceFieldModel;
 import com.hpe.adm.nga.sdk.network.OctaneHttpClient;
 import com.hpe.adm.nga.sdk.network.OctaneHttpRequest;
 import com.hpe.adm.nga.sdk.network.OctaneHttpResponse;
+import com.hpe.adm.nga.sdk.query.Query;
+import com.hpe.adm.nga.sdk.query.QueryMethod;
+import com.hpe.adm.octane.ideplugins.services.EntityService;
 import com.hpe.adm.octane.ideplugins.services.connection.ConnectionSettings;
 import com.hpe.adm.octane.ideplugins.services.connection.ConnectionSettingsProvider;
 import com.hpe.adm.octane.ideplugins.services.connection.HttpClientProvider;
 import com.hpe.adm.octane.ideplugins.services.filtering.Entity;
+import com.hpe.adm.octane.ideplugins.services.util.UrlParser;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
-import java.io.IOException;
-import java.net.URLEncoder;
-import java.util.ArrayList;
-import java.util.List;
+import java.util.*;
 
 public class CommitMessageService {
+
+    private static final Logger logger = LoggerFactory.getLogger(CommitMessageService.class);
+    private static final JsonParser JSON_PARSER = new JsonParser();
+
     @Inject
     protected ConnectionSettingsProvider connectionSettingsProvider;
     @Inject
     protected HttpClientProvider httpClientProvider;
+    @Inject
+    private EntityService entityService;
 
     public boolean validateCommitMessage(String commitMessage, Entity entityType, long entityId) {
+
         ConnectionSettings connectionSettings = connectionSettingsProvider.getConnectionSettings();
         OctaneHttpClient httpClient = httpClientProvider.getOctaneHttpClient();
+
         if (null != httpClient) {
+            OctaneHttpRequest request = new OctaneHttpRequest.GetOctaneHttpRequest(
+                    connectionSettings.getBaseUrl() +
+                            "/internal-api/shared_spaces/" + connectionSettings.getSharedSpaceId() +
+                            "/workspaces/" + connectionSettings.getWorkspaceId() +
+                            "/ali/validateCommitPattern?comment=" + UrlParser.urlEncodeQueryParamValue(commitMessage)
+            );
+
+            OctaneHttpResponse response = httpClient.execute(request);
+            String jsonString = response.getContent();
+
             try {
+                JsonArray matchedIdsArray =
+                        JSON_PARSER
+                                .parse(jsonString)
+                                .getAsJsonObject()
+                                .get(entityType.getSubtypeName())
+                                .getAsJsonArray();
 
-                OctaneHttpRequest request = new OctaneHttpRequest.GetOctaneHttpRequest(
-                        connectionSettings.getBaseUrl() + "/internal-api/shared_spaces/" + connectionSettings.getSharedSpaceId() + "/workspaces/" + connectionSettings.getWorkspaceId() + "/ali/validateCommitPattern?comment=" + URLEncoder.encode(commitMessage, "UTF-8"));
-                OctaneHttpResponse response = httpClient.execute(request);
-                String jsonString = response.getContent();
-
-                JsonArray matchedIdsArray = new JsonParser().parse(jsonString).getAsJsonObject().get(entityType.getSubtypeName())
-                        .getAsJsonArray();
                 for (JsonElement element : matchedIdsArray) {
                     if (element.getAsLong() == entityId) {
                         return true;
                     }
                 }
-            } catch (IOException e) {
-                e.printStackTrace();
+            } catch (JsonSyntaxException ex) {
+                logger.error("Failed to parse response json: " + ex);
+                return false;
             }
         }
         return false;
@@ -77,23 +101,89 @@ public class CommitMessageService {
         }
 
         List<String> commitPatterns = new ArrayList<>();
+
         ConnectionSettings connectionSettings = connectionSettingsProvider.getConnectionSettings();
         OctaneHttpClient httpClient = httpClientProvider.getOctaneHttpClient();
-        if (null != httpClient) {
-                OctaneHttpRequest request = new OctaneHttpRequest.GetOctaneHttpRequest(connectionSettings.getBaseUrl() + "/api/shared_spaces/" + connectionSettings.getSharedSpaceId() +
-                        "/workspaces/" + connectionSettings.getWorkspaceId() + "/scm_commit_patterns");
-                OctaneHttpResponse response = httpClient.execute(request);
-                String jsonString = response.getContent();
 
-                JsonArray dataArray = new JsonParser().parse(jsonString).getAsJsonObject().get("data").getAsJsonArray();
-                for (JsonElement elem : dataArray) {
-                    String name = elem.getAsJsonObject().get("entity_type").getAsJsonObject().get("name").getAsString();
-                    if (name.equals(type)) {
-                        commitPatterns.add(elem.getAsJsonObject().get("pattern").getAsString());
-                    }
+        if (null != httpClient) {
+            OctaneHttpRequest request = new OctaneHttpRequest.GetOctaneHttpRequest(
+                    connectionSettings.getBaseUrl() +
+                            "/api/shared_spaces/" + connectionSettings.getSharedSpaceId() +
+                            "/workspaces/" + connectionSettings.getWorkspaceId() + "/scm_commit_patterns");
+
+            OctaneHttpResponse response = httpClient.execute(request);
+            String jsonString = response.getContent();
+
+            JsonArray dataArray = JSON_PARSER.parse(jsonString)
+                    .getAsJsonObject()
+                    .get("data")
+                    .getAsJsonArray();
+
+            for (JsonElement elem : dataArray) {
+                String name = elem.getAsJsonObject().get("entity_type").getAsJsonObject().get("name").getAsString();
+                if (name.equals(type)) {
+                    commitPatterns.add(elem.getAsJsonObject().get("pattern").getAsString());
                 }
-                return commitPatterns;
+            }
+
+            return commitPatterns;
         }
+
         return null;
     }
+
+    public String generateLocalCommitMessage(EntityModel entityModel) {
+
+        String taskString = "";
+
+        if (Entity.getEntityType(entityModel) == Entity.TASK) {
+            taskString = ": task #" + entityModel.getId();
+
+            entityModel = addReferenceFieldIfNeeded(entityModel);
+            entityModel = (EntityModel) entityModel.getValue("story").getValue();
+        }
+
+        StringBuilder messageBuilder = new StringBuilder();
+
+        String id = entityModel.getId();
+        Entity type = Entity.getEntityType(entityModel);
+
+        switch (type) {
+            case USER_STORY:
+                messageBuilder.append("user story #");
+                break;
+            case QUALITY_STORY:
+                messageBuilder.append("quality story #");
+                break;
+            case DEFECT:
+                messageBuilder.append("defect #");
+                break;
+        }
+
+        messageBuilder.append(id);
+        messageBuilder.append(taskString);
+
+        return messageBuilder.toString();
+    }
+
+    private EntityModel addReferenceFieldIfNeeded(EntityModel entityModel) {
+        if (Entity.getEntityType(entityModel) == Entity.TASK && entityModel.getValue("story") == null) {
+            EntityModel taskParent = getTaskParent(entityModel.getId());
+            entityModel.setValue(new ReferenceFieldModel("story", taskParent));
+        }
+        return entityModel;
+    }
+
+    private EntityModel getTaskParent(String id) {
+        Set<String> storyField = new HashSet<>(Collections.singletonList("story"));
+        Query.QueryBuilder idQuery = Query.statement("id", QueryMethod.EqualTo, id);
+        Collection<EntityModel> results = entityService.findEntities(Entity.TASK, idQuery, storyField);
+
+        if (results.size() == 1) {
+            return (EntityModel) results.iterator().next().getValue("story").getValue();
+        } else {
+            return null;
+        }
+    }
+
 }
