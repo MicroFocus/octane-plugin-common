@@ -318,8 +318,12 @@ public class IdePluginsOctaneHttpClient implements OctaneHttpClient {
 		try {
 			URL parsedUrl = new URL(url);
 			String query = parsedUrl.getQuery();
-			String parsedQuery = query.replaceAll("\\+", "%2B");
-			return url.replace(query, parsedQuery);
+			if(query != null && !query.trim().isEmpty()) {
+				String parsedQuery = query.replaceAll("\\+", "%2B");
+				return url.replace(query, parsedQuery);
+			} else {
+				return url;
+			}
 		} catch (MalformedURLException e) {
 			logger.error("Failed to encode url query params: " + e);
 			return url;
