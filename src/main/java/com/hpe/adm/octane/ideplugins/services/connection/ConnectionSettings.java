@@ -97,7 +97,6 @@ public class ConnectionSettings {
         return Objects.equals(baseUrl, that.baseUrl) &&
                 Objects.equals(sharedSpaceId, that.sharedSpaceId) &&
                 Objects.equals(workspaceId, that.workspaceId) &&
-                Objects.equals(authentication.getClass(), that.authentication.getClass()) &&
                 Objects.equals(authentication.getAuthenticationString(), that.authentication.getAuthenticationString()) &&
                 !authentication.getClass().equals(GrantTokenAuthentication.class);
 
