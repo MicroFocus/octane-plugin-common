@@ -196,14 +196,15 @@ public class IdePluginsOctaneHttpClient implements OctaneHttpClient {
                 try {
                     HttpRequest pollRequest = requestFactory.buildPostRequest(new GenericUrl(urlDomain + "/authentication/grant_tool_token"),
                             identifierRequestContent);
-                    logger.debug(LOGGER_REQUEST_FORMAT, pollRequest.getRequestMethod(), pollRequest.getUrl().toString(), pollRequest.getHeaders().toString());
+
+                    logger.debug(LOGGER_REQUEST_FORMAT, pollRequest.getRequestMethod(), pollRequest.getUrl().toString(), new HttpHeaders());
 
                     HttpResponse pollResponse = pollRequest.execute();
                     logger.debug(LOGGER_RESPONSE_FORMAT, pollResponse.getStatusCode(), pollResponse.getStatusMessage(), pollResponse.getHeaders().toString());
 
                     logHttpContent(pollRequest.getContent());
 
-                    pollResponseJson = new JSONObject(pollRequest.execute().parseAsString());
+                    pollResponseJson = new JSONObject(pollResponse.parseAsString());
 
                 } catch (Exception ex) {
                     try {
