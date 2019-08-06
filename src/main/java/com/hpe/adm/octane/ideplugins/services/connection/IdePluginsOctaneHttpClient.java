@@ -203,7 +203,7 @@ public class IdePluginsOctaneHttpClient implements OctaneHttpClient {
 
                     logHttpContent(pollRequest.getContent());
 
-                    pollResponseJson = new JSONObject(pollRequest.execute().parseAsString());
+                    pollResponseJson = new JSONObject(pollResponse.parseAsString());
 
                 } catch (Exception ex) {
                     try {
