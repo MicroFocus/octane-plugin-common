@@ -105,7 +105,7 @@
         <dependency>
             <groupId>com.microfocus.adm.almoctane.sdk.extension</groupId>
             <artifactId>sdk-extension-src</artifactId>
-            <version>12.60.41</version>
+            <version>12.60.60-SNAPSHOT</version>
         </dependency>
         <dependency>
             <groupId>org.jsoup</groupId>
