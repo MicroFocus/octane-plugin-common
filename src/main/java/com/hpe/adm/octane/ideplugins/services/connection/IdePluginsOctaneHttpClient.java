@@ -13,6 +13,7 @@
 package com.hpe.adm.octane.ideplugins.services.connection;
 
 import com.google.api.client.http.*;
+import com.google.api.client.http.apache.v2.ApacheHttpTransport;
 import com.hpe.adm.nga.sdk.authentication.Authentication;
 import com.hpe.adm.nga.sdk.exception.OctaneException;
 import com.hpe.adm.nga.sdk.exception.OctanePartialException;
@@ -26,7 +27,6 @@ import com.hpe.adm.octane.ideplugins.services.util.ClientType;
 import org.apache.http.client.HttpClient;
 import org.apache.http.client.config.CookieSpecs;
 import org.apache.http.client.config.RequestConfig;
-import org.apache.http.impl.client.BasicCookieStore;
 import org.apache.http.impl.client.HttpClientBuilder;
 import org.json.JSONObject;
 import org.slf4j.Logger;
@@ -115,18 +115,16 @@ public class IdePluginsOctaneHttpClient implements OctaneHttpClient {
         logSystemProxyForUrlDomain(urlDomain);
 
         RequestConfig globalConfig = RequestConfig.custom()
-                .setCookieSpec(CookieSpecs.STANDARD)
+                .setCookieSpec(CookieSpecs.STANDARD) // allow cookies with . in them
                 .build();
 
-        BasicCookieStore cookieStore = new BasicCookieStore();
         HttpClient httpClient = HttpClientBuilder
                 .create()
                 .setDefaultRequestConfig(globalConfig)
-                .setDefaultCookieStore(cookieStore)
                 .useSystemProperties()
                 .build();
 
-        HttpTransport HTTP_TRANSPORT = new com.google.api.client.http.apache.v2.ApacheHttpTransport(httpClient);
+        HttpTransport HTTP_TRANSPORT = new ApacheHttpTransport(httpClient);
         requestFactory = HTTP_TRANSPORT.createRequestFactory(requestInitializer);
     }
 
@@ -212,7 +210,8 @@ public class IdePluginsOctaneHttpClient implements OctaneHttpClient {
                 try {
                     HttpRequest pollRequest = requestFactory.buildPostRequest(new GenericUrl(urlDomain + "/authentication/grant_tool_token"),
                             identifierRequestContent);
-                    logger.debug(LOGGER_REQUEST_FORMAT, pollRequest.getRequestMethod(), pollRequest.getUrl().toString(), pollRequest.getHeaders().toString());
+
+                    logger.debug(LOGGER_REQUEST_FORMAT, pollRequest.getRequestMethod(), pollRequest.getUrl().toString(), new HttpHeaders());
 
                     HttpResponse pollResponse = pollRequest.execute();
                     logger.debug(LOGGER_RESPONSE_FORMAT, pollResponse.getStatusCode(), pollResponse.getStatusMessage(), pollResponse.getHeaders().toString());

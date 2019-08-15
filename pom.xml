@@ -108,6 +108,11 @@
             <version>12.60.60-SNAPSHOT</version>
         </dependency>
         <dependency>
+            <groupId>com.google.http-client</groupId>
+            <artifactId>google-http-client-apache-v2</artifactId>
+            <version>1.30.2</version>
+        </dependency>
+        <dependency>
             <groupId>org.jsoup</groupId>
             <artifactId>jsoup</artifactId>
             <version>1.8.3</version>
