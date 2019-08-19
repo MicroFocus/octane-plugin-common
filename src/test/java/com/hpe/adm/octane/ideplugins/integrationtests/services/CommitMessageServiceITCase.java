@@ -16,7 +16,6 @@ import com.google.inject.Guice;
 import com.google.inject.Inject;
 import com.google.inject.Injector;
 import com.hpe.adm.nga.sdk.model.EntityModel;
-import com.hpe.adm.octane.ideplugins.integrationtests.IntegrationTestSuite;
 import com.hpe.adm.octane.ideplugins.integrationtests.TestServiceModule;
 import com.hpe.adm.octane.ideplugins.integrationtests.util.EntityUtils;
 import com.hpe.adm.octane.ideplugins.services.di.ServiceModule;
@@ -38,7 +37,6 @@ public class CommitMessageServiceITCase {
 
     @Before
     public void setUp() {
-        IntegrationTestSuite.initTestServiceModuleIfNeeded();
         ServiceModule serviceModule = TestServiceModule.getServiceModule();
         Injector injector = Guice.createInjector(serviceModule);
         injector.injectMembers(this);
