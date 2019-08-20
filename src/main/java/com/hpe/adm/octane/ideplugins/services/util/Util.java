@@ -12,10 +12,7 @@
  */
 package com.hpe.adm.octane.ideplugins.services.util;
 
-import com.hpe.adm.nga.sdk.model.EntityModel;
-import com.hpe.adm.nga.sdk.model.FieldModel;
-import com.hpe.adm.nga.sdk.model.MultiReferenceFieldModel;
-import com.hpe.adm.nga.sdk.model.ReferenceFieldModel;
+import com.hpe.adm.nga.sdk.model.*;
 import org.apache.commons.lang.CharEncoding;
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -34,49 +31,53 @@ import java.util.StringJoiner;
 @SuppressWarnings("rawtypes")
 public class Util {
     public static final String DATE_FORMAT = "MM/dd/yyyy HH:mm:ss";
-    
+
     /**
      * This method is for displaying in the UI only
      *
-     * @param fieldModel
-     *            from an {@link EntityModel}
+     * @param fieldModel from an {@link EntityModel}
      * @return string value of the field
      */
     public static String getUiDataFromModel(FieldModel fieldModel) {
         String referenceEntityField = "name"; //default
-        
+
         //Exception for all user fields
-        if(fieldModel instanceof ReferenceFieldModel && fieldModel.getValue() != null) {
+        if (fieldModel instanceof ReferenceFieldModel && fieldModel.getValue() != null) {
             EntityModel entity = (EntityModel) fieldModel.getValue();
-            if(entity.getValue("full_name") != null) {
+            if (entity.getValue("full_name") != null) {
                 referenceEntityField = "full_name";
             }
         }
-        
+
         return getUiDataFromModel(fieldModel, referenceEntityField);
     }
 
     /**
      * This method is for displaying in the UI only
      *
-     * @param fieldModel
-     *            fieldModel from an {@link EntityModel}
-     * @param neededProperty
-     *            can check {@link ReferenceFieldModel} and
-     *            {@link MultiReferenceFieldModel} for property to use
+     * @param fieldModel     fieldModel from an {@link EntityModel}
+     * @param neededProperty can check {@link ReferenceFieldModel} and
+     *                       {@link MultiReferenceFieldModel} for property to use
      * @return string value of the field
      */
     public static String getUiDataFromModel(FieldModel fieldModel, String neededProperty) {
         String result = "";
         if (null != fieldModel) {
-            FieldModel tempFieldModel = null;
+            FieldModel tempFieldModel;
+
             if (fieldModel instanceof ReferenceFieldModel) {
+
                 tempFieldModel = getValueOfChild((EntityModel) fieldModel.getValue(), neededProperty);
                 if (null != tempFieldModel) {
                     result = String.valueOf(tempFieldModel.getValue());
                 }
+
             } else if (fieldModel instanceof MultiReferenceFieldModel) {
                 result = getValueOfChildren((Collection<EntityModel>) fieldModel.getValue(), neededProperty);
+
+            } else if (fieldModel instanceof EmptyFieldModel) {
+                return " ";
+
             } else {
                 // In case of dates, we need to convert to local timezone
                 if (fieldModel.getValue() instanceof ZonedDateTime) {
@@ -125,7 +126,7 @@ public class Util {
     }
 
     public static FieldModel getContainerItemForCommentModel(EntityModel commentModel) {
-        return getNonNullValue(commentModel, "owner_work_item", "owner_test", "owner_run","owner_requirement");
+        return getNonNullValue(commentModel, "owner_work_item", "owner_test", "owner_run", "owner_requirement");
     }
 
     private static String getValueOfChildren(Collection<EntityModel> entityModelList, String child) {
