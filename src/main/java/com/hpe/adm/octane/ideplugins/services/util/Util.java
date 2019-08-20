@@ -76,7 +76,7 @@ public class Util {
                 result = getValueOfChildren((Collection<EntityModel>) fieldModel.getValue(), neededProperty);
 
             } else if (fieldModel instanceof EmptyFieldModel) {
-                return " ";
+                return "";
 
             } else {
                 // In case of dates, we need to convert to local timezone
@@ -101,7 +101,7 @@ public class Util {
         } catch (JSONException ex) {
         }
 
-        return (null == result) ? " " : result;
+        return (null == result) ? "" : result;
     }
 
     private static FieldModel getValueOfChild(EntityModel entityModel, String child) {
