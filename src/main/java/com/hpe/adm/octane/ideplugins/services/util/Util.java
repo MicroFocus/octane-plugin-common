@@ -119,7 +119,7 @@ public class Util {
     public static FieldModel getNonNullValue(EntityModel entityModel, String... keys) {
         for (String key : keys) {
             FieldModel childModel = getValueOfChild(entityModel, key);
-            if (childModel != null && childModel.getValue() != null)
+            if (childModel != null && childModel.getValue() != null && !(childModel instanceof EmptyFieldModel))
                 return childModel;
         }
         return null;
