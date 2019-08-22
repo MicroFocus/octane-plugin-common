@@ -46,6 +46,7 @@ public enum Entity {
     TEST_RUN("runs", "run"),
     MANUAL_TEST_RUN(TEST_RUN, "run_manual"),
     TEST_SUITE_RUN(TEST_RUN, "run_suite"),
+    AUTOMATED_TEST_RUN(TEST_RUN, "run_automated"),
 
     COMMENT("comments", "comment"),
 
