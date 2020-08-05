@@ -31,6 +31,9 @@ import com.hpe.adm.octane.ideplugins.services.connection.HttpClientProvider;
 import com.hpe.adm.octane.ideplugins.services.connection.OctaneProvider;
 import com.hpe.adm.octane.ideplugins.services.exception.ServiceRuntimeException;
 import com.hpe.adm.octane.ideplugins.services.filtering.Entity;
+import com.hpe.adm.octane.ideplugins.services.nonentity.SharedSpaceLevelRequestService;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.util.Collection;
 import java.util.HashSet;
@@ -52,6 +55,8 @@ public class CommentService {
 
     @Inject
     private UserService userService;
+
+    private final Logger logger = LoggerFactory.getLogger(SharedSpaceLevelRequestService.class.getClass());
 
     // Aggregate types include their subtypes when the check is done
     private static final BiMap<Entity, String> supportedEntities = HashBiMap.create();
@@ -120,7 +125,7 @@ public class CommentService {
 
             return true;
         } catch (Exception e) {
-            //log me
+            logger.error("Failed to dismiss comment", e);
         }
         return false;
     }
