@@ -66,6 +66,8 @@ public enum Entity {
     RELEASE("releases", "release"),
     
     SPRINT("sprints", "sprint"),
+
+    MILESTONE("milestones", "milestone"),
     
     PRODUCT_AREA("product_areas", "product_area"),
     
