@@ -28,7 +28,7 @@ public class DownloadScriptService {
     @Inject
     protected ConnectionSettingsProvider connectionSettingsProvider;
 
-    public String getGherkinTestScriptContent(long testId) {
+    public String getTestScriptContent(long testId) {
         ConnectionSettings connectionSettings = connectionSettingsProvider.getConnectionSettings();
         OctaneHttpClient httpClient = httpClientProvider.getOctaneHttpClient();
         if (null != httpClient) {
