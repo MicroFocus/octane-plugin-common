@@ -75,6 +75,10 @@ public class DynamoMyWorkFilterCriteria {
                         .and(createNativeStatusQuery("list_node.run_native_status.blocked", "list_node.run_native_status.not_completed", "list_node.run_native_status.planned")
                                 .and( Query.statement("parent_suite", QueryMethod.EqualTo, null)))
         );
+        filterCriteria.put(BDD_SCENARIO,
+                createUserQuery("owner", userService.getCurrentUserId())
+        );
+
 
         filterCriteria.put(COMMENT, createUserQuery("mention_user", userService.getCurrentUserId()));
 
