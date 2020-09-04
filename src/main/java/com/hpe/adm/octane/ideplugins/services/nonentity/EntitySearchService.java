@@ -59,23 +59,20 @@ public class EntitySearchService {
         String escapedQueryString = queryString.replace("\\'", "'");
         Map<Entity, Collection<EntityModel>> result = new ConcurrentHashMap<>();
 
-        try {
-            // Doing the httpClientProvider.getOctaneHttpClient() will make the login execute outside of the parallel threads
-            OctaneHttpClient httpClient = httpClientProvider.getOctaneHttpClient();
-            Arrays
-                    .stream(entity)
-                    .parallel()
-                    .forEach(entityType -> result.put(entityType, searchGlobal(escapedQueryString, limit, entityType, httpClient)));
 
-            return result
-                    .keySet()
-                    .stream()
-                    .sorted(PredefinedEntityComparator.instance)
-                    .flatMap(key -> result.get(key).stream())
-                    .collect(Collectors.toList());
-        } catch(Exception ex) {
-            throw ex;
-        }
+        // Doing the httpClientProvider.getOctaneHttpClient() will make the login execute outside of the parallel threads
+        OctaneHttpClient httpClient = httpClientProvider.getOctaneHttpClient();
+        Arrays
+                .stream(entity)
+                .parallel()
+                .forEach(entityType -> result.put(entityType, searchGlobal(escapedQueryString, limit, entityType, httpClient)));
+
+        return result
+                .keySet()
+                .stream()
+                .sorted(PredefinedEntityComparator.instance)
+                .flatMap(key -> result.get(key).stream())
+                .collect(Collectors.toList());
 
     }
 
