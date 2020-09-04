@@ -59,7 +59,6 @@ public class EntitySearchService {
         String escapedQueryString = queryString.replace("\\'", "'");
         Map<Entity, Collection<EntityModel>> result = new ConcurrentHashMap<>();
 
-
         // Doing the httpClientProvider.getOctaneHttpClient() will make the login execute outside of the parallel threads
         OctaneHttpClient httpClient = httpClientProvider.getOctaneHttpClient();
         Arrays
