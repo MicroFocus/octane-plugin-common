@@ -39,6 +39,7 @@ public enum Entity {
     GHERKIN_TEST(Entity.TEST, "gherkin_test"),
     AUTOMATED_TEST(Entity.TEST, "test_automated"),
     TEST_SUITE(Entity.TEST, "test_suite"),
+    BDD_SCENARIO(Entity.TEST, "scenario_test"),
 
     TASK("tasks", "task"),
     PHASE("phases", "phases"),

@@ -97,6 +97,13 @@
       "plural_capitalized": "Requirements",
       "initials": "R",
       "language": "lang.en"
+    },
+	{
+      "entity_type": "bdd_scenario",
+      "name": "BDD Scenario",
+      "plural_capitalized": "BDD Scenarios",
+      "initials": "BSC",
+      "language": "lang.en"
     }
   ]
 }

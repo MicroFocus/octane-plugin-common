@@ -109,5 +109,6 @@ public class Constants {
             Entity.MANUAL_TEST,
             Entity.AUTOMATED_TEST,
             Entity.GHERKIN_TEST,
+            Entity.BDD_SCENARIO,
             Entity.REQUIREMENT));
 }
