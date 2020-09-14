@@ -51,6 +51,8 @@ public enum Entity {
 
     COMMENT("comments", "comment"),
 
+    BDD_SPEC("bdd_spec", "bdd_spec"),
+
     WORKSPACE_USER("workspace_users", "workspace_user"),
     TEAM("teams", "team"),
 
