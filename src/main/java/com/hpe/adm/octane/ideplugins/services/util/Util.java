@@ -126,7 +126,7 @@ public class Util {
     }
 
     public static FieldModel getContainerItemForCommentModel(EntityModel commentModel) {
-        return getNonNullValue(commentModel, "owner_work_item", "owner_test", "owner_run", "owner_requirement");
+        return getNonNullValue(commentModel, "owner_work_item", "owner_test", "owner_run", "owner_requirement", "owner_bdd_spec");
     }
 
     private static String getValueOfChildren(Collection<EntityModel> entityModelList, String child) {
