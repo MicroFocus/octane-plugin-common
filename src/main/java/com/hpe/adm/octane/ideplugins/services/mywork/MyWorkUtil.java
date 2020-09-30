@@ -36,6 +36,7 @@ public class MyWorkUtil {
         addToMyWorkEntities.add(Entity.QUALITY_STORY);
         addToMyWorkEntities.add(Entity.MANUAL_TEST);
         addToMyWorkEntities.add(Entity.GHERKIN_TEST);
+        addToMyWorkEntities.add(Entity.BDD_SCENARIO);
         addToMyWorkEntities.add(Entity.MANUAL_TEST_RUN);
         addToMyWorkEntities.add(Entity.TEST_SUITE_RUN);
     }

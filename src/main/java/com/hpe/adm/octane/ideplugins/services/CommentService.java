@@ -22,11 +22,18 @@ import com.hpe.adm.nga.sdk.model.EntityModel;
 import com.hpe.adm.nga.sdk.model.FieldModel;
 import com.hpe.adm.nga.sdk.model.ReferenceFieldModel;
 import com.hpe.adm.nga.sdk.model.StringFieldModel;
+import com.hpe.adm.nga.sdk.network.OctaneHttpRequest;
 import com.hpe.adm.nga.sdk.query.Query;
 import com.hpe.adm.nga.sdk.query.QueryMethod;
+import com.hpe.adm.octane.ideplugins.services.connection.ConnectionSettings;
+import com.hpe.adm.octane.ideplugins.services.connection.ConnectionSettingsProvider;
+import com.hpe.adm.octane.ideplugins.services.connection.HttpClientProvider;
 import com.hpe.adm.octane.ideplugins.services.connection.OctaneProvider;
 import com.hpe.adm.octane.ideplugins.services.exception.ServiceRuntimeException;
 import com.hpe.adm.octane.ideplugins.services.filtering.Entity;
+import com.hpe.adm.octane.ideplugins.services.nonentity.SharedSpaceLevelRequestService;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.util.Collection;
 import java.util.HashSet;
@@ -41,7 +48,15 @@ public class CommentService {
     private OctaneProvider octaneProvider;
 
     @Inject
+    private ConnectionSettingsProvider connectionSettingsProvider;
+
+    @Inject
+    protected HttpClientProvider httpClientProvider;
+
+    @Inject
     private UserService userService;
+
+    private final Logger logger = LoggerFactory.getLogger(SharedSpaceLevelRequestService.class.getClass());
 
     // Aggregate types include their subtypes when the check is done
     private static final BiMap<Entity, String> supportedEntities = HashBiMap.create();
@@ -93,6 +108,26 @@ public class CommentService {
         return get.query(query)
                 .addOrderBy("creation_time", false)
                 .execute();
+    }
+
+    public boolean dismissComment(EntityModel entityModel) {
+        try {
+
+            ConnectionSettings connectionSettings = connectionSettingsProvider.getConnectionSettings();
+
+            String putUrl = connectionSettings.getBaseUrl() + "/internal-api/shared_spaces/" +
+                    connectionSettings.getSharedSpaceId() + "/workspaces/" +
+                    connectionSettings.getWorkspaceId() + "/comments/" +
+                    entityModel.getValue("id").getValue() + "/dismiss";
+
+            OctaneHttpRequest dismissCommentRequest = new OctaneHttpRequest.PutOctaneHttpRequest(putUrl, OctaneHttpRequest.JSON_CONTENT_TYPE,"");
+            httpClientProvider.getOctaneHttpClient().execute(dismissCommentRequest);
+
+            return true;
+        } catch (Exception e) {
+            logger.error("Failed to dismiss comment", e);
+        }
+        return false;
     }
 
     /**

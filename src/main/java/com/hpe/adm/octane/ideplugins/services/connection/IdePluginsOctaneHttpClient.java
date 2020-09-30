@@ -13,7 +13,7 @@
 package com.hpe.adm.octane.ideplugins.services.connection;
 
 import com.google.api.client.http.*;
-import com.google.api.client.http.javanet.NetHttpTransport;
+import com.google.api.client.http.apache.v2.ApacheHttpTransport;
 import com.hpe.adm.nga.sdk.authentication.Authentication;
 import com.hpe.adm.nga.sdk.exception.OctaneException;
 import com.hpe.adm.nga.sdk.exception.OctanePartialException;
@@ -24,6 +24,10 @@ import com.hpe.adm.nga.sdk.network.OctaneHttpResponse;
 import com.hpe.adm.octane.ideplugins.services.connection.granttoken.*;
 import com.hpe.adm.octane.ideplugins.services.exception.ServiceRuntimeException;
 import com.hpe.adm.octane.ideplugins.services.util.ClientType;
+import org.apache.http.client.HttpClient;
+import org.apache.http.client.config.CookieSpecs;
+import org.apache.http.client.config.RequestConfig;
+import org.apache.http.impl.client.HttpClientBuilder;
 import org.json.JSONObject;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -110,7 +114,17 @@ public class IdePluginsOctaneHttpClient implements OctaneHttpClient {
         logProxySystemProperties();
         logSystemProxyForUrlDomain(urlDomain);
 
-        HttpTransport HTTP_TRANSPORT = new NetHttpTransport();
+        RequestConfig globalConfig = RequestConfig.custom()
+                .setCookieSpec(CookieSpecs.STANDARD) // allow cookies with . in them
+                .build();
+
+        HttpClient httpClient = HttpClientBuilder
+                .create()
+                .setDefaultRequestConfig(globalConfig)
+                .useSystemProperties()
+                .build();
+
+        HttpTransport HTTP_TRANSPORT = new ApacheHttpTransport(httpClient);
         requestFactory = HTTP_TRANSPORT.createRequestFactory(requestInitializer);
     }
 
