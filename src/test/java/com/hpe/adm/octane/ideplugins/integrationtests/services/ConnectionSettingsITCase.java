@@ -12,7 +12,6 @@
  */
 package com.hpe.adm.octane.ideplugins.integrationtests.services;
 
-import com.google.api.client.http.HttpResponseException;
 import com.google.inject.Guice;
 import com.google.inject.Inject;
 import com.google.inject.Injector;
@@ -71,12 +70,7 @@ public class ConnectionSettingsITCase {
         try {
             return octaneHttpClient.authenticate(authentication);
         } catch (Exception e) {
-            if (e.getCause() instanceof HttpResponseException && ((HttpResponseException) e.getCause()).getStatusCode() == 401) {
-                return false;
-            } else {
-                Assert.fail("Unexpected exception from sdk during auth failure: " + e);
-                throw e;
-            }
+            return false;
         }
     }
 

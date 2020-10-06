@@ -13,18 +13,9 @@
 
 package com.hpe.adm.octane.ideplugins.integrationtests;
 
-import com.google.inject.Guice;
-import com.google.inject.Injector;
-import com.hpe.adm.octane.ideplugins.Constants;
 import com.hpe.adm.octane.ideplugins.integrationtests.services.*;
 import com.hpe.adm.octane.ideplugins.integrationtests.services.noentity.EntitySearchServiceITCase;
 import com.hpe.adm.octane.ideplugins.integrationtests.services.noentity.OctaneVersionServiceITCase;
-import com.hpe.adm.octane.ideplugins.integrationtests.util.PropertyUtil;
-import com.hpe.adm.octane.ideplugins.integrationtests.util.WorkspaceUtils;
-import com.hpe.adm.octane.ideplugins.services.connection.ConnectionSettings;
-import com.hpe.adm.octane.ideplugins.services.connection.ConnectionSettingsProvider;
-import com.hpe.adm.octane.ideplugins.services.di.ServiceModule;
-import org.junit.Assert;
 import org.junit.BeforeClass;
 import org.junit.runner.RunWith;
 import org.junit.runners.Suite;
@@ -53,44 +44,5 @@ public class IntegrationTestSuite {
      * annotations set on the implementing class
      */
     @BeforeClass
-    public static void setUp() {
-        initTestServiceModuleIfNeeded();
-    }
-
-    public static void initTestServiceModuleIfNeeded() {
-        if(TestServiceModule.getServiceModule() != null ){
-            return;
-        }
-
-        ConnectionSettingsProvider connectionSettingsProvider;
-        try{
-            connectionSettingsProvider = PropertyUtil.readFormVmArgs() != null ? PropertyUtil.readFormVmArgs() : PropertyUtil.readFromPropFile();
-            if (connectionSettingsProvider == null) {
-                Assert.fail(Constants.Errors.CONNECTION_SETTINGS_RETRIEVE_ERROR);
-            }
-        } catch (Exception ex) {
-            Assert.fail(Constants.Errors.CONNECTION_SETTINGS_RETRIEVE_ERROR);
-            return;
-        }
-
-        ConnectionSettings connectionSettings = connectionSettingsProvider.getConnectionSettings();
-
-        ServiceModule serviceModule = new ServiceModule(connectionSettingsProvider);
-        Injector injector = Guice.createInjector(serviceModule);
-
-        // set up service module to be used by all tests
-        TestServiceModule.setServiceModule(serviceModule);
-
-        WorkspaceUtils workspaceUtils = injector.getInstance(WorkspaceUtils.class);
-        if (connectionSettings.getWorkspaceId() == null) {
-            try {
-                connectionSettings.setWorkspaceId(Long.parseLong(workspaceUtils.createWorkSpace()));
-                connectionSettingsProvider.setConnectionSettings(connectionSettings);
-            } catch (Exception e) {
-                Assert.fail("Failed to set up new workspace, aborting test suite...");
-            }
-
-        }
-    }
-
+    public static void setUp() {}
 }

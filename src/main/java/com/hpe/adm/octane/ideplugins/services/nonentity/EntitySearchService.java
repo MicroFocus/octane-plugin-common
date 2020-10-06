@@ -132,7 +132,7 @@ public class EntitySearchService {
 
                 if(httpErrorCode != null && httpErrorCode.getValue() == 403L){
                     logger.warn("403 when searching " + entity + ", but exception was ignored: " + ex);
-                    return Collections.emptyList();
+                    throw octaneException;
                 }
             }
 

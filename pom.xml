@@ -20,7 +20,7 @@
 
     <groupId>com.hpe.adm.octane.ideplugins</groupId>
     <artifactId>octane-plugin-common</artifactId>
-    <version>1.6.2</version>
+    <version>1.6.4-SNAPSHOT</version>
     <packaging>jar</packaging>
 
     <name>ALM Octane IDE Plugins Common</name>
@@ -105,7 +105,12 @@
         <dependency>
             <groupId>com.microfocus.adm.almoctane.sdk.extension</groupId>
             <artifactId>sdk-extension-src</artifactId>
-            <version>12.60.41</version>
+            <version>12.60.60-SNAPSHOT</version>
+        </dependency>
+        <dependency>
+            <groupId>com.google.http-client</groupId>
+            <artifactId>google-http-client-apache-v2</artifactId>
+            <version>1.30.2</version>
         </dependency>
         <dependency>
             <groupId>org.jsoup</groupId>

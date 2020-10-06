@@ -39,6 +39,7 @@ public enum Entity {
     GHERKIN_TEST(Entity.TEST, "gherkin_test"),
     AUTOMATED_TEST(Entity.TEST, "test_automated"),
     TEST_SUITE(Entity.TEST, "test_suite"),
+    BDD_SCENARIO(Entity.TEST, "scenario_test"),
 
     TASK("tasks", "task"),
     PHASE("phases", "phases"),
@@ -46,8 +47,11 @@ public enum Entity {
     TEST_RUN("runs", "run"),
     MANUAL_TEST_RUN(TEST_RUN, "run_manual"),
     TEST_SUITE_RUN(TEST_RUN, "run_suite"),
+    AUTOMATED_TEST_RUN(TEST_RUN, "run_automated"),
 
     COMMENT("comments", "comment"),
+
+    BDD_SPEC("bdd_spec", "bdd_spec"),
 
     WORKSPACE_USER("workspace_users", "workspace_user"),
     TEAM("teams", "team"),
@@ -65,6 +69,8 @@ public enum Entity {
     RELEASE("releases", "release"),
     
     SPRINT("sprints", "sprint"),
+
+    MILESTONE("milestones", "milestone"),
     
     PRODUCT_AREA("product_areas", "product_area"),
     

@@ -20,9 +20,11 @@ import com.hpe.adm.nga.sdk.Octane;
 import com.hpe.adm.nga.sdk.query.Query;
 import com.hpe.adm.nga.sdk.query.QueryMethod;
 import com.hpe.adm.octane.ideplugins.services.connection.ConnectionSettings;
+import com.hpe.adm.octane.ideplugins.services.connection.IdePluginsOctaneHttpClient;
 import com.hpe.adm.octane.ideplugins.services.connection.granttoken.GrantTokenAuthentication;
 import com.hpe.adm.octane.ideplugins.services.exception.ServiceException;
 import com.hpe.adm.octane.ideplugins.services.filtering.Entity;
+import com.hpe.adm.octane.ideplugins.services.util.ClientType;
 
 /**
  * Does not rely on the Octane from the DI, instead is used to validate
@@ -31,7 +33,8 @@ import com.hpe.adm.octane.ideplugins.services.filtering.Entity;
 public class TestService {
 
     public Octane getOctane(ConnectionSettings connectionSettings) {
-        return new Octane.Builder(connectionSettings.getAuthentication())
+        return new Octane.Builder(connectionSettings.getAuthentication(),
+                new IdePluginsOctaneHttpClient(connectionSettings.getBaseUrl(), ClientType.OCTANE_IDE_PLUGIN))
                 .Server(connectionSettings.getBaseUrl())
                 .sharedSpace(connectionSettings.getSharedSpaceId())
                 .workSpace(connectionSettings.getWorkspaceId())
@@ -56,11 +59,9 @@ public class TestService {
     /**
      * Attempts to connect to given url, basic validations should be done first
      * Check if the current connection settings are valid
-     * 
-     * @param connectionSettings
-     *            instance of {@link ConnectionSettings} to test
-     * @throws ServiceException
-     *             on connection error
+     *
+     * @param connectionSettings instance of {@link ConnectionSettings} to test
+     * @throws ServiceException on connection error
      */
     public void testConnection(ConnectionSettings connectionSettings) throws ServiceException {
         // Try basic http connection first
