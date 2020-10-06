@@ -20,7 +20,7 @@
 
     <groupId>com.hpe.adm.octane.ideplugins</groupId>
     <artifactId>octane-plugin-common</artifactId>
-    <version>1.6.4-SNAPSHOT</version>
+    <version>1.6.3</version>
     <packaging>jar</packaging>
 
     <name>ALM Octane IDE Plugins Common</name>
@@ -237,26 +237,6 @@
                                     <goal>jar</goal>
                                     <goal>test-jar</goal>
                                 </goals>
-                            </execution>
-                        </executions>
-                    </plugin>
-                    <plugin>
-                        <groupId>org.apache.maven.plugins</groupId>
-                        <artifactId>maven-gpg-plugin</artifactId>
-                        <version>${maven-gpg-plugin.version}</version>
-                        <executions>
-                            <execution>
-                                <id>sign-artifacts</id>
-                                <phase>verify</phase>
-                                <goals>
-                                    <goal>sign</goal>
-                                </goals>
-                                <configuration>
-                                    <gpgArguments>
-                                        <arg>--pinentry-mode</arg>
-                                        <arg>loopback</arg>
-                                    </gpgArguments>
-                                </configuration>
                             </execution>
                         </executions>
                     </plugin>
