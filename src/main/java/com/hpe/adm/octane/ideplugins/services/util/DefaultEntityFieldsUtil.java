@@ -91,8 +91,8 @@ public class DefaultEntityFieldsUtil {
      * {@link Set} to JSON Adds a version tag to the json object, current is
      * CURRENT_ENTITY_FIELDS_JSON_VERSION
      *
-     * @param map
-     * @return
+     * @param map of fields
+     * @return json object from fields
      */
     public static String entityFieldsToJson(Map<Entity, Set<String>> map) {
 

@@ -16,7 +16,7 @@ import com.hpe.adm.nga.sdk.authentication.Authentication;
 import com.hpe.adm.octane.ideplugins.services.connection.IdePluginsOctaneHttpClient;
 
 /**
- * Used by {@link IdePluginsOctaneHttpClient}
+ * See {@link IdePluginsOctaneHttpClient#grantTokenAuthenticate}
  */
 public class GrantTokenAuthentication implements Authentication {
 
@@ -29,7 +29,7 @@ public class GrantTokenAuthentication implements Authentication {
     }
 
     /**
-     * @link IdePluginsOctaneHttpClient does not use this method, so it doesn't have to be implemented
+     * IdePluginsOctaneHttpClient does not use this method, so it doesn't have to be implemented
      * @return null
      */
     @Override
