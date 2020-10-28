@@ -302,20 +302,23 @@ public class EntityService {
     public void updateEntity(EntityModel entityModel) {
         String entityId = getUiDataFromModel(entityModel.getValue("id"));
         Entity entityType = Entity.getEntityType(entityModel);
-        
-        //SDK fix, client lock stamp field needs to always be sent if it's present, 
+
+        // "clone" entity, do not change it
+        EntityModel entityToUpdate = new EntityModel(new HashSet<>(entityModel.getValues()));
+
+        //SDK fix, client lock stamp field needs to always be sent if it's present,
         //currently the sdk does not consider this field as "always dirty"
-        if(entityModel.getValue(MetadataService.FIELD_CLIENT_LOCK_STAMP) != null) {
+        if(entityToUpdate.getValue(MetadataService.FIELD_CLIENT_LOCK_STAMP) != null) {
             //manually mark it as dirty
-            entityModel.setValue(entityModel.getValue(MetadataService.FIELD_CLIENT_LOCK_STAMP));
+            entityToUpdate.setValue(entityModel.getValue(MetadataService.FIELD_CLIENT_LOCK_STAMP));
         }
 
         // we don't need to send back subtype for update, and we should remove it since some versions
         // of octane misinterpret it as update on subtype which is not allowed
-        entityModel.removeValue("subtype");
+        entityToUpdate.removeValue("subtype");
 
         EntityList entityList = octaneProvider.getOctane().entityList(entityType.getApiEntityName());
-        entityList.at(entityId).update().entity(entityModel).execute();
+        entityList.at(entityId).update().entity(entityToUpdate).execute();
     }
 
     public void openInBrowser(EntityModel entityModel) {
