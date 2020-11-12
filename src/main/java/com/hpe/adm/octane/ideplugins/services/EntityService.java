@@ -300,22 +300,33 @@ public class EntityService {
     }
 
     public void updateEntity(EntityModel entityModel) {
-        String entityId = getUiDataFromModel(entityModel.getValue("id"));
-        Entity entityType = Entity.getEntityType(entityModel);
-        
-        //SDK fix, client lock stamp field needs to always be sent if it's present, 
-        //currently the sdk does not consider this field as "always dirty"
-        if(entityModel.getValue(MetadataService.FIELD_CLIENT_LOCK_STAMP) != null) {
-            //manually mark it as dirty
-            entityModel.setValue(entityModel.getValue(MetadataService.FIELD_CLIENT_LOCK_STAMP));
+        //get the entitySubtype so we can add it back
+        String entitySubtype = entityModel.getValue("subtype").getValue().toString();
+        try {
+            String entityId = getUiDataFromModel(entityModel.getValue("id"));
+            Entity entityType = Entity.getEntityType(entityModel);
+
+            //SDK fix, client lock stamp field needs to always be sent if it's present,
+            //currently the sdk does not consider this field as "always dirty"
+            if (entityModel.getValue(MetadataService.FIELD_CLIENT_LOCK_STAMP) != null) {
+                //manually mark it as dirty
+                entityModel.setValue(entityModel.getValue(MetadataService.FIELD_CLIENT_LOCK_STAMP));
+            }
+
+            // we don't need to send back subtype for update, and we should remove it since some versions
+            // of octane misinterpret it as update on subtype which is not allowed
+            entityModel.removeValue("subtype");
+
+            EntityList entityList = octaneProvider.getOctane().entityList(entityType.getApiEntityName());
+            entityList.at(entityId).update().entity(entityModel).execute();
         }
-
-        // we don't need to send back subtype for update, and we should remove it since some versions
-        // of octane misinterpret it as update on subtype which is not allowed
-        entityModel.removeValue("subtype");
-
-        EntityList entityList = octaneProvider.getOctane().entityList(entityType.getApiEntityName());
-        entityList.at(entityId).update().entity(entityModel).execute();
+        catch (Exception ex)
+        {
+            throw ex;
+        }
+        finally {
+            entityModel.setValue(new StringFieldModel("subtype", entitySubtype));
+        }
     }
 
     public void openInBrowser(EntityModel entityModel) {

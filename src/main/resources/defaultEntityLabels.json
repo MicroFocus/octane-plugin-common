@@ -99,7 +99,7 @@
       "language": "lang.en"
     },
 	{
-      "entity_type": "bdd_scenario",
+      "entity_type": "scenario_test",
       "name": "BDD Scenario",
       "plural_capitalized": "BDD Scenarios",
       "initials": "BSC",
