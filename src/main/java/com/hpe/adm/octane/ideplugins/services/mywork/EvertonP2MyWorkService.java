@@ -158,10 +158,9 @@ class EvertonP2MyWorkService implements MyWorkService {
         Query.QueryBuilder qUser = createUserQuery("user", userService.getCurrentUserId());
 
         Query.QueryBuilder qType = Query.statement("entity_type", QueryMethod.EqualTo, entityType);
-        Query.QueryBuilder qOrigin = Query.statement("origin", QueryMethod.EqualTo, 1);
 
         Collection<EntityModel> userItems = entityService.findEntities(Entity.USER_ITEM,
-                qUser.and(qType).and(qOrigin).and(qItem),
+                qUser.and(qType).and(qItem),
                 null);
 
         if (userItems.size() != 1) {
