@@ -301,10 +301,9 @@ public class EntityService {
 
     public void updateEntity(EntityModel entityModel) {
         //get the entitySubtype so we can add it back
-        String entitySubtype = entityModel.getValue("subtype").getValue().toString();
+        Entity entityType = Entity.getEntityType(entityModel);
         try {
             String entityId = getUiDataFromModel(entityModel.getValue("id"));
-            Entity entityType = Entity.getEntityType(entityModel);
 
             //SDK fix, client lock stamp field needs to always be sent if it's present,
             //currently the sdk does not consider this field as "always dirty"
@@ -325,7 +324,8 @@ public class EntityService {
             throw ex;
         }
         finally {
-            entityModel.setValue(new StringFieldModel("subtype", entitySubtype));
+            if (entityType != null && entityType.isSubtype())
+                entityModel.setValue(new StringFieldModel("subtype", entityType.getSubtypeName()));
         }
     }
 
