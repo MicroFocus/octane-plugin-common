@@ -40,6 +40,11 @@ public class UrlParser {
     /**
      * @deprecated use
      *             {@link #resolveConnectionSettings(String, Authentication)}
+     * @param url server url
+     * @param userName octane username
+     * @param password octane password
+     * @return ConnectionSettings object built from params
+     * @throws ServiceException for invalid url format
      */
     @Deprecated
     public static ConnectionSettings resolveConnectionSettings(String url, String userName, String password) throws ServiceException {

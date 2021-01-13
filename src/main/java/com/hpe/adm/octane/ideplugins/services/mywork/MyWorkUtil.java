@@ -39,6 +39,7 @@ public class MyWorkUtil {
         addToMyWorkEntities.add(Entity.BDD_SCENARIO);
         addToMyWorkEntities.add(Entity.MANUAL_TEST_RUN);
         addToMyWorkEntities.add(Entity.TEST_SUITE_RUN);
+        addToMyWorkEntities.add(Entity.REQUIREMENT);
     }
 
     /**
