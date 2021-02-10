@@ -93,6 +93,12 @@ public class UrlParser {
                     baseUrl += ":" + siteUrl.getPort();
                 }
 
+                String siteUrlPath = siteUrl.getPath();
+                if (siteUrlPath.endsWith("/ui/"))
+                    baseUrl += siteUrlPath.substring(0, siteUrlPath.length() - 4);
+                else if (!siteUrlPath.equals("/"))
+                    baseUrl += siteUrlPath.substring(0, siteUrlPath.length() - 1);
+
                 Map<String, List<String>> params = splitQueryParams(siteUrl);
 
                 if(params.containsKey("p") && params.get("p").size() == 1) {

@@ -107,7 +107,8 @@ public class ImageService {
 
         for (Element el : link) {
             String pictureLink = el.attr("src");
-            if (pictureLink.startsWith("/api/shared_spaces")) {
+            if (pictureLink.contains("/api/shared_spaces")) {
+                pictureLink = pictureLink.substring(pictureLink.indexOf("/api/shared_spaces"));
                 el.attr("src", baseUrl + pictureLink);
                 pictureLink = el.attr("src");
             }
