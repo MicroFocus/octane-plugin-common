@@ -21,6 +21,8 @@ import com.hpe.adm.octane.ideplugins.services.connection.ConnectionSettings;
 import com.hpe.adm.octane.ideplugins.services.connection.ConnectionSettingsProvider;
 import com.hpe.adm.octane.ideplugins.services.connection.HttpClientProvider;
 
+import java.io.UnsupportedEncodingException;
+
 
 public class DownloadScriptService {
     @Inject
@@ -36,8 +38,13 @@ public class DownloadScriptService {
                     "/workspaces/" + connectionSettings.getWorkspaceId() + "/tests/" + testId + "/script");
             OctaneHttpResponse response = httpClient.execute(request);
             String jsonString = response.getContent();
+            jsonString =  new JsonParser().parse(jsonString).getAsJsonObject().get("script").getAsString();
 
-            return new JsonParser().parse(jsonString).getAsJsonObject().get("script").getAsString();
+            try {
+                return new String(jsonString.getBytes("ISO-8859-1"),"UTF-8" );
+            } catch (UnsupportedEncodingException e) {
+                return "Unsupported Encoding";
+            }
         }
         return null;
     }
