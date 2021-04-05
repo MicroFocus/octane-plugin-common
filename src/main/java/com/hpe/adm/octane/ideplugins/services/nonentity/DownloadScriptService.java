@@ -41,7 +41,7 @@ public class DownloadScriptService {
             jsonString =  new JsonParser().parse(jsonString).getAsJsonObject().get("script").getAsString();
 
             try {
-                return new String(jsonString.getBytes("ISO-8859-1"),"UTF-8" );
+                return new String(jsonString.getBytes("ISO-8859-1"), "UTF-8");
             } catch (UnsupportedEncodingException e) {
                 return "Unsupported Encoding";
             }
