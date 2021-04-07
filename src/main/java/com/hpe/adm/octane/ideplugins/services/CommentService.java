@@ -65,6 +65,7 @@ public class CommentService {
         supportedEntities.put(Entity.TEST, "owner_test");
         supportedEntities.put(Entity.REQUIREMENT, "owner_requirement");
         supportedEntities.put(Entity.TEST_RUN, "owner_run");
+        supportedEntities.put(Entity.TASK, "owner_task");
 
     }
 
