@@ -20,6 +20,10 @@ import com.hpe.adm.nga.sdk.network.OctaneHttpResponse;
 import com.hpe.adm.octane.ideplugins.services.connection.ConnectionSettings;
 import com.hpe.adm.octane.ideplugins.services.connection.ConnectionSettingsProvider;
 import com.hpe.adm.octane.ideplugins.services.connection.HttpClientProvider;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import java.io.UnsupportedEncodingException;
 
 
 public class DownloadScriptService {
@@ -28,7 +32,9 @@ public class DownloadScriptService {
     @Inject
     protected ConnectionSettingsProvider connectionSettingsProvider;
 
-    public String getTestScriptContent(long testId) {
+    private static final Logger logger = LoggerFactory.getLogger(DownloadScriptService.class.getName());
+
+    public String getTestScriptContent(long testId) throws UnsupportedEncodingException {
         ConnectionSettings connectionSettings = connectionSettingsProvider.getConnectionSettings();
         OctaneHttpClient httpClient = httpClientProvider.getOctaneHttpClient();
         if (null != httpClient) {
@@ -36,8 +42,14 @@ public class DownloadScriptService {
                     "/workspaces/" + connectionSettings.getWorkspaceId() + "/tests/" + testId + "/script");
             OctaneHttpResponse response = httpClient.execute(request);
             String jsonString = response.getContent();
+            jsonString =  new JsonParser().parse(jsonString).getAsJsonObject().get("script").getAsString();
 
-            return new JsonParser().parse(jsonString).getAsJsonObject().get("script").getAsString();
+            try {
+                return new String(jsonString.getBytes("ISO-8859-1"), "UTF-8");
+            } catch (UnsupportedEncodingException e) {
+                logger.error("Unsupported Encoding");
+                throw e;
+            }
         }
         return null;
     }
