@@ -32,6 +32,7 @@ import org.json.JSONArray;
 import org.json.JSONObject;
 import org.json.JSONTokener;
 
+import java.io.UnsupportedEncodingException;
 import java.net.URISyntaxException;
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
@@ -39,6 +40,8 @@ import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 
 import static com.hpe.adm.octane.ideplugins.services.util.Util.createQueryForMultipleValues;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 public class MetadataService {
 
@@ -46,6 +49,7 @@ public class MetadataService {
      * For backwards compatibility, check if this field exists
      */
     public static final String FIELD_CLIENT_LOCK_STAMP = "client_lock_stamp";
+    private static final Logger logger = LoggerFactory.getLogger(MetadataService.class.getName());
 
     @Inject
     private HttpClientProvider httpClientProvider;
@@ -102,7 +106,7 @@ public class MetadataService {
                 .allMatch(fields::contains);
     }
 
-    public Collection<FieldMetadata> getVisibleFields(Entity entityType){
+    public Collection<FieldMetadata> getVisibleFields(Entity entityType) throws UnsupportedEncodingException {
         ConnectionSettings connectionSettings = connectionSettingsProvider.getConnectionSettings();
         OctaneHttpClient httpClient = httpClientProvider.getOctaneHttpClient();
         if (null == httpClient) {
@@ -121,7 +125,13 @@ public class MetadataService {
         List<FieldMetadata> fields;
 
         response = httpClient.execute(request);
-        fields = (List<FieldMetadata>) getFieldMetadataFromJSON(response.getContent());
+
+        try {
+            fields = (List<FieldMetadata>) getFieldMetadataFromJSON(new String(response.getContent().getBytes("ISO-8859-1"), "UTF-8"));
+        } catch (UnsupportedEncodingException e) {
+            logger.error("Unsupported Encoding");
+            throw e;
+        };
         return fields;
     }
 
