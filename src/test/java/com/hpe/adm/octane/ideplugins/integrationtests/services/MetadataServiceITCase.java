@@ -25,6 +25,7 @@ import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 
+import java.io.UnsupportedEncodingException;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.HashSet;
@@ -43,7 +44,7 @@ public class MetadataServiceITCase {
     }
 
     @Test
-    public void testMethodForVisibleFields(){
+    public void testMethodForVisibleFields() throws UnsupportedEncodingException {
         Collection<String> defaultFields = DefaultEntityFieldsUtil.getDefaultFields().get(Entity.USER_STORY);
         Collection<String> returnedFields = metadataService.getVisibleFields(Entity.USER_STORY).stream().map(FieldMetadata::getName).collect(Collectors.toCollection(HashSet::new));
         assert defaultFields.stream().allMatch(returnedFields::contains);

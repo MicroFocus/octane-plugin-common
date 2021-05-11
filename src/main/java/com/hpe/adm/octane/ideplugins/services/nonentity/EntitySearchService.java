@@ -96,13 +96,16 @@ public class EntitySearchService {
         uriBuilder.setHost(baseUrl.getHost());
         uriBuilder.setPort(baseUrl.getPort());
 
-        uriBuilder.setPath(
-                "/api"
+        String uriBuilderPath = "";
+        if (!baseUrl.getPath().equals("/"))
+            uriBuilderPath += baseUrl.getPath();
+
+        uriBuilderPath += "/api"
                 + "/shared_spaces/" + connectionSettings.getSharedSpaceId()
                 + "/workspaces/" + connectionSettings.getWorkspaceId()
-                + "/" + entity.getApiEntityName());
+                + "/" + entity.getApiEntityName();
 
-
+        uriBuilder.setPath(uriBuilderPath);
 
         uriBuilder.setParameter("text_search", "{\"type\":\"global\",\"text\":\""+queryString+"\"}");
         uriBuilder.setParameter("limit", limit + "");
