@@ -48,6 +48,7 @@ public enum Entity {
     MANUAL_TEST_RUN(TEST_RUN, "run_manual"),
     TEST_SUITE_RUN(TEST_RUN, "run_suite"),
     AUTOMATED_TEST_RUN(TEST_RUN, "run_automated"),
+    GHERKIN_AUTOMATED_RUN(TEST_RUN, "gherkin_automated_run"),
 
     COMMENT("comments", "comment"),
 
