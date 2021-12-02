@@ -60,6 +60,7 @@ public enum Entity {
     REQUIREMENT_BASE_ENTITY("requirements", "requirement"),
     REQUIREMENT_ROOT(Entity.REQUIREMENT_BASE_ENTITY, "requirement_root"),
     REQUIREMENT(Entity.REQUIREMENT_BASE_ENTITY, "requirement_document"),
+    REQUIREMENT_FOLDER(Entity.REQUIREMENT_BASE_ENTITY, "requirement_folder"),
 
     //Entity used to hold items added to my work
     USER_ITEM("user_items","user_item"),
