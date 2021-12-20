@@ -125,7 +125,7 @@ public class EntityLabelService {
             if(entityType != null) {
                 map.put(entityType, entityModel);
             } else {
-                logger.warn("Unknown entity_type string: "
+                logger.debug("Unknown entity_type string: "
                         + entityModel.getValue(ENTITY_TYPE).getValue().toString()
                         + " . will be ignored");
             }
