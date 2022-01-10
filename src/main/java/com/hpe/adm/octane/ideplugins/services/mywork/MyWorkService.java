@@ -40,4 +40,9 @@ public interface MyWorkService {
 
     boolean removeFromMyWork(EntityModel entityModel);
 
+    EntityModel getEntityFromUserItemIfNeeded(EntityModel entity);
+
+    Collection<EntityModel> getEntitiesFromUserItemsIfNeeded(Collection<EntityModel> entity);
+
+    boolean containsUserItem(Collection<EntityModel> entities, EntityModel entity);
 }

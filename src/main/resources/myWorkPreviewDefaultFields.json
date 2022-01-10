@@ -1,0 +1,81 @@
+{
+  "startingOctaneVersion": "16.0.208",
+  "data": [
+    {
+      "type": "WORK_ITEM",
+      "fields": [
+        "id",
+        "name",
+        "phase",
+        "subtype",
+        "release",
+        "taxonomies",
+        "author",
+        "story_points",
+        "owner",
+        "invested_hours",
+        "remaining_hours",
+        "estimated_hours",
+        "detected_by",
+        "severity"
+      ]
+    },
+    {
+      "type": "REQUIREMENT",
+      "fields": [
+        "id",
+        "name",
+        "phase",
+        "author",
+        "owner",
+        "release",
+        "subtype"
+      ]
+    },
+    {
+      "type": "TASK",
+      "fields": [
+        "id",
+        "name",
+        "phase",
+        "release",
+        "author",
+        "story",
+        "owner",
+        "invested_hours",
+        "remaining_hours",
+        "estimated_hours"
+      ]
+    },
+    {
+      "type": "TEST_RUN",
+      "fields": [
+        "id",
+        "name",
+        "subtype",
+        "native_status",
+        "author",
+        "taxonomies",
+        "started",
+        "test_name"
+      ]
+    },
+    {
+      "type": "TEST",
+      "fields": [
+        "id",
+        "name",
+        "phase",
+        "subtype",
+        "test_type",
+        "author",
+        "owner",
+        "automation_status",
+        "steps_num",
+        "bdd_spec"
+      ]
+    }
+  ]
+}
+
+
