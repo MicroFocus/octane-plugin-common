@@ -34,6 +34,7 @@ import com.hpe.adm.octane.ideplugins.services.util.Util;
 import java.awt.*;
 import java.net.URI;
 import java.util.*;
+import java.util.List;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.stream.Collectors;
 
@@ -51,23 +52,33 @@ public class EntityService {
     private OctaneVersionService versionService;
 
     public Collection<EntityModel> findEntities(Entity entity) {
-        return findEntities(entity, null, null, null, null, null, null, null);
+        return findEntities(entity, null, null, null, null, null, null, null, null);
     }
 
     public Collection<EntityModel> findEntities(Entity entity, Query.QueryBuilder query, Set<String> fields) {
-        return findEntities(entity, query, fields, null, null, null, null, null);
+        return findEntities(entity, query, fields, null, null, null, null, null, null);
     }
 
     public Collection<EntityModel> findEntities(Entity entity, Query.QueryBuilder query, Set<String> fields, Map<String, Set<String>> expand) {
-        return findEntities(entity, query, fields, expand, null, null, null, null);
+        return findEntities(entity, query, fields, expand, null, null, null, null, null);
+    }
+
+    public Collection<EntityModel> findEntities(Entity entity, Query.QueryBuilder query, Set<String> fields, Boolean orderByUserItem) {
+        return findEntities(entity, query, fields, null, null, null, null, null, orderByUserItem);
     }
 
     public Collection<EntityModel> findEntities(Entity entity, Query.QueryBuilder query, Set<String> fields, Map<String, Set<String>> expand, Integer offset, Integer limit) {
-        return findEntities(entity, query, fields, expand, offset, limit, null, null);
+        return findEntities(entity, query, fields, expand, offset, limit, null, null, null);
     }
 
-    public Collection<EntityModel> findEntities(Entity entity, Query.QueryBuilder query, Set<String> fields, Map<String, Set<String>> expand, Integer offset, Integer limit, String orderByField, Boolean orderByAsc) {
-        EntityList entityList = octaneProvider.getOctane().entityList(entity.getApiEntityName());
+    public Collection<EntityModel> findEntities(Entity entity, Query.QueryBuilder query, Set<String> fields, Map<String, Set<String>> expand, Integer offset, Integer limit, String orderByField, Boolean orderByAsc, Boolean orderByUserItem) {
+        EntityList entityList;
+
+        if (orderByUserItem != null && orderByUserItem) {
+            entityList = octaneProvider.getOctane().entityList(entity.getApiEntityName() + "/order_by_user_item");
+        } else {
+            entityList = octaneProvider.getOctane().entityList(entity.getApiEntityName());
+        }
 
         Query.QueryBuilder queryBuilder = null;
 
@@ -137,10 +148,12 @@ public class EntityService {
             getRequest = getRequest.limit(limit);
         }
 
-        if(orderByField != null && orderByAsc != null){
-            getRequest = getRequest.addOrderBy(orderByField, orderByAsc);
-        } else {
-            getRequest = getRequest.addOrderBy("id", true);
+        if (orderByUserItem == null) {
+            if (orderByField != null && orderByAsc != null) {
+                getRequest = getRequest.addOrderBy(orderByField, orderByAsc);
+            } else {
+                getRequest = getRequest.addOrderBy("id", true);
+            }
         }
 
         return getRequest.execute();

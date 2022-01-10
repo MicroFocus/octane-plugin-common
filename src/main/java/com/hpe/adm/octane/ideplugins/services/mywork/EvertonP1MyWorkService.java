@@ -21,7 +21,9 @@ import com.hpe.adm.nga.sdk.query.Query;
 import com.hpe.adm.nga.sdk.query.QueryMethod;
 import com.hpe.adm.octane.ideplugins.services.EntityService;
 import com.hpe.adm.octane.ideplugins.services.UserService;
+import com.hpe.adm.octane.ideplugins.services.exception.ServiceRuntimeException;
 import com.hpe.adm.octane.ideplugins.services.filtering.Entity;
+import com.hpe.adm.octane.ideplugins.services.util.EntityUtil;
 
 import java.util.*;
 import java.util.stream.Collectors;
@@ -109,7 +111,7 @@ class EvertonP1MyWorkService extends EvertonP2MyWorkService implements MyWorkSer
                     Collection<EntityModel> addedEntitiesByKey = addedEntities.get(entityType);
 
                     for(EntityModel userItem : addedEntitiesByKey){
-                        if(!MyWorkUtil.containsUserItem(queryEntitiesByKey, userItem)){
+                        if(!containsUserItem(queryEntitiesByKey, userItem)){
                             resultMap.get(entityType).add(userItem);
                         }
                     }
@@ -122,6 +124,32 @@ class EvertonP1MyWorkService extends EvertonP2MyWorkService implements MyWorkSer
                 .sorted(entityTypeComparator)
                 .flatMap(entityType -> resultMap.get(entityType).stream())
                 .collect(Collectors.toList());
+    }
+
+    @Override
+    public EntityModel getEntityFromUserItemIfNeeded(EntityModel entity) {
+        if(Entity.USER_ITEM != Entity.getEntityType(entity)){
+            throw new ServiceRuntimeException("Given param entity is not of type: user_item, type is: " + Entity.getEntityType(entity));
+        }
+        String followField = "my_follow_items_" + entity.getValue("entity_type").getValue();
+
+        return (EntityModel) entity.getValue(followField).getValue();
+    }
+
+    @Override
+    public Collection<EntityModel> getEntitiesFromUserItemsIfNeeded(Collection<EntityModel> entities) {
+        return entities
+                .stream()
+                .map(e -> getEntityFromUserItemIfNeeded(e))
+                .collect(Collectors.toList());
+    }
+
+    @Override
+    public boolean containsUserItem(Collection<EntityModel> entities, EntityModel entity) {
+        return entities
+                .stream()
+                .map(e -> getEntityFromUserItemIfNeeded(e))
+                .anyMatch(entityModel -> EntityUtil.areEqual(entityModel, getEntityFromUserItemIfNeeded(entity)));
     }
 
     protected Map<Entity, Collection<EntityModel>> getAddedItems(Map<Entity, Set<String>> fieldListMap) {
