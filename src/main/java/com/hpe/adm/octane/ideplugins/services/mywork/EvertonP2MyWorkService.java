@@ -23,7 +23,6 @@ import com.hpe.adm.octane.ideplugins.services.EntityService;
 import com.hpe.adm.octane.ideplugins.services.MetadataService;
 import com.hpe.adm.octane.ideplugins.services.UserService;
 import com.hpe.adm.octane.ideplugins.services.connection.OctaneProvider;
-import com.hpe.adm.octane.ideplugins.services.exception.ServiceRuntimeException;
 import com.hpe.adm.octane.ideplugins.services.filtering.Entity;
 import com.hpe.adm.octane.ideplugins.services.util.EntityUtil;
 
@@ -118,8 +117,8 @@ class EvertonP2MyWorkService implements MyWorkService {
             return userItems
                     .stream()
                     .sorted((userItemLeft, userItemRight) -> {
-                        EntityModel entityLeft = getEntityFromUserItemIfNeeded(userItemLeft);
-                        EntityModel entityRight = getEntityFromUserItemIfNeeded(userItemRight);
+                        EntityModel entityLeft = getEntityFromUserItem(userItemLeft);
+                        EntityModel entityRight = getEntityFromUserItem(userItemRight);
 
                         Entity entityTypeLeft = Entity.getEntityType(entityLeft);
                         Entity entityTypeRight = Entity.getEntityType(entityRight);
@@ -175,7 +174,7 @@ class EvertonP2MyWorkService implements MyWorkService {
     public boolean isInMyWork(EntityModel entityModel) {
         // TODO: can be optimized
         Collection<EntityModel> myWork = getMyWork();
-        myWork = getEntitiesFromUserItemsIfNeeded(myWork);
+        myWork = getEntitiesFromUserItems(myWork);
         return EntityUtil.containsEntityModel(myWork, entityModel);
     }
 
@@ -232,31 +231,5 @@ class EvertonP2MyWorkService implements MyWorkService {
         }
 
         return true;
-    }
-
-    @Override
-    public EntityModel getEntityFromUserItemIfNeeded(EntityModel entity) {
-        if(Entity.USER_ITEM != Entity.getEntityType(entity)){
-            throw new ServiceRuntimeException("Given param entity is not of type: user_item, type is: " + Entity.getEntityType(entity));
-        }
-        String followField = "my_follow_items_" + entity.getValue("entity_type").getValue();
-
-        return (EntityModel) entity.getValue(followField).getValue();
-    }
-
-    @Override
-    public Collection<EntityModel> getEntitiesFromUserItemsIfNeeded(Collection<EntityModel> entities) {
-        return entities
-                .stream()
-                .map(e -> getEntityFromUserItemIfNeeded(e))
-                .collect(Collectors.toList());
-    }
-
-    @Override
-    public boolean containsUserItem(Collection<EntityModel> entities, EntityModel entity) {
-        return entities
-                .stream()
-                .map(e -> getEntityFromUserItemIfNeeded(e))
-                .anyMatch(entityModel -> EntityUtil.areEqual(entityModel, getEntityFromUserItemIfNeeded(entity)));
     }
 }

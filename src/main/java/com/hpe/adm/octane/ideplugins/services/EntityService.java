@@ -75,6 +75,7 @@ public class EntityService {
         EntityList entityList;
 
         if (orderByUserItem != null && orderByUserItem) {
+            //TODO - this is a temporary solution to append the suffix to the URL like this, until we upgrade to the latest Java SDK (this version does not support appending)
             entityList = octaneProvider.getOctane().entityList(entity.getApiEntityName() + "/order_by_user_item");
         } else {
             entityList = octaneProvider.getOctane().entityList(entity.getApiEntityName());

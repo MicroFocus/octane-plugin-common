@@ -35,6 +35,11 @@ import static com.hpe.adm.octane.ideplugins.services.filtering.Entity.COMMENT;
 import static com.hpe.adm.octane.ideplugins.services.mywork.MyWorkUtil.*;
 import static com.hpe.adm.octane.ideplugins.services.mywork.MyWorkUtil.getEntityTypeName;
 
+
+/**
+ * Service class responsible for MyWork requests, used only for Octane server versions greater than Iron Maiden P1 (16.0.208).
+ * This was implemented because of the changes made on the Octane MyWork that were introduced by default in Iron Maiden P1.
+ */
 public class IronMaidenP1MyWorkService implements MyWorkService {
 
     @Inject
@@ -195,23 +200,7 @@ public class IronMaidenP1MyWorkService implements MyWorkService {
     }
 
     @Override
-    public EntityModel getEntityFromUserItemIfNeeded(EntityModel entity) {
+    public EntityModel getEntityFromUserItem(EntityModel entity) {
         return entity;
-    }
-
-    @Override
-    public Collection<EntityModel> getEntitiesFromUserItemsIfNeeded(Collection<EntityModel> entities) {
-        return entities
-                .stream()
-                .map(e -> getEntityFromUserItemIfNeeded(e))
-                .collect(Collectors.toList());
-    }
-
-    @Override
-    public boolean containsUserItem(Collection<EntityModel> entities, EntityModel entity) {
-        return entities
-                .stream()
-                .map(e -> getEntityFromUserItemIfNeeded(e))
-                .anyMatch(entityModel -> EntityUtil.areEqual(entityModel, getEntityFromUserItemIfNeeded(entity)));
     }
 }
