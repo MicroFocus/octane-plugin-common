@@ -13,13 +13,16 @@
 package com.hpe.adm.octane.ideplugins.services.mywork;
 
 import com.hpe.adm.nga.sdk.model.EntityModel;
+import com.hpe.adm.octane.ideplugins.services.exception.ServiceRuntimeException;
 import com.hpe.adm.octane.ideplugins.services.filtering.Entity;
 import com.hpe.adm.octane.ideplugins.services.filtering.PredefinedEntityComparator;
+import com.hpe.adm.octane.ideplugins.services.util.EntityUtil;
 
 import java.util.Collection;
 import java.util.Comparator;
 import java.util.Map;
 import java.util.Set;
+import java.util.stream.Collectors;
 
 public interface MyWorkService {
 
@@ -34,15 +37,33 @@ public interface MyWorkService {
 
     boolean isAddingToMyWorkSupported(Entity entityType);
 
+    //default
     boolean isInMyWork(EntityModel entityModel);
 
     boolean addToMyWork(EntityModel entityModel);
 
     boolean removeFromMyWork(EntityModel entityModel);
 
-    EntityModel getEntityFromUserItemIfNeeded(EntityModel entity);
+    default EntityModel getEntityFromUserItem(EntityModel entity) {
+        if(Entity.USER_ITEM != Entity.getEntityType(entity)){
+            throw new ServiceRuntimeException("Given param entity is not of type: user_item, type is: " + Entity.getEntityType(entity));
+        }
+        String followField = "my_follow_items_" + entity.getValue("entity_type").getValue();
 
-    Collection<EntityModel> getEntitiesFromUserItemsIfNeeded(Collection<EntityModel> entity);
+        return (EntityModel) entity.getValue(followField).getValue();
+    };
 
-    boolean containsUserItem(Collection<EntityModel> entities, EntityModel entity);
+    default Collection<EntityModel> getEntitiesFromUserItems(Collection<EntityModel> entities) {
+        return entities
+                .stream()
+                .map(e -> getEntityFromUserItem(e))
+                .collect(Collectors.toList());
+    };
+
+    default boolean containsUserItem(Collection<EntityModel> entities, EntityModel entity) {
+        return entities
+                .stream()
+                .map(e -> getEntityFromUserItem(e))
+                .anyMatch(entityModel -> EntityUtil.areEqual(entityModel, getEntityFromUserItem(entity)));
+    };
 }

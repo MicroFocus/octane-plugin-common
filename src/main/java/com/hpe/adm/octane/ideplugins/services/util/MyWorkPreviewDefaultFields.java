@@ -39,7 +39,7 @@ public class MyWorkPreviewDefaultFields {
             InputStream input = cprl.getResourceStream(MYWORK_PREVIEW_DEFAULT_FIELDS_FILE_NAME);
             String jsonString = CharStreams.toString(new InputStreamReader(input, Charsets.UTF_8));
 
-            return entityFieldsFromJson(jsonString);
+            return convertEntityFieldsFromJsonToObjects(jsonString);
         } catch (IOException e) {
             throw new ServiceRuntimeException("Failed to parse " + MYWORK_PREVIEW_DEFAULT_FIELDS_FILE_NAME + " file ", e);
         }
@@ -51,7 +51,7 @@ public class MyWorkPreviewDefaultFields {
      * @param jsonString json containing fields for entities
      * @return map containing {@link Entity} to field {@link Set}
      */
-    public static Map<Entity, Set<String>> entityFieldsFromJson(String jsonString) {
+    public static Map<Entity, Set<String>> convertEntityFieldsFromJsonToObjects(String jsonString) {
         JSONObject jsonObject = new JSONObject(jsonString);
         Map<Entity, Set<String>> fieldsMap = new LinkedHashMap<>();
 

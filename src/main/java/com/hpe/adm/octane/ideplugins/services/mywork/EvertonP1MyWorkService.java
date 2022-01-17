@@ -126,32 +126,6 @@ class EvertonP1MyWorkService extends EvertonP2MyWorkService implements MyWorkSer
                 .collect(Collectors.toList());
     }
 
-    @Override
-    public EntityModel getEntityFromUserItemIfNeeded(EntityModel entity) {
-        if(Entity.USER_ITEM != Entity.getEntityType(entity)){
-            throw new ServiceRuntimeException("Given param entity is not of type: user_item, type is: " + Entity.getEntityType(entity));
-        }
-        String followField = "my_follow_items_" + entity.getValue("entity_type").getValue();
-
-        return (EntityModel) entity.getValue(followField).getValue();
-    }
-
-    @Override
-    public Collection<EntityModel> getEntitiesFromUserItemsIfNeeded(Collection<EntityModel> entities) {
-        return entities
-                .stream()
-                .map(e -> getEntityFromUserItemIfNeeded(e))
-                .collect(Collectors.toList());
-    }
-
-    @Override
-    public boolean containsUserItem(Collection<EntityModel> entities, EntityModel entity) {
-        return entities
-                .stream()
-                .map(e -> getEntityFromUserItemIfNeeded(e))
-                .anyMatch(entityModel -> EntityUtil.areEqual(entityModel, getEntityFromUserItemIfNeeded(entity)));
-    }
-
     protected Map<Entity, Collection<EntityModel>> getAddedItems(Map<Entity, Set<String>> fieldListMap) {
 
         final Map<Entity, Set<String>> fieldListMapCopy = cloneFieldListMap(fieldListMap);
