@@ -34,7 +34,6 @@ import com.hpe.adm.octane.ideplugins.services.util.Util;
 import java.awt.*;
 import java.net.URI;
 import java.util.*;
-import java.util.List;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.stream.Collectors;
 
@@ -121,9 +120,9 @@ public class EntityService {
                     expandFields.add(
                             relationFieldName + "{" +
                                     expand.get(relationFieldName)
-                            .stream()
-                            .collect(Collectors.joining(","))
-                            + "}");
+                                            .stream()
+                                            .collect(Collectors.joining(","))
+                                    + "}");
                 });
             }
 
@@ -191,19 +190,19 @@ public class EntityService {
      * @return a map with the result entities organized by entity type
      */
     public Map<Entity, Collection<EntityModel>> concurrentFindEntities(Map<Entity, Query.QueryBuilder> filterCriteria,
-            Map<Entity, Set<String>> fieldListMap) {
+                                                                       Map<Entity, Set<String>> fieldListMap) {
         Map<Entity, Collection<EntityModel>> resultMap = new ConcurrentHashMap<>();
 
         // TODO, known subtypes should be under same rest call
         filterCriteria
-        .keySet()
-        .parallelStream()
-        .forEach(
-                entityType -> resultMap.put(entityType,
-                        findEntities(
-                                entityType.getApiEntityName(),
-                                filterCriteria.get(entityType),
-                                fieldListMap.get(entityType))));
+                .keySet()
+                .parallelStream()
+                .forEach(
+                        entityType -> resultMap.put(entityType,
+                                findEntities(
+                                        entityType.getApiEntityName(),
+                                        filterCriteria.get(entityType),
+                                        fieldListMap.get(entityType))));
 
         return resultMap;
     }
@@ -224,7 +223,7 @@ public class EntityService {
 
         Query.QueryBuilder entityQuery = Query.statement("id", QueryMethod.EqualTo, entityId);
 
-        if(entityType.isSubtype()) {
+        if (entityType.isSubtype()) {
             Query.QueryBuilder subtypeQuery = Query.statement("subtype", QueryMethod.EqualTo, entityType.getSubtypeName());
             entityQuery = entityQuery.and(subtypeQuery);
         }
@@ -236,14 +235,14 @@ public class EntityService {
         }
 
         Collection<EntityModel> retrievedEntities = get.execute();
-        if(retrievedEntities.size() == 0) {
+        if (retrievedEntities.size() == 0) {
             throw new ServiceRuntimeException("Entity of type: " + entityType.getTypeName() + ", with id: " + entityId + " could not be found");
         }
 
         EntityModel retrievedEntity = retrievedEntities.iterator().next();
 
         //Make sure subtype is always set
-        if(entityType.isSubtype()) {
+        if (entityType.isSubtype()) {
             retrievedEntity.setValue(new StringFieldModel("subtype", entityType.getSubtypeName()));
         }
 
@@ -293,9 +292,9 @@ public class EntityService {
 
 
     /**
-     * @deprecated <br> use {@link #updateEntity(EntityModel)}
      * @param entityModel base entity model
-     * @param nextPhase entity representing the new phase
+     * @param nextPhase   entity representing the new phase
+     * @deprecated <br> use {@link #updateEntity(EntityModel)}
      */
     @SuppressWarnings("rawtypes")
     @Deprecated
@@ -332,12 +331,9 @@ public class EntityService {
 
             EntityList entityList = octaneProvider.getOctane().entityList(entityType.getApiEntityName());
             entityList.at(entityId).update().entity(entityModel).execute();
-        }
-        catch (Exception ex)
-        {
+        } catch (Exception ex) {
             throw ex;
-        }
-        finally {
+        } finally {
             if (entityType != null && entityType.isSubtype())
                 entityModel.setValue(new StringFieldModel("subtype", entityType.getSubtypeName()));
         }
@@ -359,7 +355,7 @@ public class EntityService {
                 URI uri = UrlParser.createEntityWebURI(
                         connectionSettingsProvider.getConnectionSettings(),
                         entityType == Entity.COMMENT ? ownerEntityType : entityType,
-                                entityType == Entity.COMMENT ? ownerEntityId : entityId);
+                        entityType == Entity.COMMENT ? ownerEntityId : entityId);
                 desktop.browse(uri);
             } catch (Exception ex) {
                 ex.printStackTrace();

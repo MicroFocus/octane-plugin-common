@@ -21,9 +21,7 @@ import com.hpe.adm.nga.sdk.query.Query;
 import com.hpe.adm.nga.sdk.query.QueryMethod;
 import com.hpe.adm.octane.ideplugins.services.EntityService;
 import com.hpe.adm.octane.ideplugins.services.UserService;
-import com.hpe.adm.octane.ideplugins.services.exception.ServiceRuntimeException;
 import com.hpe.adm.octane.ideplugins.services.filtering.Entity;
-import com.hpe.adm.octane.ideplugins.services.util.EntityUtil;
 
 import java.util.*;
 import java.util.stream.Collectors;
@@ -51,8 +49,8 @@ class EvertonP1MyWorkService extends EvertonP2MyWorkService implements MyWorkSer
         //For Everton P1 change the way MANUAL_TEST_RUNs are queried
         Query.QueryBuilder runParentSuiteQuery =
                 Query.statement("parent_suite", QueryMethod.EqualTo,
-                        Query.statement("run_by", QueryMethod.EqualTo, null))
-                .and(Query.not("parent_suite", QueryMethod.EqualTo, null));
+                                Query.statement("run_by", QueryMethod.EqualTo, null))
+                        .and(Query.not("parent_suite", QueryMethod.EqualTo, null));
 
         Query.QueryBuilder runParentNullQuery =
                 Query.statement("parent_suite", QueryMethod.EqualTo, null);
@@ -66,7 +64,7 @@ class EvertonP1MyWorkService extends EvertonP2MyWorkService implements MyWorkSer
         runParentSuiteQuery = Query.QueryBuilder.parenthesis(runParentSuiteQuery);
 
         Query.QueryBuilder manualTestRunQuery =
-                        userQuery
+                userQuery
                         .and(subtypeQuery)
                         .and(statusQuery)
                         .and(Query.QueryBuilder.parenthesis(runParentNullQuery.or(runParentSuiteQuery)));
@@ -110,8 +108,8 @@ class EvertonP1MyWorkService extends EvertonP2MyWorkService implements MyWorkSer
                     Collection<EntityModel> queryEntitiesByKey = resultMap.get(entityType);
                     Collection<EntityModel> addedEntitiesByKey = addedEntities.get(entityType);
 
-                    for(EntityModel userItem : addedEntitiesByKey){
-                        if(!containsUserItem(queryEntitiesByKey, userItem)){
+                    for (EntityModel userItem : addedEntitiesByKey) {
+                        if (!containsUserItem(queryEntitiesByKey, userItem)) {
                             resultMap.get(entityType).add(userItem);
                         }
                     }
