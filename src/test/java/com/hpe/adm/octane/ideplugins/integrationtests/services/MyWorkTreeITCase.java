@@ -55,6 +55,9 @@ public class MyWorkTreeITCase {
     @Inject
     private MyWorkUtils myWorkUtils;
 
+    @Inject
+    private OctaneUtils octaneUtils;
+
     @Before
     public void setUp() {
         ServiceModule serviceModule = TestServiceModule.getServiceModule();
@@ -138,29 +141,41 @@ public class MyWorkTreeITCase {
 
         boolean itemsFound = true;
 
-        for (EntityModel entityModel : workItems) {
-            ReferenceFieldModel subField = null;
-            String entityType = entityModel.getValue("entity_type").getValue().toString();
-            if (entityType.equals("work_item")) {
-                subField = (ReferenceFieldModel) entityModel.getValue("my_follow_items_work_item");
-            }
-            if (entityType.equals("test")) {
-                subField = (ReferenceFieldModel) entityModel.getValue("my_follow_items_test");
-            }
-            if (entityType.equals("run")) {
-                subField = (ReferenceFieldModel) entityModel.getValue("my_follow_items_run");
-            }
-            if (entityType.equals("task")) {
-                subField = (ReferenceFieldModel) entityModel.getValue("my_follow_items_task");
-            }
+        // based on the changes made in IronMaidenP1MyworkService, it is necessary to work differently with the entities from Mywork based on the Octane server version
+        if (octaneUtils.isIronMaidenP1VersionOrHigher()) {
+            for (EntityModel entityModel : workItems) {
+                boolean itemPresent = myWorkEntities.stream().noneMatch(em -> entityModel.getId().equals(em.getId()));
 
-            ReferenceFieldModel subFieldVal = subField;
-            boolean itemPresent = myWorkEntities.stream().noneMatch(em ->
-                    subFieldVal != null && subFieldVal.getValue().getValue("id").getValue().toString().equals(em.getValue("id").getValue().toString()));
+                if (itemPresent) {
+                    itemsFound = false;
+                    break;
+                }
+            }
+        } else {
+            for (EntityModel entityModel : workItems) {
+                ReferenceFieldModel subField = null;
+                String entityType = entityModel.getValue("entity_type").getValue().toString();
+                if (entityType.equals("work_item")) {
+                    subField = (ReferenceFieldModel) entityModel.getValue("my_follow_items_work_item");
+                }
+                if (entityType.equals("test")) {
+                    subField = (ReferenceFieldModel) entityModel.getValue("my_follow_items_test");
+                }
+                if (entityType.equals("run")) {
+                    subField = (ReferenceFieldModel) entityModel.getValue("my_follow_items_run");
+                }
+                if (entityType.equals("task")) {
+                    subField = (ReferenceFieldModel) entityModel.getValue("my_follow_items_task");
+                }
 
-            if (itemPresent) {
-                itemsFound = false;
-                break;
+                ReferenceFieldModel subFieldVal = subField;
+                boolean itemPresent = myWorkEntities.stream().noneMatch(em ->
+                        subFieldVal != null && subFieldVal.getValue().getValue("id").getValue().toString().equals(em.getValue("id").getValue().toString()));
+
+                if (itemPresent) {
+                    itemsFound = false;
+                    break;
+                }
             }
         }
 
