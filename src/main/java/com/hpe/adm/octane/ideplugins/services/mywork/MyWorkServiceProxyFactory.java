@@ -34,8 +34,8 @@ public class MyWorkServiceProxyFactory {
 
     private MyWorkService myWorkProxy;
 
-    private void init(){
-        if(myWorkProxy != null) return;
+    private void init() {
+        if (myWorkProxy != null) return;
 
         BooleanSupplier isBeforeOrDynamo = () -> compareServerVersion(OctaneVersion.Operation.LOWER_EQ, OctaneVersion.DYNAMO);
         BooleanSupplier isEvertonP1 = () -> compareServerVersion(OctaneVersion.Operation.EQ, OctaneVersion.EVERTON_P1);
@@ -53,12 +53,12 @@ public class MyWorkServiceProxyFactory {
         this.myWorkProxy = myWorkProxy.getServiceProxy();
     }
 
-    public MyWorkService getMyWorkService(){
+    public MyWorkService getMyWorkService() {
         init();
         return myWorkProxy;
     }
 
-    private boolean compareServerVersion(OctaneVersion.Operation operation, OctaneVersion otherVersion){
+    private boolean compareServerVersion(OctaneVersion.Operation operation, OctaneVersion otherVersion) {
         OctaneVersion version = octaneVersionService.getOctaneVersion(true);
         version.discardBuildNumber();
         return OctaneVersion.compare(version, operation, otherVersion);

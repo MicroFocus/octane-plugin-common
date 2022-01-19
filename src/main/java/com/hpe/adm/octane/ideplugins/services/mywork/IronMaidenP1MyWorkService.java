@@ -12,11 +12,12 @@
  */
 package com.hpe.adm.octane.ideplugins.services.mywork;
 
-import com.google.common.collect.BiMap;
-import com.google.common.collect.HashBiMap;
 import com.google.inject.Inject;
 import com.hpe.adm.nga.sdk.metadata.FieldMetadata;
-import com.hpe.adm.nga.sdk.model.*;
+import com.hpe.adm.nga.sdk.model.EntityModel;
+import com.hpe.adm.nga.sdk.model.LongFieldModel;
+import com.hpe.adm.nga.sdk.model.ReferenceFieldModel;
+import com.hpe.adm.nga.sdk.model.StringFieldModel;
 import com.hpe.adm.nga.sdk.query.Query;
 import com.hpe.adm.nga.sdk.query.QueryMethod;
 import com.hpe.adm.octane.ideplugins.services.EntityService;
@@ -29,11 +30,9 @@ import com.hpe.adm.octane.ideplugins.services.util.MyWorkPreviewDefaultFields;
 
 import java.util.*;
 import java.util.stream.Collectors;
-import java.util.stream.Stream;
 
 import static com.hpe.adm.octane.ideplugins.services.filtering.Entity.COMMENT;
 import static com.hpe.adm.octane.ideplugins.services.mywork.MyWorkUtil.*;
-import static com.hpe.adm.octane.ideplugins.services.mywork.MyWorkUtil.getEntityTypeName;
 
 
 /**
@@ -64,7 +63,7 @@ public class IronMaidenP1MyWorkService implements MyWorkService {
         Collection<EntityModel> result = new ArrayList<>();
 
         Query.QueryBuilder qUser = Query.statement("user_item", QueryMethod.EqualTo, Query.statement("user", QueryMethod.EqualTo,
-                Query.statement( "id", QueryMethod.EqualTo, userService.getCurrentUserId())));
+                Query.statement("id", QueryMethod.EqualTo, userService.getCurrentUserId())));
 
         Map<Entity, Set<String>> myWorkPreviewMapFields = MyWorkPreviewDefaultFields.getDefaultFields();
 
@@ -78,7 +77,7 @@ public class IronMaidenP1MyWorkService implements MyWorkService {
         return result;
     }
 
-    private Collection<EntityModel> getCommentsAsUserItems(){
+    private Collection<EntityModel> getCommentsAsUserItems() {
         Set<String> fields = metadataService.getFields(Entity.COMMENT).stream().map(FieldMetadata::getName).collect(Collectors.toSet());
         Collection<EntityModel> comments = entityService.findEntities(
                 COMMENT,

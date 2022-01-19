@@ -47,6 +47,7 @@ class EvertonP2MyWorkService implements MyWorkService {
     private MetadataService metadataService;
 
     private static final BiMap<String, Entity> relationFieldTypeMap = HashBiMap.create();
+
     static {
         relationFieldTypeMap.put("my_follow_items_work_item", Entity.WORK_ITEM);
         relationFieldTypeMap.put("my_follow_items_task", Entity.TASK);
@@ -77,7 +78,7 @@ class EvertonP2MyWorkService implements MyWorkService {
         return result;
     }
 
-    private Collection<EntityModel> getCommentsAsUserItems(){
+    private Collection<EntityModel> getCommentsAsUserItems() {
         // Also get comments
         Set<String> fields = metadataService.getFields(Entity.COMMENT).stream().map(FieldMetadata::getName).collect(Collectors.toSet());
         Collection<EntityModel> comments = entityService.findEntities(
