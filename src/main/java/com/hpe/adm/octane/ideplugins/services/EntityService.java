@@ -1,5 +1,5 @@
 /*
- * Copyright 2017 EntIT Software LLC, a Micro Focus company, L.P.
+ * © Copyright 2017-2022 Micro Focus or one of its affiliates.
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
@@ -51,23 +51,34 @@ public class EntityService {
     private OctaneVersionService versionService;
 
     public Collection<EntityModel> findEntities(Entity entity) {
-        return findEntities(entity, null, null, null, null, null, null, null);
+        return findEntities(entity, null, null, null, null, null, null, null, null);
     }
 
     public Collection<EntityModel> findEntities(Entity entity, Query.QueryBuilder query, Set<String> fields) {
-        return findEntities(entity, query, fields, null, null, null, null, null);
+        return findEntities(entity, query, fields, null, null, null, null, null, null);
     }
 
     public Collection<EntityModel> findEntities(Entity entity, Query.QueryBuilder query, Set<String> fields, Map<String, Set<String>> expand) {
-        return findEntities(entity, query, fields, expand, null, null, null, null);
+        return findEntities(entity, query, fields, expand, null, null, null, null, null);
+    }
+
+    public Collection<EntityModel> findEntities(Entity entity, Query.QueryBuilder query, Set<String> fields, Boolean orderByUserItem) {
+        return findEntities(entity, query, fields, null, null, null, null, null, orderByUserItem);
     }
 
     public Collection<EntityModel> findEntities(Entity entity, Query.QueryBuilder query, Set<String> fields, Map<String, Set<String>> expand, Integer offset, Integer limit) {
-        return findEntities(entity, query, fields, expand, offset, limit, null, null);
+        return findEntities(entity, query, fields, expand, offset, limit, null, null, null);
     }
 
-    public Collection<EntityModel> findEntities(Entity entity, Query.QueryBuilder query, Set<String> fields, Map<String, Set<String>> expand, Integer offset, Integer limit, String orderByField, Boolean orderByAsc) {
-        EntityList entityList = octaneProvider.getOctane().entityList(entity.getApiEntityName());
+    public Collection<EntityModel> findEntities(Entity entity, Query.QueryBuilder query, Set<String> fields, Map<String, Set<String>> expand, Integer offset, Integer limit, String orderByField, Boolean orderByAsc, Boolean orderByUserItem) {
+        EntityList entityList;
+
+        if (orderByUserItem != null && orderByUserItem) {
+            //TODO - this is a temporary solution to append the suffix to the URL like this, until we upgrade to the latest Java SDK (this version does not support appending)
+            entityList = octaneProvider.getOctane().entityList(entity.getApiEntityName() + "/order_by_user_item");
+        } else {
+            entityList = octaneProvider.getOctane().entityList(entity.getApiEntityName());
+        }
 
         Query.QueryBuilder queryBuilder = null;
 
@@ -109,9 +120,9 @@ public class EntityService {
                     expandFields.add(
                             relationFieldName + "{" +
                                     expand.get(relationFieldName)
-                            .stream()
-                            .collect(Collectors.joining(","))
-                            + "}");
+                                            .stream()
+                                            .collect(Collectors.joining(","))
+                                    + "}");
                 });
             }
 
@@ -137,10 +148,12 @@ public class EntityService {
             getRequest = getRequest.limit(limit);
         }
 
-        if(orderByField != null && orderByAsc != null){
-            getRequest = getRequest.addOrderBy(orderByField, orderByAsc);
-        } else {
-            getRequest = getRequest.addOrderBy("id", true);
+        if (orderByUserItem == null) {
+            if (orderByField != null && orderByAsc != null) {
+                getRequest = getRequest.addOrderBy(orderByField, orderByAsc);
+            } else {
+                getRequest = getRequest.addOrderBy("id", true);
+            }
         }
 
         return getRequest.execute();
@@ -177,19 +190,19 @@ public class EntityService {
      * @return a map with the result entities organized by entity type
      */
     public Map<Entity, Collection<EntityModel>> concurrentFindEntities(Map<Entity, Query.QueryBuilder> filterCriteria,
-            Map<Entity, Set<String>> fieldListMap) {
+                                                                       Map<Entity, Set<String>> fieldListMap) {
         Map<Entity, Collection<EntityModel>> resultMap = new ConcurrentHashMap<>();
 
         // TODO, known subtypes should be under same rest call
         filterCriteria
-        .keySet()
-        .parallelStream()
-        .forEach(
-                entityType -> resultMap.put(entityType,
-                        findEntities(
-                                entityType.getApiEntityName(),
-                                filterCriteria.get(entityType),
-                                fieldListMap.get(entityType))));
+                .keySet()
+                .parallelStream()
+                .forEach(
+                        entityType -> resultMap.put(entityType,
+                                findEntities(
+                                        entityType.getApiEntityName(),
+                                        filterCriteria.get(entityType),
+                                        fieldListMap.get(entityType))));
 
         return resultMap;
     }
@@ -210,7 +223,7 @@ public class EntityService {
 
         Query.QueryBuilder entityQuery = Query.statement("id", QueryMethod.EqualTo, entityId);
 
-        if(entityType.isSubtype()) {
+        if (entityType.isSubtype()) {
             Query.QueryBuilder subtypeQuery = Query.statement("subtype", QueryMethod.EqualTo, entityType.getSubtypeName());
             entityQuery = entityQuery.and(subtypeQuery);
         }
@@ -222,14 +235,14 @@ public class EntityService {
         }
 
         Collection<EntityModel> retrievedEntities = get.execute();
-        if(retrievedEntities.size() == 0) {
+        if (retrievedEntities.size() == 0) {
             throw new ServiceRuntimeException("Entity of type: " + entityType.getTypeName() + ", with id: " + entityId + " could not be found");
         }
 
         EntityModel retrievedEntity = retrievedEntities.iterator().next();
 
         //Make sure subtype is always set
-        if(entityType.isSubtype()) {
+        if (entityType.isSubtype()) {
             retrievedEntity.setValue(new StringFieldModel("subtype", entityType.getSubtypeName()));
         }
 
@@ -279,9 +292,9 @@ public class EntityService {
 
 
     /**
-     * @deprecated <br> use {@link #updateEntity(EntityModel)}
      * @param entityModel base entity model
-     * @param nextPhase entity representing the new phase
+     * @param nextPhase   entity representing the new phase
+     * @deprecated <br> use {@link #updateEntity(EntityModel)}
      */
     @SuppressWarnings("rawtypes")
     @Deprecated
@@ -318,12 +331,9 @@ public class EntityService {
 
             EntityList entityList = octaneProvider.getOctane().entityList(entityType.getApiEntityName());
             entityList.at(entityId).update().entity(entityModel).execute();
-        }
-        catch (Exception ex)
-        {
+        } catch (Exception ex) {
             throw ex;
-        }
-        finally {
+        } finally {
             if (entityType != null && entityType.isSubtype())
                 entityModel.setValue(new StringFieldModel("subtype", entityType.getSubtypeName()));
         }
@@ -345,7 +355,7 @@ public class EntityService {
                 URI uri = UrlParser.createEntityWebURI(
                         connectionSettingsProvider.getConnectionSettings(),
                         entityType == Entity.COMMENT ? ownerEntityType : entityType,
-                                entityType == Entity.COMMENT ? ownerEntityId : entityId);
+                        entityType == Entity.COMMENT ? ownerEntityId : entityId);
                 desktop.browse(uri);
             } catch (Exception ex) {
                 ex.printStackTrace();

@@ -1,5 +1,5 @@
 /*
- * Copyright 2017 EntIT Software LLC, a Micro Focus company, L.P.
+ * © Copyright 2017-2022 Micro Focus or one of its affiliates.
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
@@ -27,6 +27,7 @@ public class OctaneVersion implements Comparable<OctaneVersion> {
     public static final OctaneVersion JUVENTUS_P3 = new OctaneVersion("12.60.35");
     public static final OctaneVersion LIVERPOOL_P0 = new OctaneVersion("12.60.36");
     public static final OctaneVersion COLDPLAY_P1 = new OctaneVersion("15.1.4");
+    public static final OctaneVersion IRONMAIDEN_P1 = new OctaneVersion("16.0.208");
 
     private String almVersion;
     private Integer octaneVersion;

@@ -1,5 +1,5 @@
 /*
- * Copyright 2017 EntIT Software LLC, a Micro Focus company, L.P.
+ * © Copyright 2017-2022 Micro Focus or one of its affiliates.
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
@@ -48,6 +48,7 @@ public enum Entity {
     MANUAL_TEST_RUN(TEST_RUN, "run_manual"),
     TEST_SUITE_RUN(TEST_RUN, "run_suite"),
     AUTOMATED_TEST_RUN(TEST_RUN, "run_automated"),
+    GHERKIN_AUTOMATED_RUN(TEST_RUN, "gherkin_automated_run"),
 
     COMMENT("comments", "comment"),
 
@@ -59,6 +60,7 @@ public enum Entity {
     REQUIREMENT_BASE_ENTITY("requirements", "requirement"),
     REQUIREMENT_ROOT(Entity.REQUIREMENT_BASE_ENTITY, "requirement_root"),
     REQUIREMENT(Entity.REQUIREMENT_BASE_ENTITY, "requirement_document"),
+    REQUIREMENT_FOLDER(Entity.REQUIREMENT_BASE_ENTITY, "requirement_folder"),
 
     //Entity used to hold items added to my work
     USER_ITEM("user_items","user_item"),

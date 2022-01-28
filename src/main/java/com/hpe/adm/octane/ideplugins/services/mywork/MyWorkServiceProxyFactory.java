@@ -1,5 +1,5 @@
 /*
- * Copyright 2017 EntIT Software LLC, a Micro Focus company, L.P.
+ * © Copyright 2017-2022 Micro Focus or one of its affiliates.
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
@@ -28,32 +28,37 @@ public class MyWorkServiceProxyFactory {
     @Inject
     private EvertonP1MyWorkService evertonP1MyWorkService; //v == 12.53.21
     @Inject
-    private EvertonP2MyWorkService evertonP2MyWorkService; //v >= 12.53.22
+    private EvertonP2MyWorkService evertonP2MyWorkService; //v >= 12.53.22 && < 16.0.208
+    @Inject
+    private IronMaidenP1MyWorkService ironMaidenP1MyWorkService; //v >= 16.0.208
 
     private MyWorkService myWorkProxy;
 
-    private void init(){
-        if(myWorkProxy != null) return;
+    private void init() {
+        if (myWorkProxy != null) return;
 
         BooleanSupplier isBeforeOrDynamo = () -> compareServerVersion(OctaneVersion.Operation.LOWER_EQ, OctaneVersion.DYNAMO);
         BooleanSupplier isEvertonP1 = () -> compareServerVersion(OctaneVersion.Operation.EQ, OctaneVersion.EVERTON_P1);
-        BooleanSupplier isEvertonP2OrHigher = () -> compareServerVersion(OctaneVersion.Operation.HIGHER_EQ, OctaneVersion.EVERTON_P2);
+        BooleanSupplier isEvertonP2OrHigherAndBeforeIronMaidenP1 = () -> compareServerVersion(OctaneVersion.Operation.HIGHER_EQ, OctaneVersion.EVERTON_P2) &&
+                compareServerVersion(OctaneVersion.Operation.LOWER, OctaneVersion.IRONMAIDEN_P1);
+        BooleanSupplier isIronMaidenP1OrHigher = () -> compareServerVersion(OctaneVersion.Operation.HIGHER_EQ, OctaneVersion.IRONMAIDEN_P1);
 
         ServiceProxyFactory<MyWorkService> myWorkProxy = new ServiceProxyFactory<MyWorkService>(MyWorkService.class);
 
         myWorkProxy.addService(isBeforeOrDynamo, dynamoMyWorkService);
         myWorkProxy.addService(isEvertonP1, evertonP1MyWorkService);
-        myWorkProxy.addService(isEvertonP2OrHigher, evertonP2MyWorkService);
+        myWorkProxy.addService(isEvertonP2OrHigherAndBeforeIronMaidenP1, evertonP2MyWorkService);
+        myWorkProxy.addService(isIronMaidenP1OrHigher, ironMaidenP1MyWorkService);
 
         this.myWorkProxy = myWorkProxy.getServiceProxy();
     }
 
-    public MyWorkService getMyWorkService(){
+    public MyWorkService getMyWorkService() {
         init();
         return myWorkProxy;
     }
 
-    private boolean compareServerVersion(OctaneVersion.Operation operation, OctaneVersion otherVersion){
+    private boolean compareServerVersion(OctaneVersion.Operation operation, OctaneVersion otherVersion) {
         OctaneVersion version = octaneVersionService.getOctaneVersion(true);
         version.discardBuildNumber();
         return OctaneVersion.compare(version, operation, otherVersion);

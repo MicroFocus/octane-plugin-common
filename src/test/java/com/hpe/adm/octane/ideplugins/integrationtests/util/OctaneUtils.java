@@ -10,11 +10,18 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.hpe.adm.octane.ideplugins.services.connection;
+package com.hpe.adm.octane.ideplugins.integrationtests.util;
 
+import com.google.inject.Inject;
+import com.hpe.adm.octane.ideplugins.services.nonentity.OctaneVersionService;
+import com.hpe.adm.octane.ideplugins.services.util.OctaneVersion;
 
-import com.hpe.adm.nga.sdk.Octane;
+public class OctaneUtils {
 
-public interface OctaneProvider {
-    Octane getOctane();
+    @Inject
+    private OctaneVersionService versionService;
+
+    public boolean isIronMaidenP1VersionOrHigher() {
+        return OctaneVersion.compare(versionService.getOctaneVersion(), OctaneVersion.Operation.HIGHER_EQ, OctaneVersion.IRONMAIDEN_P1);
+    }
 }

@@ -1,5 +1,5 @@
 /*
- * Copyright 2017 EntIT Software LLC, a Micro Focus company, L.P.
+ * © Copyright 2017-2022 Micro Focus or one of its affiliates.
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
@@ -125,7 +125,7 @@ public class EntityLabelService {
             if(entityType != null) {
                 map.put(entityType, entityModel);
             } else {
-                logger.warn("Unknown entity_type string: "
+                logger.debug("Unknown entity_type string: "
                         + entityModel.getValue(ENTITY_TYPE).getValue().toString()
                         + " . will be ignored");
             }

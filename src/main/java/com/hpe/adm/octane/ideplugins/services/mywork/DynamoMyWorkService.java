@@ -1,5 +1,5 @@
 /*
- * Copyright 2017 EntIT Software LLC, a Micro Focus company, L.P.
+ * © Copyright 2017-2022 Micro Focus or one of its affiliates.
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
@@ -28,7 +28,7 @@ import java.util.stream.Collectors;
 
 import static com.hpe.adm.octane.ideplugins.services.mywork.MyWorkUtil.*;
 
-class DynamoMyWorkService implements MyWorkService{
+class DynamoMyWorkService implements MyWorkService {
 
     @Inject
     private EntityService entityService;
@@ -92,8 +92,8 @@ class DynamoMyWorkService implements MyWorkService{
                     Collection<EntityModel> queryEntitiesByKey = resultMap.get(entityType);
                     Collection<EntityModel> addedEntitiesByKey = addedEntities.get(entityType);
 
-                    for(EntityModel userItem : addedEntitiesByKey){
-                        if(!MyWorkUtil.containsUserItem(queryEntitiesByKey, userItem)){
+                    for (EntityModel userItem : addedEntitiesByKey) {
+                        if (!containsUserItem(queryEntitiesByKey, userItem)) {
                             resultMap.get(entityType).add(userItem);
                         }
                     }
@@ -108,7 +108,7 @@ class DynamoMyWorkService implements MyWorkService{
                 .collect(Collectors.toList());
     }
 
-    protected Map<Entity, Collection<EntityModel>> getAddedItems(Map<Entity, Set<String>> fieldListMap){
+    protected Map<Entity, Collection<EntityModel>> getAddedItems(Map<Entity, Set<String>> fieldListMap) {
 
         final Map<Entity, Set<String>> fieldListMapCopy = cloneFieldListMap(fieldListMap);
 
@@ -153,13 +153,13 @@ class DynamoMyWorkService implements MyWorkService{
     public boolean isInMyWork(EntityModel entityModel) {
         //TODO: can be optimized
         Collection<EntityModel> myWork = getMyWork();
-        myWork = MyWorkUtil.getEntityModelsFromUserItems(myWork);
+        myWork = getEntitiesFromUserItems(myWork);
         return EntityUtil.containsEntityModel(myWork, entityModel);
     }
 
     @Override
     public boolean addToMyWork(EntityModel entityModel) {
-        if(isInMyWork(entityModel)){
+        if (isInMyWork(entityModel)) {
             return false;
         }
 

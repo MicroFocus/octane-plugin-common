@@ -1,5 +1,5 @@
 /*
- * Copyright 2017 EntIT Software LLC, a Micro Focus company, L.P.
+ * © Copyright 2017-2022 Micro Focus or one of its affiliates.
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
@@ -49,8 +49,8 @@ class EvertonP1MyWorkService extends EvertonP2MyWorkService implements MyWorkSer
         //For Everton P1 change the way MANUAL_TEST_RUNs are queried
         Query.QueryBuilder runParentSuiteQuery =
                 Query.statement("parent_suite", QueryMethod.EqualTo,
-                        Query.statement("run_by", QueryMethod.EqualTo, null))
-                .and(Query.not("parent_suite", QueryMethod.EqualTo, null));
+                                Query.statement("run_by", QueryMethod.EqualTo, null))
+                        .and(Query.not("parent_suite", QueryMethod.EqualTo, null));
 
         Query.QueryBuilder runParentNullQuery =
                 Query.statement("parent_suite", QueryMethod.EqualTo, null);
@@ -64,7 +64,7 @@ class EvertonP1MyWorkService extends EvertonP2MyWorkService implements MyWorkSer
         runParentSuiteQuery = Query.QueryBuilder.parenthesis(runParentSuiteQuery);
 
         Query.QueryBuilder manualTestRunQuery =
-                        userQuery
+                userQuery
                         .and(subtypeQuery)
                         .and(statusQuery)
                         .and(Query.QueryBuilder.parenthesis(runParentNullQuery.or(runParentSuiteQuery)));
@@ -108,8 +108,8 @@ class EvertonP1MyWorkService extends EvertonP2MyWorkService implements MyWorkSer
                     Collection<EntityModel> queryEntitiesByKey = resultMap.get(entityType);
                     Collection<EntityModel> addedEntitiesByKey = addedEntities.get(entityType);
 
-                    for(EntityModel userItem : addedEntitiesByKey){
-                        if(!MyWorkUtil.containsUserItem(queryEntitiesByKey, userItem)){
+                    for (EntityModel userItem : addedEntitiesByKey) {
+                        if (!containsUserItem(queryEntitiesByKey, userItem)) {
                             resultMap.get(entityType).add(userItem);
                         }
                     }

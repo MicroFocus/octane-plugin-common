@@ -12,11 +12,12 @@
  */
 package com.hpe.adm.octane.ideplugins.services.mywork;
 
-import com.google.common.collect.BiMap;
-import com.google.common.collect.HashBiMap;
 import com.google.inject.Inject;
 import com.hpe.adm.nga.sdk.metadata.FieldMetadata;
-import com.hpe.adm.nga.sdk.model.*;
+import com.hpe.adm.nga.sdk.model.EntityModel;
+import com.hpe.adm.nga.sdk.model.LongFieldModel;
+import com.hpe.adm.nga.sdk.model.ReferenceFieldModel;
+import com.hpe.adm.nga.sdk.model.StringFieldModel;
 import com.hpe.adm.nga.sdk.query.Query;
 import com.hpe.adm.nga.sdk.query.QueryMethod;
 import com.hpe.adm.octane.ideplugins.services.EntityService;
@@ -25,6 +26,7 @@ import com.hpe.adm.octane.ideplugins.services.UserService;
 import com.hpe.adm.octane.ideplugins.services.connection.OctaneProvider;
 import com.hpe.adm.octane.ideplugins.services.filtering.Entity;
 import com.hpe.adm.octane.ideplugins.services.util.EntityUtil;
+import com.hpe.adm.octane.ideplugins.services.util.MyWorkPreviewDefaultFields;
 
 import java.util.*;
 import java.util.stream.Collectors;
@@ -32,7 +34,12 @@ import java.util.stream.Collectors;
 import static com.hpe.adm.octane.ideplugins.services.filtering.Entity.COMMENT;
 import static com.hpe.adm.octane.ideplugins.services.mywork.MyWorkUtil.*;
 
-class EvertonP2MyWorkService implements MyWorkService {
+
+/**
+ * Service class responsible for MyWork requests, used only for Octane server versions greater than Iron Maiden P1 (16.0.208).
+ * This was implemented because of the changes made on the Octane MyWork that were introduced by default in Iron Maiden P1.
+ */
+public class IronMaidenP1MyWorkService implements MyWorkService {
 
     @Inject
     private EntityService entityService;
@@ -46,16 +53,6 @@ class EvertonP2MyWorkService implements MyWorkService {
     @Inject
     private MetadataService metadataService;
 
-    private static final BiMap<String, Entity> relationFieldTypeMap = HashBiMap.create();
-
-    static {
-        relationFieldTypeMap.put("my_follow_items_work_item", Entity.WORK_ITEM);
-        relationFieldTypeMap.put("my_follow_items_task", Entity.TASK);
-        relationFieldTypeMap.put("my_follow_items_test", Entity.TEST);
-        relationFieldTypeMap.put("my_follow_items_run", Entity.TEST_RUN);
-        relationFieldTypeMap.put("my_follow_items_requirement", Entity.REQUIREMENT_BASE_ENTITY);
-    }
-
     @Override
     public Collection<EntityModel> getMyWork() {
         return getMyWork(new HashMap<>());
@@ -65,13 +62,15 @@ class EvertonP2MyWorkService implements MyWorkService {
     public Collection<EntityModel> getMyWork(Map<Entity, Set<String>> fieldListMap) {
         Collection<EntityModel> result = new ArrayList<>();
 
-        Query.QueryBuilder qUser = createUserQuery("user", userService.getCurrentUserId());
+        Query.QueryBuilder qUser = Query.statement("user_item", QueryMethod.EqualTo, Query.statement("user", QueryMethod.EqualTo,
+                Query.statement("id", QueryMethod.EqualTo, userService.getCurrentUserId())));
 
-        Set<String> fields = metadataService.getFields(Entity.USER_ITEM).stream().map(FieldMetadata::getName).collect(Collectors.toSet());
+        Map<Entity, Set<String>> myWorkPreviewMapFields = MyWorkPreviewDefaultFields.getDefaultFields();
 
-        Collection<EntityModel> userItems = entityService.findEntities(Entity.USER_ITEM, qUser, fields, createExpandFieldsMap(fieldListMap));
-        userItems = sortUserItems(userItems);
-        result.addAll(userItems);
+        myWorkPreviewMapFields.keySet().forEach(entity -> {
+            Collection<EntityModel> items = entityService.findEntities(entity, qUser, myWorkPreviewMapFields.get(entity), true);
+            result.addAll(items);
+        });
 
         result.addAll(getCommentsAsUserItems());
 
@@ -79,56 +78,28 @@ class EvertonP2MyWorkService implements MyWorkService {
     }
 
     private Collection<EntityModel> getCommentsAsUserItems() {
-        // Also get comments
         Set<String> fields = metadataService.getFields(Entity.COMMENT).stream().map(FieldMetadata::getName).collect(Collectors.toSet());
         Collection<EntityModel> comments = entityService.findEntities(
                 COMMENT,
                 createUserQuery("mention_user", userService.getCurrentUserId()),
                 fields);
 
-        return MyWorkUtil.wrapCollectionIntoUserItem(comments, -1);
+        return comments;
     }
 
-    /**
-     * Converts the req fields into an expand clause for user item relations
-     *
-     * @param fieldListMap
-     * @return
-     */
-    private static Map<String, Set<String>> createExpandFieldsMap(Map<Entity, Set<String>> fieldListMap) {
-        Map<String, Set<String>> result = new HashMap<>();
-        fieldListMap.keySet().stream().forEach(entity -> {
-            //Group by parent type if needed (only exception is task), only consider fields for relevant relations
-            Entity type = entity.isSubtype() ? entity.getSubtypeOf() : entity;
-            if (relationFieldTypeMap.values().contains(type)) {
-                //get the relation field for this type
-                String fieldName = relationFieldTypeMap.inverse().get(type);
-                if (!result.containsKey(fieldName)) {
-                    result.put(fieldName, new HashSet<>());
-                }
-                //Add the expand clause
-                result.get(fieldName).addAll(fieldListMap.get(entity));
-            }
-        });
-        return result;
-    }
-
-    private Collection<EntityModel> sortUserItems(Collection<EntityModel> userItems) {
+    private static Collection<EntityModel> sortEntityModels(Collection<EntityModel> userItems, Entity entity) {
         try {
             return userItems
                     .stream()
-                    .sorted((userItemLeft, userItemRight) -> {
-                        EntityModel entityLeft = getEntityFromUserItem(userItemLeft);
-                        EntityModel entityRight = getEntityFromUserItem(userItemRight);
-
-                        Entity entityTypeLeft = Entity.getEntityType(entityLeft);
-                        Entity entityTypeRight = Entity.getEntityType(entityRight);
+                    .sorted((entityModelLeft, entityModelRight) -> {
+                        Entity entityTypeLeft = Entity.getEntityType(entityModelLeft);
+                        Entity entityTypeRight = Entity.getEntityType(entityModelRight);
 
                         if (entityTypeLeft != entityTypeRight) {
                             return entityTypeComparator.compare(entityTypeLeft, entityTypeRight);
                         } else {
-                            Long leftId = Long.parseLong(entityLeft.getValue("id").getValue().toString());
-                            Long rightId = Long.parseLong(entityRight.getValue("id").getValue().toString());
+                            Long leftId = Long.parseLong(entityModelLeft.getId());
+                            Long rightId = Long.parseLong(entityModelRight.getId());
                             return leftId.compareTo(rightId);
                         }
                     })
@@ -173,9 +144,7 @@ class EvertonP2MyWorkService implements MyWorkService {
 
     @Override
     public boolean isInMyWork(EntityModel entityModel) {
-        // TODO: can be optimized
         Collection<EntityModel> myWork = getMyWork();
-        myWork = getEntitiesFromUserItems(myWork);
         return EntityUtil.containsEntityModel(myWork, entityModel);
     }
 
@@ -199,18 +168,12 @@ class EvertonP2MyWorkService implements MyWorkService {
 
     protected EntityModel createNewUserItem(EntityModel wrappedEntityModel) {
         EntityModel newUserItem = new EntityModel();
-        newUserItem.setValue(new LongFieldModel("origin", 1L));
-        newUserItem.setValue(new BooleanFieldModel("is_new", true));
-        newUserItem.setValue(new ReferenceFieldModel("reason", null));
-
         String entityType = getEntityTypeName(Entity.getEntityType(wrappedEntityModel));
-
-        newUserItem.setValue(new StringFieldModel("entity_type", entityType));
-
-        newUserItem.setValue(new ReferenceFieldModel("user", userService.getCurrentUser()));
-
         String followField = "my_follow_items_" + getEntityTypeName(Entity.getEntityType(wrappedEntityModel));
 
+        newUserItem.setValue(new LongFieldModel("origin", 1L));
+        newUserItem.setValue(new StringFieldModel("entity_type", entityType));
+        newUserItem.setValue(new ReferenceFieldModel("user", userService.getCurrentUser()));
         newUserItem.setValue(new ReferenceFieldModel(followField, wrappedEntityModel));
 
         return newUserItem;
@@ -218,13 +181,14 @@ class EvertonP2MyWorkService implements MyWorkService {
 
     @Override
     public boolean removeFromMyWork(EntityModel entityModel) {
-
         EntityModel userItem = findUserItemForEntity(entityModel);
+
         if (userItem == null) {
             return false;
         }
 
         String id = userItem.getValue("id").getValue().toString();
+
         try {
             octaneProvider.getOctane().entityList(Entity.USER_ITEM.getApiEntityName()).at(id).delete().execute();
         } catch (Exception ex) {
@@ -232,5 +196,10 @@ class EvertonP2MyWorkService implements MyWorkService {
         }
 
         return true;
+    }
+
+    @Override
+    public EntityModel getEntityFromUserItem(EntityModel entity) {
+        return entity;
     }
 }
