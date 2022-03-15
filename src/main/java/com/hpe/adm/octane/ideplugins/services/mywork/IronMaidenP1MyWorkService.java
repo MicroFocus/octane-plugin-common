@@ -82,7 +82,9 @@ public class IronMaidenP1MyWorkService implements MyWorkService {
         Collection<EntityModel> comments = entityService.findEntities(
                 COMMENT,
                 createUserQuery("mention_user", userService.getCurrentUserId()),
-                fields);
+                fields,
+                "creation_time",
+                false);
 
         return comments;
     }
