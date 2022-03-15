@@ -62,6 +62,10 @@ public class EntityService {
         return findEntities(entity, query, fields, expand, null, null, null, null, null);
     }
 
+    public Collection<EntityModel> findEntities(Entity entity, Query.QueryBuilder query, Set<String> fields, String orderByField, Boolean orderByAsc) {
+        return findEntities(entity, query, fields, null, null, null, orderByField, orderByAsc, null);
+    }
+
     public Collection<EntityModel> findEntities(Entity entity, Query.QueryBuilder query, Set<String> fields, Boolean orderByUserItem) {
         return findEntities(entity, query, fields, null, null, null, null, null, orderByUserItem);
     }
