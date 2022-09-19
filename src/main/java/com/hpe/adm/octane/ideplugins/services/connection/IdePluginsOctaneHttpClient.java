@@ -14,7 +14,7 @@ package com.hpe.adm.octane.ideplugins.services.connection;
 
 import com.google.api.client.http.*;
 import com.google.api.client.http.apache.v2.ApacheHttpTransport;
-import com.hpe.adm.nga.sdk.authentication.Authentication;
+import com.hpe.adm.nga.sdk.authentication.JSONAuthentication;
 import com.hpe.adm.nga.sdk.exception.OctaneException;
 import com.hpe.adm.nga.sdk.exception.OctanePartialException;
 import com.hpe.adm.nga.sdk.model.*;
@@ -59,13 +59,14 @@ public class IdePluginsOctaneHttpClient implements OctaneHttpClient {
     private static final String ERROR_CODE_TOKEN_EXPIRED = "VALIDATION_TOKEN_EXPIRED_IDLE_TIME_OUT";
     private static final String ERROR_CODE_GLOBAL_TOKEN_EXPIRED = "VALIDATION_TOKEN_EXPIRED_GLOBAL_TIME_OUT";
     private static final String DEFAULT_OCTANE_SESSION_COOKIE_NAME = "LWSSO_COOKIE_KEY";
+    private static final String HPE_CLIENT_TYPE = "HPECLIENTTYPE";
 
     private static final int HTTP_REQUEST_RETRY_COUNT = 1;
 
     private final String urlDomain;
     private HttpRequestFactory requestFactory;
     private String octaneUserValue;
-    private Authentication lastUsedAuthentication;
+    private JSONAuthentication lastUsedAuthentication;
     private final Map<OctaneHttpRequest, OctaneHttpResponse> cachedRequestToResponse = new HashMap<>();
     private final Map<OctaneHttpRequest, String> requestToEtagMap = new HashMap<>();
 
@@ -129,22 +130,21 @@ public class IdePluginsOctaneHttpClient implements OctaneHttpClient {
     }
 
     @Override
-    public synchronized boolean authenticate(Authentication authentication) {
+    public synchronized boolean authenticate() {
         authenticationLock.lock();
-        lastUsedAuthentication = authentication;
 
         try {
-            if (authentication instanceof GrantTokenAuthentication) {
-                return grantTokenAuthenticate(authentication);
+            if (lastUsedAuthentication instanceof GrantTokenAuthentication) {
+                return grantTokenAuthenticate();
             } else {
-                return octaneAuthenticate(authentication);
+                return octaneAuthenticate(lastUsedAuthentication);
             }
         } finally {
             authenticationLock.unlock();
         }
     }
 
-    private boolean octaneAuthenticate(Authentication authentication) {
+    private boolean octaneAuthenticate(JSONAuthentication authentication) {
 
         clearSessionFields();
 
@@ -166,7 +166,7 @@ public class IdePluginsOctaneHttpClient implements OctaneHttpClient {
         return lwssoValue != null && !lwssoValue.isEmpty();
     }
 
-    private boolean grantTokenAuthenticate(Authentication authentication) {
+    private boolean grantTokenAuthenticate() {
 
         // do not authenticate if lwssoValue is not empty
         if (isAuthenticated()) {
@@ -265,7 +265,7 @@ public class IdePluginsOctaneHttpClient implements OctaneHttpClient {
 
     public HttpCookie getSessionHttpCookie() {
         if (lwssoValue == null && lastUsedAuthentication != null) {
-            authenticate(lastUsedAuthentication);
+            authenticate();
         }
         return new HttpCookie(sessionCookieName, lwssoValue);
     }
@@ -400,7 +400,7 @@ public class IdePluginsOctaneHttpClient implements OctaneHttpClient {
                         if (lastUsedAuthentication instanceof GrantTokenAuthentication) {
                             lwssoValue = ""; //clear it to force re-auth
                         }
-                        authenticate(lastUsedAuthentication);
+                        authenticate();
                     } catch (OctaneException ex) {
                         logger.debug("Exception while retrying authentication: {}", ex.getMessage());
                     }
@@ -633,4 +633,7 @@ public class IdePluginsOctaneHttpClient implements OctaneHttpClient {
         this.tokenPollingInProgressHandler = tokenPollingInProgressHandler;
     }
 
+    public void setLastUsedAuthentication(JSONAuthentication lastUsedAuthentication) {
+        this.lastUsedAuthentication = lastUsedAuthentication;
+    }
 }

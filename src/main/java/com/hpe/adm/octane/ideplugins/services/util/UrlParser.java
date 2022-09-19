@@ -13,7 +13,7 @@
 package com.hpe.adm.octane.ideplugins.services.util;
 
 import com.google.api.client.util.Charsets;
-import com.hpe.adm.nga.sdk.authentication.Authentication;
+import com.hpe.adm.nga.sdk.authentication.JSONAuthentication;
 import com.hpe.adm.octane.ideplugins.services.connection.ConnectionSettings;
 import com.hpe.adm.octane.ideplugins.services.connection.UserAuthentication;
 import com.hpe.adm.octane.ideplugins.services.exception.ServiceException;
@@ -31,7 +31,7 @@ public class UrlParser {
 
     private static final String INVALID_URL_FORMAT_MESSAGE = "Given server URL is not valid.";
 
-    public static ConnectionSettings resolveConnectionSettings(String url, Authentication authentication) throws ServiceException {
+    public static ConnectionSettings resolveConnectionSettings(String url, JSONAuthentication authentication) throws ServiceException {
         ConnectionSettings connectionSettings = resolveConnectionSettingsFromUrl(url);
         connectionSettings.setAuthentication(authentication);
         return connectionSettings;
@@ -39,7 +39,7 @@ public class UrlParser {
 
     /**
      * @deprecated use
-     *             {@link #resolveConnectionSettings(String, Authentication)}
+     *             {@link #resolveConnectionSettings(String, JSONAuthentication)}
      * @param url server url
      * @param userName octane username
      * @param password octane password

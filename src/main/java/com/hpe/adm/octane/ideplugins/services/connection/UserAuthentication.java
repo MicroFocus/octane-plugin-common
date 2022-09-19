@@ -24,13 +24,13 @@ public class UserAuthentication extends SimpleUserAuthentication {
     }
 
     @Override
-    public String getUserName() {
-        return super.getUserName();
+    public String getAuthenticationId() {
+        return super.getAuthenticationId();
     }
 
     @Override
-    public String getPassword() {
-        return super.getPassword();
+    public String getAuthenticationSecret() {
+        return super.getAuthenticationSecret();
     }
 
 }

@@ -12,7 +12,7 @@
  */
 package com.hpe.adm.octane.ideplugins.services.connection;
 
-import com.hpe.adm.nga.sdk.authentication.Authentication;
+import com.hpe.adm.nga.sdk.authentication.JSONAuthentication;
 import com.hpe.adm.octane.ideplugins.services.connection.granttoken.GrantTokenAuthentication;
 import com.hpe.adm.octane.ideplugins.services.exception.ServiceRuntimeException;
 import org.slf4j.Logger;
@@ -27,12 +27,12 @@ public class ConnectionSettings {
     private String baseUrl;
     private Long sharedSpaceId;
     private Long workspaceId;
-    private Authentication authentication;
+    private JSONAuthentication authentication;
 
     public ConnectionSettings() {
     }
 
-    public ConnectionSettings(String baseUrl, Long sharedSpaceId, Long workspaceId, Authentication authentication) {
+    public ConnectionSettings(String baseUrl, Long sharedSpaceId, Long workspaceId, JSONAuthentication authentication) {
         this.baseUrl = baseUrl;
         this.sharedSpaceId = sharedSpaceId;
         this.workspaceId = workspaceId;
@@ -63,11 +63,11 @@ public class ConnectionSettings {
         this.workspaceId = workspaceId;
     }
 
-    public Authentication getAuthentication() {
+    public JSONAuthentication getAuthentication() {
         return this.authentication;
     }
 
-    public void setAuthentication(Authentication authentication) {
+    public void setAuthentication(JSONAuthentication authentication) {
         this.authentication = authentication;
     }
 
@@ -127,7 +127,7 @@ public class ConnectionSettings {
      * @return copy of param
      */
     public static ConnectionSettings getCopy(ConnectionSettings connectionSettings) {
-        Authentication authentication;
+        JSONAuthentication authentication;
 
         try {
             authentication = cloneAuthentication(connectionSettings.getAuthentication());
@@ -144,10 +144,10 @@ public class ConnectionSettings {
                 authentication);
     }
 
-    private static Authentication cloneAuthentication(Authentication authentication) {
+    private static JSONAuthentication cloneAuthentication(JSONAuthentication authentication) {
         if(authentication instanceof UserAuthentication) {
             UserAuthentication userAuthentication = (UserAuthentication) authentication;
-            return new UserAuthentication(userAuthentication.getUserName(), userAuthentication.getPassword());
+            return new UserAuthentication(userAuthentication.getAuthenticationId(), userAuthentication.getAuthenticationSecret());
 
         } else if (authentication instanceof GrantTokenAuthentication){
             return new GrantTokenAuthentication();

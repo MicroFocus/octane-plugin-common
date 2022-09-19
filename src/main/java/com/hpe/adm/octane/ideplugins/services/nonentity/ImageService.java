@@ -86,7 +86,9 @@ public class ImageService {
             if(e instanceof HttpResponseException && ((HttpResponseException)e).getStatusCode() == 401 && tryCount > 0) {
                 //means that the cookie expired
                 logger.error("Cookie expired, retrying: " + e.getMessage());
-                httpClientProvider.getOctaneHttpClient().authenticate(connectionSettingsProvider.getConnectionSettings().getAuthentication());
+                ((IdePluginsOctaneHttpClient) httpClientProvider.getOctaneHttpClient())
+                        .setLastUsedAuthentication(connectionSettingsProvider.getConnectionSettings().getAuthentication());
+                httpClientProvider.getOctaneHttpClient().authenticate();
                 return downloadImage(pictureLink, --tryCount);
             } else {
                 logger.error(e.getMessage());

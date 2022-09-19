@@ -15,10 +15,9 @@ package com.hpe.adm.octane.ideplugins.integrationtests.services;
 import com.google.inject.Guice;
 import com.google.inject.Inject;
 import com.google.inject.Injector;
-import com.hpe.adm.nga.sdk.authentication.Authentication;
+import com.hpe.adm.nga.sdk.authentication.JSONAuthentication;
 import com.hpe.adm.nga.sdk.exception.OctaneException;
 import com.hpe.adm.nga.sdk.model.EntityModel;
-import com.hpe.adm.nga.sdk.network.OctaneHttpClient;
 import com.hpe.adm.octane.ideplugins.integrationtests.TestServiceModule;
 import com.hpe.adm.octane.ideplugins.integrationtests.util.UserUtils;
 import com.hpe.adm.octane.ideplugins.services.TestService;
@@ -65,10 +64,11 @@ public class ConnectionSettingsITCase {
         testService = new TestService();
     }
 
-    private boolean validateCredentials(Authentication authentication) {
-        OctaneHttpClient octaneHttpClient = new IdePluginsOctaneHttpClient(baseUrl, ClientType.OCTANE_IDE_PLUGIN);
+    private boolean validateCredentials(JSONAuthentication authentication) {
+        IdePluginsOctaneHttpClient octaneHttpClient = new IdePluginsOctaneHttpClient(baseUrl, ClientType.OCTANE_IDE_PLUGIN);
         try {
-            return octaneHttpClient.authenticate(authentication);
+            octaneHttpClient.setLastUsedAuthentication(authentication);
+            return octaneHttpClient.authenticate();
         } catch (Exception e) {
             return false;
         }
