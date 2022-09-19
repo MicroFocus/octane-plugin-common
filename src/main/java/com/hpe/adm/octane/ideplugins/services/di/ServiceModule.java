@@ -125,8 +125,9 @@ public class ServiceModule extends AbstractModule {
 	                httpClient.setSsoTokenPollingStartedHandler(tokenPollingStartedHandler);
 	                httpClient.setSsoTokenPollingInProgressHandler(tokenPollingInProgressHandler);
 	                httpClient.setSsoTokenPollingCompleteHandler(tokenPollingCompleteHandler);
+                    httpClient.setLastUsedAuthentication(currentConnectionSettings.getAuthentication());
 	
-	                boolean authResult = httpClient.authenticate(currentConnectionSettings.getAuthentication());
+	                boolean authResult = httpClient.authenticate();
 	                
 	                if (!authResult) {
 	                    throw new ServiceRuntimeException("Failed to authenticate to Octane");
