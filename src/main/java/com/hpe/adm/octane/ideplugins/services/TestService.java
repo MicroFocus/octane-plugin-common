@@ -33,8 +33,10 @@ import com.hpe.adm.octane.ideplugins.services.util.ClientType;
 public class TestService {
 
     public Octane getOctane(ConnectionSettings connectionSettings) {
-        return new Octane.Builder(connectionSettings.getAuthentication(),
-                new IdePluginsOctaneHttpClient(connectionSettings.getBaseUrl(), ClientType.OCTANE_IDE_PLUGIN))
+        IdePluginsOctaneHttpClient idePluginsOctaneHttpClient = new IdePluginsOctaneHttpClient(connectionSettings.getBaseUrl(), ClientType.OCTANE_IDE_PLUGIN);
+        idePluginsOctaneHttpClient.setLastUsedAuthentication(connectionSettings.getAuthentication());
+
+        return new Octane.Builder(connectionSettings.getAuthentication(), idePluginsOctaneHttpClient)
                 .Server(connectionSettings.getBaseUrl())
                 .sharedSpace(connectionSettings.getSharedSpaceId())
                 .workSpace(connectionSettings.getWorkspaceId())

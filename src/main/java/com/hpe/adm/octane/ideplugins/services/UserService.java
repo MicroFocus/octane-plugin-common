@@ -14,7 +14,7 @@ package com.hpe.adm.octane.ideplugins.services;
 
 import com.google.inject.Inject;
 import com.hpe.adm.nga.sdk.Octane;
-import com.hpe.adm.nga.sdk.authentication.Authentication;
+import com.hpe.adm.nga.sdk.authentication.JSONAuthentication;
 import com.hpe.adm.nga.sdk.entities.EntityList;
 import com.hpe.adm.nga.sdk.entities.OctaneCollection;
 import com.hpe.adm.nga.sdk.model.EntityModel;
@@ -100,9 +100,9 @@ public class UserService {
 
     private void initCurrentUserWithOldAPI() {
         Octane octane = octaneProvider.getOctane();
-        Authentication authentication = connectionSettingsProvider.getConnectionSettings().getAuthentication();
+        JSONAuthentication authentication = connectionSettingsProvider.getConnectionSettings().getAuthentication();
 
-        String currentUserName = ((UserAuthentication) authentication).getUserName();
+        String currentUserName = ((UserAuthentication) authentication).getAuthenticationId();
         //TODO This is a nasty hotfix for the username having special characters
         currentUserName = UrlParser.urlEncodeQueryParamValue(currentUserName);
 

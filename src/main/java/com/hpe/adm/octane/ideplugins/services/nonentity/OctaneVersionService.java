@@ -43,7 +43,7 @@ public class OctaneVersionService {
     private static String getVersionString(ConnectionSettings connectionSettings) {
         try {
             OctaneHttpRequest request = new OctaneHttpRequest.GetOctaneHttpRequest(getServerVersionUrl(connectionSettings));
-            OctaneHttpClient octaneHttpClient = new GoogleHttpClient(connectionSettings.getBaseUrl());
+            OctaneHttpClient octaneHttpClient = new GoogleHttpClient(connectionSettings.getBaseUrl(), connectionSettings.getAuthentication());
             OctaneHttpResponse response = octaneHttpClient.execute(request);
             String jsonString = response.getContent();
             return new JsonParser().parse(jsonString).getAsJsonObject().get("display_version").getAsString();
