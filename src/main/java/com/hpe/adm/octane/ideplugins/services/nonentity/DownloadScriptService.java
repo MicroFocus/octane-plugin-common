@@ -40,6 +40,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.UnsupportedEncodingException;
+import java.nio.charset.StandardCharsets;
 
 
 public class DownloadScriptService {
@@ -58,14 +59,9 @@ public class DownloadScriptService {
                     "/workspaces/" + connectionSettings.getWorkspaceId() + "/tests/" + testId + "/script");
             OctaneHttpResponse response = httpClient.execute(request);
             String jsonString = response.getContent();
-            jsonString =  new JsonParser().parse(jsonString).getAsJsonObject().get("script").getAsString();
+            jsonString = JsonParser.parseString(jsonString).getAsJsonObject().get("script").getAsString();
 
-            try {
-                return new String(jsonString.getBytes("ISO-8859-1"), "UTF-8");
-            } catch (UnsupportedEncodingException e) {
-                logger.error("Unsupported Encoding");
-                throw e;
-            }
+            return new String(jsonString.getBytes(StandardCharsets.UTF_8), StandardCharsets.UTF_8);
         }
         return null;
     }
