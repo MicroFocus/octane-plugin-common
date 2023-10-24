@@ -39,9 +39,9 @@
     <version>1.9.1</version>
     <packaging>jar</packaging>
 
-    <name>ALM Octane IDE Plugins Common</name>
+    <name>ValueEdge IDE Plugins Common</name>
     <description>
-        Service layer for ALM Octane IDE Plugins, used by:
+        Service layer for ValueEdge IDE Plugins, used by:
         https://github.com/MicroFocus/octane-intellij-plugin
         https://github.com/MicroFocus/octane-eclipse-plugin
     </description>
@@ -68,33 +68,13 @@
 
     <developers>
         <developer>
-            <name>Alexandra Marinescu</name>
-            <email>alexandra.marinescu@microfocus.com</email>
-            <organization>Open Text</organization>
-        </developer>
-        <developer>
-            <name>Andras Toth</name>
-            <email>atoth@microfocus.com</email>
-            <organization>Open Text</organization>
-        </developer>
-        <developer>
-            <name>Octavian Savencu</name>
-            <email>osavencu@microfocus.com</email>
-            <organization>Open Text</organization>
-        </developer>
-        <developer>
-            <name>Tudor Dulau</name>
-            <email>dulau@microfocus.com</email>
-            <organization>Open Text</organization>
-        </developer>
-        <developer>
             <name>Vlad Benchea</name>
-            <email>vlad.benchea@microfocus.com</email>
+            <email>vbenchea@opentext.com</email>
             <organization>Open Text</organization>
         </developer>
         <developer>
-            <name>Kadar Tibor</name>
-            <email>kadar-tibor.manasse@microfocus.com</email>
+            <name>Dan Moldoveanu</name>
+            <email>dmoldoveanu@opentext.com</email>
             <organization>Open Text</organization>
         </developer>
     </developers>

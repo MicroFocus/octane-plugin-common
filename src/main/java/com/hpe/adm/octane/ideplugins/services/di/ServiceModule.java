@@ -146,7 +146,7 @@ public class ServiceModule extends AbstractModule {
 	                boolean authResult = httpClient.authenticate();
 	                
 	                if (!authResult) {
-	                    throw new ServiceRuntimeException("Failed to authenticate to Octane");
+	                    throw new ServiceRuntimeException("Failed to authenticate to ValueEdge");
 	                }
 	
 	                ServiceModule.this.octaneHttpClient = httpClient;

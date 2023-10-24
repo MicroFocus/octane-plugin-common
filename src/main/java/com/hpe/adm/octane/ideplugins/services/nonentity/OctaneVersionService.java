@@ -64,8 +64,8 @@ public class OctaneVersionService {
             String jsonString = response.getContent();
             return new JsonParser().parse(jsonString).getAsJsonObject().get("display_version").getAsString();
         } catch (Exception e) {
-            logger.error("Failed to retrieve Octane server version");
-            throw new ServiceRuntimeException("Failed to retrieve Octane server version", e);
+            logger.error("Failed to retrieve ValueEdge server version");
+            throw new ServiceRuntimeException("Failed to retrieve ValueEdge server version", e);
         }
     }
 
