@@ -108,7 +108,7 @@ public class ImageService {
                 return downloadImage(pictureLink, --tryCount);
             } else {
                 logger.error(e.getMessage());
-                throw new Exception("Failed to load image from octane");
+                throw new Exception("Failed to load image from ValueEdge");
             }
         }
         return httpResponse;

@@ -53,7 +53,7 @@ public class OctaneVersion implements Comparable<OctaneVersion> {
         String[] parts = versionString.split("\\.");
 
         if (!(parts.length == 3 || parts.length == 4)) {
-            throw new RuntimeException("Unable to parse octane version from string: " + versionString);
+            throw new RuntimeException("Unable to parse ValueEdge version from string: " + versionString);
         }
 
         //The first two parts are from ALM version
@@ -70,7 +70,7 @@ public class OctaneVersion implements Comparable<OctaneVersion> {
                 buildNumber = Integer.parseInt(parts[3]);
             }
         } catch (NumberFormatException ex) {
-            throw new RuntimeException("Unable to parse octane version from string: " + versionString, ex);
+            throw new RuntimeException("Unable to parse ValueEdge version from string: " + versionString, ex);
         }
     }
 
