@@ -92,7 +92,7 @@
         <maven-surefire.version>2.19.1</maven-surefire.version>
         <maven-javadoc-plugin.version>2.10.4</maven-javadoc-plugin.version>
 
-        <logback.version>1.2.3</logback.version>
+        <logback.version>1.2.13</logback.version>
 
         <runSuite>IntegrationTestSuite.class</runSuite>
     </properties>
