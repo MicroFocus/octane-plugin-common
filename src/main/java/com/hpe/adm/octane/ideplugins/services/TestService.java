@@ -28,11 +28,10 @@
  ******************************************************************************/
 package com.hpe.adm.octane.ideplugins.services;
 
-import com.google.api.client.http.GenericUrl;
-import com.google.api.client.http.HttpRequest;
-import com.google.api.client.http.HttpTransport;
-import com.google.api.client.http.javanet.NetHttpTransport;
 import com.hpe.adm.nga.sdk.Octane;
+import com.hpe.adm.nga.sdk.network.OctaneHttpClient;
+import com.hpe.adm.nga.sdk.network.OctaneHttpRequest;
+import com.hpe.adm.nga.sdk.network.OctaneHttpResponse;
 import com.hpe.adm.nga.sdk.query.Query;
 import com.hpe.adm.nga.sdk.query.QueryMethod;
 import com.hpe.adm.octane.ideplugins.services.connection.ConnectionSettings;
@@ -40,6 +39,7 @@ import com.hpe.adm.octane.ideplugins.services.connection.IdePluginsOctaneHttpCli
 import com.hpe.adm.octane.ideplugins.services.connection.granttoken.GrantTokenAuthentication;
 import com.hpe.adm.octane.ideplugins.services.exception.ServiceException;
 import com.hpe.adm.octane.ideplugins.services.filtering.Entity;
+import com.hpe.adm.octane.ideplugins.services.nonentity.OctaneVersionService;
 import com.hpe.adm.octane.ideplugins.services.util.ClientType;
 
 /**
@@ -61,13 +61,13 @@ public class TestService {
 
     public void testHttpConnection(ConnectionSettings connectionSettings) throws ServiceException {
         try {
-            HttpTransport HTTP_TRANSPORT = new NetHttpTransport();
-            HttpRequest httpRequest = HTTP_TRANSPORT.createRequestFactory()
-                    .buildGetRequest(new GenericUrl(connectionSettings.getBaseUrl() + "/admin/server/version"));
-            int statusCode = httpRequest.execute().getStatusCode();
-            if (httpRequest.execute().getStatusCode() >= 300) {
-                throw new ServiceException(
-                        "HTTP connection to url: " + connectionSettings.getBaseUrl() + " failed: http response code: + " + statusCode);
+            OctaneHttpClient octaneHttpClient = new IdePluginsOctaneHttpClient(connectionSettings.getBaseUrl(), ClientType.OCTANE_IDE_PLUGIN);
+            OctaneHttpRequest request = new OctaneHttpRequest.GetOctaneHttpRequest(OctaneVersionService.getServerVersionUrl(connectionSettings));
+
+            OctaneHttpResponse response = octaneHttpClient.execute(request);
+
+            if (!response.isSuccessStatusCode()) {
+                throw new ServiceException("HTTP connection to url: " + connectionSettings.getBaseUrl() + " failed");
             }
         } catch (Exception e) {
             throw new ServiceException("HTTP connection to url: " + connectionSettings.getBaseUrl() + " failed: " + e.getMessage());
