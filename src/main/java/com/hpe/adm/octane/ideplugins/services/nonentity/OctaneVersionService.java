@@ -59,6 +59,7 @@ public class OctaneVersionService {
 
     private static String getVersionString(ConnectionSettings connectionSettings) {
         try {
+        	System.setProperty("jdk.http.auth.tunneling.disabledSchemes", "");
             OctaneHttpRequest request = new OctaneHttpRequest.GetOctaneHttpRequest(getServerVersionUrl(connectionSettings));
             OctaneHttpClient octaneHttpClient = new IdePluginsOctaneHttpClient(connectionSettings.getBaseUrl(), ClientType.OCTANE_IDE_PLUGIN);
             OctaneHttpResponse response = octaneHttpClient.execute(request);
