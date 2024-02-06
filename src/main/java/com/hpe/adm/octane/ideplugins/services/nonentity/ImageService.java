@@ -28,13 +28,13 @@
  ******************************************************************************/
 package com.hpe.adm.octane.ideplugins.services.nonentity;
 
-import com.google.api.client.http.*;
-import com.google.api.client.http.javanet.NetHttpTransport;
-import com.google.api.client.util.IOUtils;
+import com.google.common.io.ByteStreams;
 import com.google.inject.Inject;
+import com.hpe.adm.nga.sdk.network.OctaneHttpClient;
+import com.hpe.adm.nga.sdk.network.OctaneHttpRequest;
+import com.hpe.adm.nga.sdk.network.OctaneHttpResponse;
 import com.hpe.adm.octane.ideplugins.services.connection.ConnectionSettingsProvider;
 import com.hpe.adm.octane.ideplugins.services.connection.HttpClientProvider;
-import com.hpe.adm.octane.ideplugins.services.connection.IdePluginsOctaneHttpClient;
 import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
@@ -43,7 +43,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.*;
-import java.net.HttpCookie;
 
 public class ImageService {
 
@@ -72,11 +71,11 @@ public class ImageService {
             imgFile = new File(octanePhotosDir, pictureName);
         }
 
-        HttpResponse httpResponse = downloadImage(pictureLink, 2);
+        OctaneHttpResponse httpResponse = downloadImage(pictureLink, 2);
 
-        try (InputStream is = httpResponse.getContent();
+        try (InputStream is = httpResponse.getInputStream();
              OutputStream os = new FileOutputStream(imgFile)) {
-            IOUtils.copy(is, os);
+            ByteStreams.copy(is, os);
         } catch (IOException e) {
             logger.error(e.getMessage());
         }
@@ -88,30 +87,23 @@ public class ImageService {
      * @param pictureLink - src link to the image from server
      * @return
      */
-    private HttpResponse downloadImage(String pictureLink, int tryCount) throws Exception {
+    private OctaneHttpResponse downloadImage(String pictureLink, int tryCount) throws Exception {
 
-        HttpResponse httpResponse;
-        HttpTransport HTTP_TRANSPORT = new NetHttpTransport();
-        HttpRequestFactory requestFactory = HTTP_TRANSPORT.createRequestFactory();
-        try {
-            HttpRequest httpRequest = requestFactory.buildGetRequest(new GenericUrl(pictureLink));
-            HttpCookie lwssoCookie = ((IdePluginsOctaneHttpClient) httpClientProvider.getOctaneHttpClient()).getSessionHttpCookie();
-            httpRequest.getHeaders().setCookie(lwssoCookie.toString());
-            httpResponse = httpRequest.execute();
-        } catch (IOException e) {
-            if(e instanceof HttpResponseException && ((HttpResponseException)e).getStatusCode() == 401 && tryCount > 0) {
-                //means that the cookie expired
-                logger.error("Cookie expired, retrying: " + e.getMessage());
-                ((IdePluginsOctaneHttpClient) httpClientProvider.getOctaneHttpClient())
-                        .setLastUsedAuthentication(connectionSettingsProvider.getConnectionSettings().getAuthentication());
-                httpClientProvider.getOctaneHttpClient().authenticate();
+        OctaneHttpClient octaneHttpClient = httpClientProvider.getOctaneHttpClient();
+        OctaneHttpRequest request = new OctaneHttpRequest.GetOctaneHttpRequest(pictureLink);
+
+        OctaneHttpResponse response = octaneHttpClient.execute(request);
+
+        if (!response.isSuccessStatusCode()) {
+            if (tryCount > 0) {
                 return downloadImage(pictureLink, --tryCount);
             } else {
-                logger.error(e.getMessage());
+                logger.error("Failed to load image from ValueEdge");
                 throw new Exception("Failed to load image from ValueEdge");
             }
         }
-        return httpResponse;
+
+        return response;
     }
 
     public String downloadPictures(String descriptionField) throws Exception{
