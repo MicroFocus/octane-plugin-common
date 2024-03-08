@@ -59,7 +59,7 @@ public class EntityLabelService {
     private static final String DEFAULT_ENTITY_LABELS_FILE_NAME = "defaultEntityLabels.json";
 
     private OctaneProvider octaneProvider;
-    private static  Map<Entity, EntityModel> defaultLabels = getDefaultEntityLabels();
+    private static Map<Entity, EntityModel> defaultLabels = getDefaultEntityLabels();
     private Map<Entity, EntityModel> serverSideLabels;
 
     @Inject
@@ -70,7 +70,7 @@ public class EntityLabelService {
 
     public Map<Entity, EntityModel> getEntityLabelDetails() {
 
-        if(serverSideLabels == null || serverSideLabels.isEmpty()) {
+        if (serverSideLabels == null || serverSideLabels.isEmpty()) {
 
             try {
                 serverSideLabels = getEntityLabelsFromServer();
@@ -84,7 +84,7 @@ public class EntityLabelService {
         final Map<Entity, EntityModel> resultMap = new HashMap<>(serverSideLabels);
 
         defaultLabels.forEach((entity, entityModel) -> {
-            if(resultMap.putIfAbsent(entity, entityModel) == null) {
+            if (resultMap.putIfAbsent(entity, entityModel) == null) {
                 logger.trace("Adding default entity label details for " + entity + " since the server side one could not be determined.");
             }
         });
@@ -116,8 +116,8 @@ public class EntityLabelService {
     }
 
     private static Map<Entity, EntityModel> getDefaultEntityLabels() {
-        try {
-            InputStream input = EntityLabelService.class.getResourceAsStream("/" + DEFAULT_ENTITY_LABELS_FILE_NAME);
+        try (InputStream input = EntityLabelService.class.getResourceAsStream("/" + DEFAULT_ENTITY_LABELS_FILE_NAME);) {
+
             String jsonString = CharStreams.toString(new InputStreamReader(input, Charsets.UTF_8));
 
             return convertToMap(ModelParser.getInstance().getEntities(jsonString));
@@ -136,7 +136,7 @@ public class EntityLabelService {
             // Octane bug, the label is saved for REQUIREMENT_ROOT, not REQUIREMENT or even all of them
             entityType = entityType == Entity.REQUIREMENT_ROOT ? Entity.REQUIREMENT : entityType;
 
-            if(entityType != null) {
+            if (entityType != null) {
                 map.put(entityType, entityModel);
             } else {
                 logger.debug("Unknown entity_type string: "

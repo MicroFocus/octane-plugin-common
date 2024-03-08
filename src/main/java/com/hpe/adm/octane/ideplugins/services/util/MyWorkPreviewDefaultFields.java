@@ -52,8 +52,8 @@ public class MyWorkPreviewDefaultFields {
     public static final String MYWORK_PREVIEW_DEFAULT_FIELDS_FILE_NAME = "myWorkPreviewDefaultFields.json";
 
     public static Map<Entity, Set<String>> getDefaultFields() {
-        try {
-            InputStream input = MyWorkPreviewDefaultFields.class.getResourceAsStream("/" + MYWORK_PREVIEW_DEFAULT_FIELDS_FILE_NAME);
+        try (InputStream input = MyWorkPreviewDefaultFields.class.getResourceAsStream("/" + MYWORK_PREVIEW_DEFAULT_FIELDS_FILE_NAME)) {
+
             String jsonString = CharStreams.toString(new InputStreamReader(input, Charsets.UTF_8));
 
             return convertEntityFieldsFromJsonToObjects(jsonString);

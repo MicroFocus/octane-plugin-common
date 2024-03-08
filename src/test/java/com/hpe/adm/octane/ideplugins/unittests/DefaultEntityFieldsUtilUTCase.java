@@ -28,7 +28,7 @@
  ******************************************************************************/
 package com.hpe.adm.octane.ideplugins.unittests;
 
-import com.google.api.client.util.Charsets;
+import com.google.common.base.Charsets;
 import com.google.common.io.CharStreams;
 import com.hpe.adm.octane.ideplugins.services.exception.ServiceRuntimeException;
 import com.hpe.adm.octane.ideplugins.services.filtering.Entity;
@@ -50,13 +50,8 @@ public class DefaultEntityFieldsUtilUTCase {
 
     private static String readDefaultFile() {
 
-        InputStream input = null;
-
-        try {
-            ClassLoader classLoader = Thread.currentThread().getContextClassLoader();
-            input = classLoader.getResourceAsStream(DefaultEntityFieldsUtil.DEFAULT_FIELDS_FILE_NAME);
-
-            InputStreamReader inputStreamReader = new InputStreamReader(input, Charsets.UTF_8);
+        try (InputStream input = DefaultEntityFieldsUtilUTCase.class.getResourceAsStream("/" + DefaultEntityFieldsUtil.DEFAULT_FIELDS_FILE_NAME);
+             InputStreamReader inputStreamReader = new InputStreamReader(input, Charsets.UTF_8)) {
 
             String readJsonString = CharStreams.toString(inputStreamReader);
             readJsonString = readJsonString.replaceAll("\\s", "");
@@ -66,10 +61,6 @@ public class DefaultEntityFieldsUtilUTCase {
             return readJsonString;
         } catch (IOException e) {
             fail("Failed to read " + DefaultEntityFieldsUtil.DEFAULT_FIELDS_FILE_NAME);
-        } finally {
-            if (input != null) {
-                IOUtils.closeQuietly(input);
-            }
         }
 
         return "";

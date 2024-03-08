@@ -32,7 +32,6 @@ import com.hpe.adm.octane.ideplugins.services.connection.BasicConnectionSettingP
 import com.hpe.adm.octane.ideplugins.services.connection.ConnectionSettings;
 import com.hpe.adm.octane.ideplugins.services.connection.ConnectionSettingsProvider;
 import com.hpe.adm.octane.ideplugins.services.connection.UserAuthentication;
-import org.apache.commons.io.IOUtils;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -103,17 +102,12 @@ public class PropertyUtil {
     public static ConnectionSettingsProvider readFromPropFile(){
 
         if(fileProps == null) {
-            InputStream resourceStream = null;
+            fileProps = new Properties();
 
-            try {
-                fileProps = new Properties();
-                resourceStream = PropertyUtil.class.getClassLoader().getResourceAsStream(MAIN_CONFIG_FILE_NAME);
-
+            try (InputStream resourceStream = PropertyUtil.class.getClassLoader().getResourceAsStream("/" + MAIN_CONFIG_FILE_NAME)) {
                 fileProps.load(resourceStream);
             } catch (IOException ex) {
                 throw new RuntimeException("Error occured while loading config file: " + MAIN_CONFIG_FILE_NAME + ", " + ex);
-            } finally {
-                IOUtils.closeQuietly(resourceStream);
             }
         }
 
