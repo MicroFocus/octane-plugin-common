@@ -54,9 +54,10 @@ public class DefaultEntityFieldsUtil {
     public static final String DEFAULT_FIELDS_FILE_NAME = "defaultFields.json";
 
     public static Map<Entity, Set<String>> getDefaultFields() {
-        try {
-            InputStream input = DefaultEntityFieldsUtil.class.getResourceAsStream("/" + DEFAULT_FIELDS_FILE_NAME);
+        try (InputStream input = DefaultEntityFieldsUtil.class.getResourceAsStream("/" + DEFAULT_FIELDS_FILE_NAME)) {
+
             String jsonString = CharStreams.toString(new InputStreamReader(input, Charsets.UTF_8));
+
             return entityFieldsFromJson(jsonString);
         } catch (IOException e) {
             throw new ServiceRuntimeException("Failed to parse " + DEFAULT_FIELDS_FILE_NAME + " file ", e);
