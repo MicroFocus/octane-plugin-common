@@ -28,11 +28,10 @@
  ******************************************************************************/
 package com.hpe.adm.octane.ideplugins.services.util;
 
-import com.google.api.client.util.Charsets;
+import com.google.common.base.Charsets;
 import com.google.common.io.CharStreams;
 import com.hpe.adm.octane.ideplugins.services.exception.ServiceRuntimeException;
 import com.hpe.adm.octane.ideplugins.services.filtering.Entity;
-import org.apache.velocity.runtime.resource.loader.ClasspathResourceLoader;
 import org.json.JSONArray;
 import org.json.JSONObject;
 
@@ -56,8 +55,7 @@ public class DefaultEntityFieldsUtil {
 
     public static Map<Entity, Set<String>> getDefaultFields() {
         try {
-            ClasspathResourceLoader cprl = new ClasspathResourceLoader();
-            InputStream input = cprl.getResourceStream(DEFAULT_FIELDS_FILE_NAME);
+            InputStream input = DefaultEntityFieldsUtil.class.getResourceAsStream("/" + DEFAULT_FIELDS_FILE_NAME);
             String jsonString = CharStreams.toString(new InputStreamReader(input, Charsets.UTF_8));
             return entityFieldsFromJson(jsonString);
         } catch (IOException e) {

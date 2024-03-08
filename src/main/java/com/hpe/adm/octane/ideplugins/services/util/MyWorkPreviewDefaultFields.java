@@ -28,11 +28,10 @@
  ******************************************************************************/
 package com.hpe.adm.octane.ideplugins.services.util;
 
-import com.google.api.client.util.Charsets;
+import com.google.common.base.Charsets;
 import com.google.common.io.CharStreams;
 import com.hpe.adm.octane.ideplugins.services.exception.ServiceRuntimeException;
 import com.hpe.adm.octane.ideplugins.services.filtering.Entity;
-import org.apache.velocity.runtime.resource.loader.ClasspathResourceLoader;
 import org.json.JSONArray;
 import org.json.JSONObject;
 
@@ -54,8 +53,7 @@ public class MyWorkPreviewDefaultFields {
 
     public static Map<Entity, Set<String>> getDefaultFields() {
         try {
-            ClasspathResourceLoader cprl = new ClasspathResourceLoader();
-            InputStream input = cprl.getResourceStream(MYWORK_PREVIEW_DEFAULT_FIELDS_FILE_NAME);
+            InputStream input = MyWorkPreviewDefaultFields.class.getResourceAsStream("/" + MYWORK_PREVIEW_DEFAULT_FIELDS_FILE_NAME);
             String jsonString = CharStreams.toString(new InputStreamReader(input, Charsets.UTF_8));
 
             return convertEntityFieldsFromJsonToObjects(jsonString);

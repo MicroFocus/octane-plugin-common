@@ -28,7 +28,7 @@
  ******************************************************************************/
 package com.hpe.adm.octane.ideplugins.services;
 
-import com.google.api.client.util.Charsets;
+import com.google.common.base.Charsets;
 import com.google.common.io.CharStreams;
 import com.google.inject.Inject;
 import com.hpe.adm.nga.sdk.entities.OctaneCollection;
@@ -40,7 +40,6 @@ import com.hpe.adm.octane.ideplugins.services.connection.ConnectionSettingsProvi
 import com.hpe.adm.octane.ideplugins.services.connection.OctaneProvider;
 import com.hpe.adm.octane.ideplugins.services.exception.ServiceRuntimeException;
 import com.hpe.adm.octane.ideplugins.services.filtering.Entity;
-import org.apache.velocity.runtime.resource.loader.ClasspathResourceLoader;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -118,8 +117,7 @@ public class EntityLabelService {
 
     private static Map<Entity, EntityModel> getDefaultEntityLabels() {
         try {
-            ClasspathResourceLoader classpathResourceLoader = new ClasspathResourceLoader();
-            InputStream input = classpathResourceLoader.getResourceStream(DEFAULT_ENTITY_LABELS_FILE_NAME);
+            InputStream input = EntityLabelService.class.getResourceAsStream("/" + DEFAULT_ENTITY_LABELS_FILE_NAME);
             String jsonString = CharStreams.toString(new InputStreamReader(input, Charsets.UTF_8));
 
             return convertToMap(ModelParser.getInstance().getEntities(jsonString));
