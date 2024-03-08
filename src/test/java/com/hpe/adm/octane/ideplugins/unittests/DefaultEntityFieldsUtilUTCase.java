@@ -33,6 +33,7 @@ import com.google.common.io.CharStreams;
 import com.hpe.adm.octane.ideplugins.services.exception.ServiceRuntimeException;
 import com.hpe.adm.octane.ideplugins.services.filtering.Entity;
 import com.hpe.adm.octane.ideplugins.services.util.DefaultEntityFieldsUtil;
+import org.apache.commons.io.IOUtils;
 import org.json.JSONObject;
 import org.junit.Test;
 
@@ -49,15 +50,26 @@ public class DefaultEntityFieldsUtilUTCase {
 
     private static String readDefaultFile() {
 
+        InputStream input = null;
+
         try {
             ClassLoader classLoader = Thread.currentThread().getContextClassLoader();
-            InputStream input = classLoader.getResourceAsStream(DefaultEntityFieldsUtil.DEFAULT_FIELDS_FILE_NAME);
-            String readJsonString = CharStreams.toString(new InputStreamReader(input, Charsets.UTF_8));
-            readJsonString = readJsonString.replaceAll("\\s", "");
-            return readJsonString;
+            input = classLoader.getResourceAsStream(DefaultEntityFieldsUtil.DEFAULT_FIELDS_FILE_NAME);
 
+            InputStreamReader inputStreamReader = new InputStreamReader(input, Charsets.UTF_8);
+
+            String readJsonString = CharStreams.toString(inputStreamReader);
+            readJsonString = readJsonString.replaceAll("\\s", "");
+
+            IOUtils.closeQuietly(inputStreamReader);
+
+            return readJsonString;
         } catch (IOException e) {
             fail("Failed to read " + DefaultEntityFieldsUtil.DEFAULT_FIELDS_FILE_NAME);
+        } finally {
+            if (input != null) {
+                IOUtils.closeQuietly(input);
+            }
         }
 
         return "";
@@ -87,5 +99,4 @@ public class DefaultEntityFieldsUtilUTCase {
         jsonObject.put("version", -1L);
         DefaultEntityFieldsUtil.entityFieldsFromJson(jsonObject.toString());
     }
-
 }

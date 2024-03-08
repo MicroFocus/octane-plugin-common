@@ -35,6 +35,7 @@ import com.google.inject.Inject;
 import com.hpe.adm.octane.ideplugins.services.connection.ConnectionSettingsProvider;
 import com.hpe.adm.octane.ideplugins.services.connection.HttpClientProvider;
 import com.hpe.adm.octane.ideplugins.services.connection.IdePluginsOctaneHttpClient;
+import org.apache.commons.io.FilenameUtils;
 import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
@@ -58,7 +59,9 @@ public class ImageService {
     private File saveImageToTempFile(String pictureLink) throws Exception {
 
         String tmpPath = System.getProperty("java.io.tmpdir");
-        File tmpDir = new File(tmpPath);
+        String normalizedPath = FilenameUtils.normalize(tmpPath);
+        File tmpDir = new File(normalizedPath);
+
         File octanePhotosDir = new File(tmpDir, "Octane_pictures");
 
         if (!octanePhotosDir.exists()) {
