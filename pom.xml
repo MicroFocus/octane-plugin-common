@@ -36,7 +36,7 @@
 
     <groupId>com.hpe.adm.octane.ideplugins</groupId>
     <artifactId>octane-plugin-common</artifactId>
-    <version>1.9.2-SNAPSHOT</version>
+    <version>CE-24.2</version>
     <packaging>jar</packaging>
 
     <name>ValueEdge IDE Plugins Common</name>
