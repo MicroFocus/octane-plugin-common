@@ -86,7 +86,7 @@
         <java.target.version>17</java.target.version>
         <maven-compiler.version>3.6.1</maven-compiler.version>
 
-        <nexus-staging-maven-plugin.version>1.6.8</nexus-staging-maven-plugin.version>
+        <nexus-staging-maven-plugin.version>1.6.13</nexus-staging-maven-plugin.version>
         <maven-gpg-plugin.version>1.5</maven-gpg-plugin.version>
         <maven-source-plugin.version>2.2.1</maven-source-plugin.version>
         <maven-surefire.version>2.19.1</maven-surefire.version>
