@@ -81,7 +81,7 @@
 
     <properties>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-
+        <baseNexusURL>http://nexus.octane.admlabs.aws.swinfra.net:8080/nexus</baseNexusURL>
         <java.source.version>17</java.source.version>
         <java.target.version>17</java.target.version>
         <maven-compiler.version>3.6.1</maven-compiler.version>
@@ -272,46 +272,15 @@
             </build>
         </profile>
         <profile>
-            <id>release</id>
-            <build>
-                <plugins>
-                    <plugin>
-                        <groupId>org.sonatype.plugins</groupId>
-                        <artifactId>nexus-staging-maven-plugin</artifactId>
-                        <version>${nexus-staging-maven-plugin.version}</version>
-                        <extensions>true</extensions>
-                        <configuration>
-                            <serverId>release-repository</serverId>
-                            <nexusUrl>https://oss.sonatype.org/</nexusUrl>
-                            <autoReleaseAfterClose>true</autoReleaseAfterClose>
-                        </configuration>
-                    </plugin>
-                </plugins>
-            </build>
+            <id>full-staging</id>
             <distributionManagement>
                 <repository>
-                    <id>release-repository</id>
-                    <url>https://oss.sonatype.org/service/local/staging/deploy/maven2</url>
-                </repository>
-                <snapshotRepository>
-                    <id>snapshot-repository</id>
-                    <name>Maven2 Snapshot Repository</name>
-                    <url>https://oss.sonatype.org/content/repositories/snapshots</url>
-                </snapshotRepository>
-            </distributionManagement>
-        </profile>
-
-        <profile>
-            <id>release-internal</id>
-            <distributionManagement>
-                <repository>
-                    <id>mqm-snapshots</id>
-                    <name>Internal Nexus</name>
-                    <url>${internal-nexus-url}</url>
+                    <id>stage-mqm</id>
+                    <name>Staging repository</name>
+                    <url>${baseNexusURL}/content/repositories/mqm-staging</url>
                 </repository>
             </distributionManagement>
         </profile>
-
     </profiles>
 
 </project>
