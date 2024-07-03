@@ -39,9 +39,9 @@
     <version>CE-24.2</version>
     <packaging>jar</packaging>
 
-    <name>ValueEdge IDE Plugins Common</name>
+    <name>OpenText™️ Core Software Delivery Platform IDE Plugins Common</name>
     <description>
-        Service layer for ValueEdge IDE Plugins, used by:
+        Service layer for OpenText™️ Core Software Delivery Platform IDE Plugins, used by:
         https://github.com/MicroFocus/octane-intellij-plugin
         https://github.com/MicroFocus/octane-eclipse-plugin
     </description>
