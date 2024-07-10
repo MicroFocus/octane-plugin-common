@@ -146,7 +146,7 @@ public class ServiceModule extends AbstractModule {
 	                boolean authResult = httpClient.authenticate();
 	                
 	                if (!authResult) {
-	                    throw new ServiceRuntimeException("Failed to authenticate to OpenText™️ Core Software Delivery Platform");
+	                    throw new ServiceRuntimeException("Failed to authenticate to Core Software Delivery Platform");
 	                }
 	
 	                ServiceModule.this.octaneHttpClient = httpClient;
