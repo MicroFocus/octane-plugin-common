@@ -111,7 +111,7 @@ public class ImageService {
                 return downloadImage(pictureLink, --tryCount);
             } else {
                 logger.error(e.getMessage());
-                throw new Exception("Failed to load image from OpenText™️ Core Software Delivery Platform");
+                throw new Exception("Failed to load image from Core Software Delivery Platform");
             }
         }
         return httpResponse;
