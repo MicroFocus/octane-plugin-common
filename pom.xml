@@ -36,7 +36,7 @@
 
     <groupId>com.hpe.adm.octane.ideplugins</groupId>
     <artifactId>octane-plugin-common</artifactId>
-    <version>CE-24.3</version>
+    <version>CE-24.4</version>
     <packaging>jar</packaging>
 
     <name>Core Software Delivery Platform IDE Plugins Common</name>
