@@ -184,7 +184,33 @@
 				{ "name":"owner"},
 				{ "name":"description"}
 			]
-		 }
+		 },
+		{
+			"type": "FEATURE",
+			"fields": [
+				{ "name":"creation_time" },
+				{ "name":"last_modified" },
+				{ "name":"story_points" },
+				{ "name":"item_origin" },
+				{ "name":"last_runs" },
+				{ "name":"parent" },
+				{ "name":"priority" },
+				{ "name":"product_areas" },
+				{ "name":"release" },
+				{ "name":"milestone" },
+				{ "name":"sprint" },
+				{ "name":"team" },
+				{ "name":"items_in_releasess" },
+				{ "name":"progress" },
+				{ "name":"feature_type" },
+				{ "name":"actual_story_points" },
+				{ "name":"blocked" },
+				{ "name":"blocked_reason"},
+				{ "name":"author"},
+				{ "name":"owner"},
+				{ "name":"description"}
+			]
+		}
 	]
  }
 
