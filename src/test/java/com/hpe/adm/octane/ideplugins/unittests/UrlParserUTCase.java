@@ -28,7 +28,9 @@
  ******************************************************************************/
 package com.hpe.adm.octane.ideplugins.unittests;
 
+import com.hpe.adm.nga.sdk.authentication.JSONAuthentication;
 import com.hpe.adm.octane.ideplugins.services.connection.ConnectionSettings;
+import com.hpe.adm.octane.ideplugins.services.connection.UserAuthentication;
 import com.hpe.adm.octane.ideplugins.services.exception.ServiceException;
 import com.hpe.adm.octane.ideplugins.services.util.UrlParser;
 import org.junit.Test;
@@ -50,7 +52,8 @@ public class UrlParserUTCase {
         //Test parsing
         ConnectionSettings connectionSettings = null;
         try {
-            connectionSettings = UrlParser.resolveConnectionSettings(octaneUrlWithPort, "username", "password");
+            JSONAuthentication jsonAuthentication = new UserAuthentication("username", "password");
+            connectionSettings = UrlParser.resolveConnectionSettings(octaneUrlWithPort, jsonAuthentication);
         } catch (ServiceException e) {
             fail(e.getMessage());
         }
