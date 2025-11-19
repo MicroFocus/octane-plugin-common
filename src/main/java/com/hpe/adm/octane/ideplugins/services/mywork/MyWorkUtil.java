@@ -50,12 +50,19 @@ public class MyWorkUtil {
         addToMyWorkEntities.add(Entity.DEFECT);
         addToMyWorkEntities.add(Entity.TASK);
         addToMyWorkEntities.add(Entity.QUALITY_STORY);
+        addToMyWorkEntities.add(Entity.FEATURE);
         addToMyWorkEntities.add(Entity.MANUAL_TEST);
         addToMyWorkEntities.add(Entity.GHERKIN_TEST);
         addToMyWorkEntities.add(Entity.BDD_SCENARIO);
         addToMyWorkEntities.add(Entity.MANUAL_TEST_RUN);
         addToMyWorkEntities.add(Entity.TEST_SUITE_RUN);
         addToMyWorkEntities.add(Entity.REQUIREMENT);
+        addToMyWorkEntities.add(Entity.TEST_SUITE);
+        addToMyWorkEntities.add(Entity.UNIT);
+        addToMyWorkEntities.add(Entity.MODEL);
+        addToMyWorkEntities.add(Entity.MANUAL_ACTION);
+        addToMyWorkEntities.add(Entity.AUTO_ACTION);
+        addToMyWorkEntities.add(Entity.QUALITY_GATE);
     }
 
     /**

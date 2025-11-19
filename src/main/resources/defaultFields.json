@@ -184,7 +184,77 @@
 				{ "name":"owner"},
 				{ "name":"description"}
 			]
-		 }
+		 },
+		{
+			"type": "QUALITY_GATE",
+			"fields": [
+				{ "name":"creation_time" },
+				{ "name":"last_modified" },
+				{ "name":"author"},
+				{ "name":"owner"},
+				{ "name":"description"},
+				{ "name":"start_time"},
+				{ "name":"end_time"},
+				{ "name": "duration"},
+				{ "name": "parent_process"},
+				{ "name":  "parent"},
+				{ "name":  "transition_note"}
+			]
+		},
+		{
+			"type": "AUTO_ACTION",
+			"fields": [
+				{ "name":"creation_time" },
+				{ "name":"last_modified" },
+				{ "name":"author"},
+				{ "name":"owner"},
+				{ "name":"description"},
+				{ "name":"start_time"},
+				{ "name":"end_time"},
+				{ "name": "duration"},
+				{ "name": "parent_process"},
+				{ "name":  "parent"},
+				{ "name":  "action_type"}
+			]
+		},
+		{
+			"type": "MANUAL_ACTION",
+			"fields": [
+				{ "name":"creation_time" },
+				{ "name":"last_modified" },
+				{ "name":"author"},
+				{ "name":"owner"},
+				{ "name":"description"},
+				{ "name":"start_time"},
+				{ "name":"end_time"},
+				{ "name": "duration"},
+				{ "name": "parent_process"},
+				{ "name":  "parent"}
+			]
+		},
+		{
+			"type": "UNIT",
+			"fields": [
+				{ "name":"creation_time" },
+				{ "name":"last_modified" },
+				{ "name":"author"},
+				{ "name":"owner"},
+				{ "name":"description"},
+				{ "name":"last_modified"},
+				{ "name":"automation_status"},
+				{ "name": "risk"}
+			]
+		},
+		{
+			"type": "MODEL",
+			"fields": [
+				{ "name":"creation_time" },
+				{ "name":"last_modified" },
+				{ "name":"author"},
+				{ "name":"owner"},
+				{ "name":"description"}
+			]
+		}
 	]
  }
 

@@ -74,6 +74,29 @@
         "steps_num",
         "bdd_spec"
       ]
+    },
+    {
+      "type": "MODEL_ITEM",
+      "fields": [
+        "id",
+        "name",
+        "subtype",
+        "owner",
+        "phase"
+      ]
+    },
+    {
+      "type": "PROCESS_ITEM",
+      "fields": [
+        "id",
+        "name",
+        "subtype",
+        "owner",
+        "phase",
+        "duration",
+        "start_time",
+        "end_time"
+      ]
     }
   ]
 }

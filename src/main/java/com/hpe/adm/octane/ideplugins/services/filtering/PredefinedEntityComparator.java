@@ -40,13 +40,20 @@ public class PredefinedEntityComparator implements Comparator<Entity> {
             Entity.QUALITY_STORY,
             Entity.DEFECT,
             Entity.TASK,
+            Entity.FEATURE,
             Entity.MANUAL_TEST,
             Entity.GHERKIN_TEST,
             Entity.BDD_SCENARIO,
             Entity.TEST_SUITE_RUN,
             Entity.MANUAL_TEST_RUN,
             Entity.COMMENT,
-            Entity.REQUIREMENT);
+            Entity.REQUIREMENT,
+            Entity.UNIT,
+            Entity.TEST_SUITE,
+            Entity.MODEL,
+            Entity.MANUAL_ACTION,
+            Entity.AUTO_ACTION,
+            Entity.QUALITY_GATE);
 
     @Override
     public int compare(Entity entityLeft, Entity entityRight) {

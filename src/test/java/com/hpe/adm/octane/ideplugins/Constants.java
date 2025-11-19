@@ -126,5 +126,11 @@ public class Constants {
             Entity.AUTOMATED_TEST,
             Entity.GHERKIN_TEST,
             Entity.BDD_SCENARIO,
-            Entity.REQUIREMENT));
+            Entity.REQUIREMENT,
+            Entity.UNIT,
+            Entity.MODEL,
+            Entity.MANUAL_ACTION,
+            Entity.AUTO_ACTION,
+            Entity.QUALITY_GATE
+            ));
 }

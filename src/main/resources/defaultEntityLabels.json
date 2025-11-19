@@ -105,6 +105,47 @@
       "initials": "BSC",
       "language": "lang.en"
     }
+    ,
+    {
+      "entity_type": "unit",
+      "name": "Unit",
+      "plural_capitalized": "Units",
+      "initials": "U",
+      "language": "lang.en"
+    }
+  ,
+    {
+      "entity_type": "model",
+      "name": "Model",
+      "plural_capitalized": "Models",
+      "initials": "M",
+      "language": "lang.en"
+    }
+  ,
+    {
+      "entity_type": "manual_action",
+      "name": "Manual Action",
+      "plural_capitalized": "Manual Actions",
+      "initials": "MA",
+      "language": "lang.en"
+    }
+  ,
+    {
+      "entity_type": "auto_action",
+      "name": "Auto Action",
+      "plural_capitalized": "Auto Actions",
+      "initials": "AA",
+      "language": "lang.en"
+    }
+  ,
+    {
+      "entity_type": "quality_gate",
+      "name": "Quality_Gate",
+      "plural_capitalized": "Quality Gates",
+      "initials": "QG",
+      "language": "lang.en"
+    }
+
   ]
 }
 
