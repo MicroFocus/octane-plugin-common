@@ -42,6 +42,15 @@ import java.util.Set;
  */
 public enum Entity {
 
+    MODEL_ITEM("model_items", "model_item"),
+    UNIT(Entity.MODEL_ITEM, "unit"),
+    MODEL(Entity.MODEL_ITEM, "model"),
+
+    PROCESS_ITEM("processes", "process"),
+    AUTO_ACTION(Entity.PROCESS_ITEM, "process_auto_action"),
+    MANUAL_ACTION(Entity.PROCESS_ITEM, "process_action"),
+    QUALITY_GATE(Entity.PROCESS_ITEM, "process_quality_gate"),
+
     WORK_ITEM("work_items", "work_item"),
     USER_STORY(Entity.WORK_ITEM, "story"),
     QUALITY_STORY(Entity.WORK_ITEM, "quality_story"),
