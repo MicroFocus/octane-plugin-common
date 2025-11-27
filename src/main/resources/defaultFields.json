@@ -255,6 +255,52 @@
 				{"name":"description"}
 			]
 		}
+		,
+		{
+			"type": "MODEL_BASED_TEST",
+			"fields": [
+				{"name":"creation_time" },
+				{"name":"last_modified" },
+				{"name":"author"},
+				{"name":"owner"},
+				{"name":"description"},
+				{"name":"test_type"},
+				{"name":"automation_coverage"},
+				{"name":"readiness"},
+				{"name":"backlog_coverage"},
+				{"name":"estimated_duration"},
+				{"name":"application_modules"}
+			]
+		}
+		,
+		{
+			"type": "SUITE_RUN_SCHEDULER",
+			"fields": [
+				{"name":"creation_time" },
+				{"name":"last_modified" },
+				{"name":"author"},
+				{"name":"owner"},
+				{"name":"description"},
+				{"name":"release"},
+				{"name":"milestone"},
+				{"name":"status"}
+			]
+		}
+		,
+		{
+			"type": "SUITE_RUN_SCHEDULER_RUN",
+			"fields": [
+				{"name":"creation_time" },
+				{"name":"last_modified" },
+				{"name":"author"},
+				{"name":"owner"},
+				{"name":"description"},
+				{"name":"status"},
+				{"name":"start_time"},
+				{"name":"duration"},
+				{"name":"general_run_status"}
+			]
+		}
 	]
  }
 

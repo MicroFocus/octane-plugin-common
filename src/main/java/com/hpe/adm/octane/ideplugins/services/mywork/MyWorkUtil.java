@@ -54,6 +54,7 @@ public class MyWorkUtil {
         addToMyWorkEntities.add(Entity.MANUAL_TEST);
         addToMyWorkEntities.add(Entity.GHERKIN_TEST);
         addToMyWorkEntities.add(Entity.BDD_SCENARIO);
+        addToMyWorkEntities.add(Entity.MODEL_BASED_TEST);
         addToMyWorkEntities.add(Entity.MANUAL_TEST_RUN);
         addToMyWorkEntities.add(Entity.TEST_SUITE_RUN);
         addToMyWorkEntities.add(Entity.REQUIREMENT);
@@ -63,6 +64,8 @@ public class MyWorkUtil {
         addToMyWorkEntities.add(Entity.MANUAL_ACTION);
         addToMyWorkEntities.add(Entity.AUTO_ACTION);
         addToMyWorkEntities.add(Entity.QUALITY_GATE);
+        addToMyWorkEntities.add(Entity.SUITE_RUN_SCHEDULER);
+        addToMyWorkEntities.add(Entity.SUITE_RUN_SCHEDULER_RUN);
     }
 
     /**

@@ -125,12 +125,15 @@ public class Constants {
             Entity.MANUAL_TEST,
             Entity.AUTOMATED_TEST,
             Entity.GHERKIN_TEST,
+            Entity.MODEL_BASED_TEST,
             Entity.BDD_SCENARIO,
             Entity.REQUIREMENT,
             Entity.UNIT,
             Entity.MODEL,
             Entity.MANUAL_ACTION,
             Entity.AUTO_ACTION,
-            Entity.QUALITY_GATE
+            Entity.QUALITY_GATE,
+            Entity.SUITE_RUN_SCHEDULER,
+            Entity.SUITE_RUN_SCHEDULER_RUN
             ));
 }
