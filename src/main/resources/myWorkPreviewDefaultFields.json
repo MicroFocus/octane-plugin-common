@@ -102,14 +102,17 @@
       "type": "SUITE_RUN_SCHEDULER",
       "fields": [
         "id",
-        "name"
-        ]
+        "name",
+        "author",
+        "status"
+      ]
     },
     {
       "type": "SUITE_RUN_SCHEDULER_RUN",
       "fields": [
         "id",
-        "name"
+        "name",
+        "status"
       ]
     }
   ]
