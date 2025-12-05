@@ -128,6 +128,19 @@
 				{ "name":"description"}
 			]
 		 },
+		{
+			"type": "BDD_SCENARIO",
+			"fields": [
+				{ "name":"test_type"},
+				{ "name":"testing_tool_type"},
+				{ "name":"estimated_duration"},
+				{ "name":"created"},
+				{ "name":"last_modified"},
+				{ "name":"backlog_coverage"},
+				{ "name":"automation_status"},
+				{ "name":"description"}
+			]
+		},
 		{ 
 			"type": "MANUAL_TEST_RUN",
 			"fields": [
@@ -256,6 +269,26 @@
 			]
 		}
 		,
+		{
+			"type": "FEATURE",
+			"fields": [
+				{"name":"creation_time" },
+				{"name":"last_modified" },
+				{"name":"author"},
+				{"name":"owner"},
+				{"name":"description"},
+				{"name":"story_points" },
+				{"name":"epic" },
+				{"name":"test_coverage"},
+				{"name":"release"},
+				{"name":"priority"},
+				{"name":"target_sprint" },
+				{"name":"team" },
+				{"name":"feature_type"},
+				{"name":"progress"}
+			]
+		}
+	,
 		{
 			"type": "MODEL_BASED_TEST",
 			"fields": [
