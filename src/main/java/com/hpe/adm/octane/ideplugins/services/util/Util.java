@@ -142,7 +142,7 @@ public class Util {
     }
 
     public static FieldModel getContainerItemForCommentModel(EntityModel commentModel) {
-        return getNonNullValue(commentModel, "owner_work_item", "owner_test", "owner_run", "owner_requirement", "owner_bdd_spec", "owner_task", "owner_model_item","owner_process");
+        return getNonNullValue(commentModel, "owner_work_item", "owner_test", "owner_run", "owner_requirement", "owner_bdd_spec", "owner_task", "owner_model_item","owner_process","owner_suite_run_scheduler","owner_suite_run_scheduler_run");
     }
 
     private static String getValueOfChildren(Collection<EntityModel> entityModelList, String child) {

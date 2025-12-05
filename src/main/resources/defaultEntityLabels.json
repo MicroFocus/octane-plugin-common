@@ -145,6 +145,30 @@
       "initials": "QG",
       "language": "lang.en"
     }
+    ,
+    {
+      "entity_type": "model_based_test",
+      "name": "Model_Test_Based",
+      "plural_capitalized": "Model Based Tests",
+      "initials": "MBT",
+      "language": "lang.en"
+    }
+    ,
+    {
+      "entity_type": "suite_run_scheduler",
+      "name": "Suite_Run_Scheduler",
+      "plural_capitalized": "Suite Run Schedulers",
+      "initials": "SCH",
+      "language": "lang.en"
+    }
+    ,
+    {
+      "entity_type": "suite_run_scheduler_run",
+      "name": "Suite_Run_Scheduler_Run",
+      "plural_capitalized": "Suite Run Scheduler Runs",
+      "initials": "SCR",
+      "language": "lang.en"
+    }
 
   ]
 }

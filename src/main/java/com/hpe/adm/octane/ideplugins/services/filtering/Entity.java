@@ -43,6 +43,8 @@ import java.util.Set;
 public enum Entity {
 
     MODEL_ITEM("model_items", "model_item"),
+    SUITE_RUN_SCHEDULER("suite_run_schedulers","suite_run_scheduler"),
+    SUITE_RUN_SCHEDULER_RUN("suite_run_scheduler_runs","suite_run_scheduler_run"),
     UNIT(Entity.MODEL_ITEM, "unit"),
     MODEL(Entity.MODEL_ITEM, "model"),
 
@@ -64,6 +66,7 @@ public enum Entity {
     GHERKIN_TEST(Entity.TEST, "gherkin_test"),
     AUTOMATED_TEST(Entity.TEST, "test_automated"),
     TEST_SUITE(Entity.TEST, "test_suite"),
+    MODEL_BASED_TEST(Entity.TEST,"model_based_test"),
     BDD_SCENARIO(Entity.TEST, "scenario_test"),
 
     TASK("tasks", "task"),

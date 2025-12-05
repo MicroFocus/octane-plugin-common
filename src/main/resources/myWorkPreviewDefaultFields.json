@@ -97,6 +97,23 @@
         "start_time",
         "end_time"
       ]
+    },
+    {
+      "type": "SUITE_RUN_SCHEDULER",
+      "fields": [
+        "id",
+        "name",
+        "author",
+        "status"
+      ]
+    },
+    {
+      "type": "SUITE_RUN_SCHEDULER_RUN",
+      "fields": [
+        "id",
+        "name",
+        "status"
+      ]
     }
   ]
 }
