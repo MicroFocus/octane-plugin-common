@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!--
 
-    Copyright 2017-2023 Open Text.
+    Copyright 2017-2026 Open Text.
 
     The only warranties for products and services of Open Text and
     its affiliates and licensors (“Open Text”) are as may be set forth
@@ -36,7 +36,7 @@
 
     <groupId>com.hpe.adm.octane.ideplugins</groupId>
     <artifactId>octane-plugin-common</artifactId>
-    <version>CE-24.4</version>
+    <version>26.1</version>
     <packaging>jar</packaging>
 
     <name>Core Software Delivery Platform IDE Plugins Common</name>
