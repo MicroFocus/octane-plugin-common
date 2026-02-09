@@ -123,7 +123,7 @@
     }
   ,
     {
-      "entity_type": "manual_action",
+      "entity_type": "process_action",
       "name": "Manual Action",
       "plural_capitalized": "Manual Actions",
       "initials": "MA",
@@ -131,7 +131,7 @@
     }
   ,
     {
-      "entity_type": "auto_action",
+      "entity_type": "process_auto_action",
       "name": "Auto Action",
       "plural_capitalized": "Auto Actions",
       "initials": "AA",
@@ -139,7 +139,7 @@
     }
   ,
     {
-      "entity_type": "quality_gate",
+      "entity_type": "process_quality_gate",
       "name": "Quality_Gate",
       "plural_capitalized": "Quality Gates",
       "initials": "QG",
