@@ -1,4 +1,4 @@
-/*******************************************************************************
+/*
  * Copyright 2017-2026 Open Text.
  *
  * The only warranties for products and services of Open Text and
@@ -25,7 +25,7 @@
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
  * See the License for the specific language governing permissions and
  * limitations under the License.
- ******************************************************************************/
+ */
 package com.hpe.adm.octane.ideplugins.services;
 
 import com.google.common.base.Charsets;
