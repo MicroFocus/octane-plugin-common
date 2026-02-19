@@ -13,6 +13,7 @@
         "author",
         "story_points",
         "owner",
+        "team",
         "invested_hours",
         "remaining_hours",
         "estimated_hours",
@@ -82,7 +83,9 @@
         "name",
         "subtype",
         "owner",
-        "phase"
+        "phase",
+        "author",
+        "priority"
       ]
     },
     {
@@ -95,7 +98,9 @@
         "phase",
         "duration",
         "start_time",
-        "end_time"
+        "end_time",
+        "parent",
+        "release_process"
       ]
     },
     {
